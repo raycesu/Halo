@@ -1,4 +1,33 @@
 package view;
 
-public class ViewManager {
+import java.awt.CardLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.JPanel;
+
+import interface_adapter.ViewManagerModel;
+
+public class ViewManager extends JPanel implements PropertyChangeListener {
+
+    private final CardLayout cardLayout = new CardLayout();
+    private final ViewManagerModel viewManagerModel;
+
+    public ViewManager(final ViewManagerModel viewManagerModel) {
+        this.viewManagerModel = viewManagerModel;
+        setLayout(cardLayout);
+        viewManagerModel.addPropertyChangeListener(this);
+    }
+
+    public void registerView(final String viewName, final JPanel view) {
+        add(view, viewName);
+        cardLayout.show(this, viewManagerModel.getActiveView());
+    }
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent event) {
+        if ("activeView".equals(event.getPropertyName())) {
+            cardLayout.show(this, viewManagerModel.getActiveView());
+        }
+    }
 }
