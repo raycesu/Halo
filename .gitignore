@@ -1,0 +1,19 @@
+# Maven
+target/
+
+# Java
+*.class
+
+# macOS
+.DS_Store
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code local settings
+.vscode/
+
+# Local secrets and configuration
+.env
+config.properties
