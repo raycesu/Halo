@@ -8,6 +8,10 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -17,25 +21,41 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import interface_adapter.check_conditions.CheckConditionsController;
+import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.view_sky.SkyViewModel;
 
 public class SkyView extends JPanel implements PropertyChangeListener {
 
+    // Temporary placeholder until a real geocoding/location use case supplies lat/lon
+    // for the observation location the user typed in.
+    private static final double TORONTO_LATITUDE = 43.6532;
+    private static final double TORONTO_LONGITUDE = -79.3832;
+
     private final SkyViewModel viewModel;
+    private final CheckConditionsController checkConditionsController;
+    private final CheckConditionsViewModel checkConditionsViewModel;
     private final JTextField locationField = new JTextField();
     private final JTextField dateField = new JTextField();
     private final JTextField timeField = new JTextField();
     private final JLabel objectNameLabel = new JLabel();
     private final JTextArea objectDetailsArea = new JTextArea();
     private final JTextArea weatherArea = new JTextArea();
+    private final JButton checkConditionsButton = new JButton("Check Conditions");
     private final JLabel errorLabel = new JLabel();
     private boolean updatingFields;
 
-    public SkyView(final SkyViewModel viewModel) {
+    public SkyView(
+            final SkyViewModel viewModel,
+            final CheckConditionsController checkConditionsController,
+            final CheckConditionsViewModel checkConditionsViewModel) {
         this.viewModel = viewModel;
+        this.checkConditionsController = checkConditionsController;
+        this.checkConditionsViewModel = checkConditionsViewModel;
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
@@ -46,6 +66,7 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         updateFromViewModel();
         registerTextFieldListeners();
         viewModel.addPropertyChangeListener(this);
+        checkConditionsViewModel.addPropertyChangeListener(this);
     }
 
     private JPanel createLeftPanel() {
@@ -138,11 +159,13 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         starPanel.add(objectNameLabel, BorderLayout.NORTH);
         starPanel.add(objectDetailsArea, BorderLayout.CENTER);
 
-        final JPanel weatherPanel = new JPanel(new BorderLayout());
+        final JPanel weatherPanel = new JPanel(new BorderLayout(0, 8));
         weatherPanel.setBackground(sidebar.getBackground());
         weatherPanel.setBorder(BorderFactory.createTitledBorder("Weather"));
         configureTextArea(weatherArea);
         weatherPanel.add(weatherArea, BorderLayout.CENTER);
+        weatherPanel.add(checkConditionsButton, BorderLayout.SOUTH);
+        checkConditionsButton.addActionListener(event -> handleCheckConditions());
 
         sidebar.add(starPanel);
         sidebar.add(weatherPanel);
@@ -167,11 +190,40 @@ public class SkyView extends JPanel implements PropertyChangeListener {
                 viewModel.getSelectedObjectName(), "No object selected"));
         objectDetailsArea.setText(textOrPlaceholder(
                 viewModel.getSelectedObjectDetails(), "Details unavailable"));
-        weatherArea.setText(textOrPlaceholder(
-                viewModel.getWeatherOrObservabilityText(), "Weather unavailable"));
+        updateWeatherFromViewModel();
         errorLabel.setText(viewModel.getErrorMessage());
         revalidate();
         repaint();
+    }
+
+    private void updateWeatherFromViewModel() {
+        final String error = checkConditionsViewModel.getErrorMessage();
+        if (!error.isBlank()) {
+            weatherArea.setForeground(Color.RED);
+            weatherArea.setText(error);
+            return;
+        }
+        final String combinedText = String.join("\n",
+                checkConditionsViewModel.getCloudCoverText(),
+                checkConditionsViewModel.getVisibilityText(),
+                checkConditionsViewModel.getPrecipitationText(),
+                checkConditionsViewModel.getWeatherCodeText(),
+                checkConditionsViewModel.getOverallScoreText(),
+                checkConditionsViewModel.getRatingText());
+        weatherArea.setForeground(colorOrDefault(checkConditionsViewModel.getRatingColor()));
+        weatherArea.setText(textOrPlaceholder(
+                combinedText, "Click Check Conditions to see forecast conditions."));
+    }
+
+    private Color colorOrDefault(final String hexColor) {
+        final Color color;
+        if (hexColor == null || hexColor.isBlank()) {
+            color = Color.BLACK;
+        }
+        else {
+            color = Color.decode(hexColor);
+        }
+        return color;
     }
 
     private void registerTextFieldListeners() {
@@ -205,6 +257,30 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         }
     }
 
+    private void handleCheckConditions() {
+        final LocalDateTime observationDateTime;
+        try {
+            observationDateTime = LocalDateTime.of(
+                    LocalDate.parse(viewModel.getDisplayedDate()),
+                    LocalTime.parse(viewModel.getDisplayedTime()));
+        }
+        catch (DateTimeParseException exception) {
+            checkConditionsViewModel.setErrorMessage(
+                    "Enter a valid date (yyyy-MM-dd) and time (HH:mm) before checking conditions.");
+            return;
+        }
+        checkConditionsButton.setEnabled(false);
+        new Thread(() -> {
+            try {
+                checkConditionsController.checkConditions(
+                        TORONTO_LATITUDE, TORONTO_LONGITUDE, observationDateTime);
+            }
+            finally {
+                SwingUtilities.invokeLater(() -> checkConditionsButton.setEnabled(true));
+            }
+        }, "check-conditions-worker").start();
+    }
+
     private void setFieldText(final JTextField field, final String text) {
         if (!field.getText().equals(text)) {
             updatingFields = true;
@@ -222,6 +298,12 @@ public class SkyView extends JPanel implements PropertyChangeListener {
 
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
+        if (event.getSource() == checkConditionsViewModel) {
+            // Presenter updates may arrive on a background thread (see handleCheckConditions()),
+            // so defer the Swing mutation to the Event Dispatch Thread.
+            SwingUtilities.invokeLater(this::updateWeatherFromViewModel);
+            return;
+        }
         if ("displayedLocation".equals(event.getPropertyName())) {
             setFieldText(locationField, viewModel.getDisplayedLocation());
         }
@@ -238,10 +320,6 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         else if ("selectedObjectDetails".equals(event.getPropertyName())) {
             objectDetailsArea.setText(textOrPlaceholder(
                     viewModel.getSelectedObjectDetails(), "Details unavailable"));
-        }
-        else if ("weatherOrObservabilityText".equals(event.getPropertyName())) {
-            weatherArea.setText(textOrPlaceholder(
-                    viewModel.getWeatherOrObservabilityText(), "Weather unavailable"));
         }
         else if ("errorMessage".equals(event.getPropertyName())) {
             errorLabel.setText(viewModel.getErrorMessage());
