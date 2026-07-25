@@ -10,5 +10,44 @@ package use_case.check_conditions;
 // It depends only on interfaces (WeatherDataAccessInterface,
 // CheckConditionsOutputBoundary) — never on the concrete DAO or Presenter classes.
 
-public class CheckConditionsInteractor {
+import entity.weather.ViewingQualityRating;
+import entity.weather.WeatherCondition;
+
+public class CheckConditionsInteractor implements CheckConditionsInputBoundary {
+
+    private final WeatherDataAccessInterface weatherDataAccess;
+    private final CheckConditionsOutputBoundary outputBoundary;
+
+    public CheckConditionsInteractor(
+            final WeatherDataAccessInterface weatherDataAccess,
+            final CheckConditionsOutputBoundary outputBoundary) {
+        this.weatherDataAccess = weatherDataAccess;
+        this.outputBoundary = outputBoundary;
+    }
+
+    @Override
+    public void checkConditions(final CheckConditionsInputData inputData) {
+        try {
+            final WeatherCondition condition = weatherDataAccess.getWeatherCondition(
+                    inputData.getLatitude(),
+                    inputData.getLongitude(),
+                    inputData.getObservationDateTime());
+
+            final double overallScore = ViewingQualityRating.calculateOverallScore(condition);
+            final ViewingQualityRating rating = ViewingQualityRating.fromScore(overallScore);
+
+            final CheckConditionsOutputData outputData = new CheckConditionsOutputData(
+                    condition.getCloudCoverPercent(),
+                    condition.getVisibilityMeters(),
+                    condition.getPrecipitationProbabilityPercent(),
+                    condition.getWeatherCode(),
+                    overallScore,
+                    rating);
+
+            outputBoundary.presentConditions(outputData);
+        }
+        catch (WeatherUnavailableException exception) {
+            outputBoundary.presentError(exception.getMessage());
+        }
+    }
 }
