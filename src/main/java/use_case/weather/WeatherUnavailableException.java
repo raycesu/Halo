@@ -1,4 +1,4 @@
-package use_case.check_conditions;
+package use_case.weather;
 
 // checked exception thrown by WeatherDataAccessInterface implementations when weather data
 // cannot be obtained or does not cover the requested time (network failure, non-200 response,
