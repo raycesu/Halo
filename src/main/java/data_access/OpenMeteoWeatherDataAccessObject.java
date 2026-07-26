@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Locale;
 
 import entity.weather.WeatherCondition;
-import use_case.check_conditions.WeatherDataAccessInterface;
-import use_case.check_conditions.WeatherUnavailableException;
+import use_case.weather.WeatherDataAccessInterface;
+import use_case.weather.WeatherUnavailableException;
 
 public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterface {
 

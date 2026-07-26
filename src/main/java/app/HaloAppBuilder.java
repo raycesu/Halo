@@ -12,7 +12,7 @@ import interface_adapter.view_sky.SkyViewModel;
 import use_case.check_conditions.CheckConditionsInputBoundary;
 import use_case.check_conditions.CheckConditionsInteractor;
 import use_case.check_conditions.CheckConditionsOutputBoundary;
-import use_case.check_conditions.WeatherDataAccessInterface;
+import use_case.weather.WeatherDataAccessInterface;
 import view.LoadingView;
 import view.ObservationSetupView;
 import view.SkyView;

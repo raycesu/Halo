@@ -12,6 +12,8 @@ package use_case.check_conditions;
 
 import entity.weather.ViewingQualityRating;
 import entity.weather.WeatherCondition;
+import use_case.weather.WeatherDataAccessInterface;
+import use_case.weather.WeatherUnavailableException;
 
 public class CheckConditionsInteractor implements CheckConditionsInputBoundary {
 
