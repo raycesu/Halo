@@ -12,6 +12,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,26 +44,44 @@ public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterf
     public WeatherCondition getWeatherCondition(
             final double latitude, final double longitude, final LocalDateTime dateTime)
             throws WeatherUnavailableException {
+        final List<WeatherCondition> conditions =
+                getWeatherConditions(latitude, longitude, List.of(dateTime));
+        return conditions.get(0);
+    }
+
+    @Override
+    public List<WeatherCondition> getWeatherConditions(
+            final double latitude,
+            final double longitude,
+            final List<LocalDateTime> dateTimes)
+            throws WeatherUnavailableException {
+        if (dateTimes == null || dateTimes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         final String responseBody = sendRequest(buildRequestUrl(latitude, longitude));
 
         final List<String> times = extractStringArray(responseBody, "time");
-        final String targetHour = roundToNearestHour(dateTime).format(HOUR_FORMAT);
-        final int index = times.indexOf(targetHour);
-        if (index < 0) {
-            throw new WeatherUnavailableException(
-                    "No forecast data available for " + targetHour + " at the requested location.");
-        }
-
         final List<String> cloudCover = extractNumberArray(responseBody, "cloud_cover");
         final List<String> visibility = extractNumberArray(responseBody, "visibility");
         final List<String> precipitation = extractNumberArray(responseBody, "precipitation_probability");
         final List<String> weatherCode = extractNumberArray(responseBody, "weather_code");
 
-        return new WeatherCondition(
-                parseDoubleAt(cloudCover, index, "cloud_cover"),
-                parseDoubleAt(visibility, index, "visibility"),
-                parseDoubleAt(precipitation, index, "precipitation_probability"),
-                (int) parseDoubleAt(weatherCode, index, "weather_code"));
+        final List<WeatherCondition> conditions = new ArrayList<>(dateTimes.size());
+        for (final LocalDateTime dateTime : dateTimes) {
+            final String targetHour = roundToNearestHour(dateTime).format(HOUR_FORMAT);
+            final int index = times.indexOf(targetHour);
+            if (index < 0) {
+                throw new WeatherUnavailableException(
+                        "No forecast data available for " + targetHour + " at the requested location.");
+            }
+            conditions.add(new WeatherCondition(
+                    parseDoubleAt(cloudCover, index, "cloud_cover"),
+                    parseDoubleAt(visibility, index, "visibility"),
+                    parseDoubleAt(precipitation, index, "precipitation_probability"),
+                    (int) parseDoubleAt(weatherCode, index, "weather_code")));
+        }
+        return conditions;
     }
 
     private String buildRequestUrl(final double latitude, final double longitude) {
