@@ -7,8 +7,11 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.List;
 
 import javax.swing.JPanel;
+
+import entity.Star;
 
 public class SkyMapPanel extends JPanel {
 
@@ -69,6 +72,11 @@ public class SkyMapPanel extends JPanel {
         setBackground(new Color(7, 7, 9));
     }
 
+    public void setStars(List<Star> stars) {
+        this.stars = stars;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(final Graphics graphics) {
         super.paintComponent(graphics);
@@ -114,13 +122,21 @@ public class SkyMapPanel extends JPanel {
 
             graphics2D.fillOval(centreX - 3, centreY - 3, 6, 6);
 
-            // These dots are visual placeholders only.
-            for (int index = 0; index < demo_star_positions.length; index++) {
-                final double[] position = demo_star_positions[index];
-                final int starX = centreX + (int) (position[0] * radius);
-                final int starY = centreY + (int) (position[1] * radius);
-                final int starSize = index % 3 == 0 ? 6 : 4;
-                graphics2D.fillOval(starX - starSize / 2, starY - starSize / 2, starSize, starSize);
+            if (stars != null) {
+                graphics2D.setColor(Color.WHITE);
+                List<Star> visibleStars = VisibilityFilter.filterVisible(stars);
+
+                for (Star star : visibleStars) {
+                    SkyVisualization.ScreenPosition pos =
+                            SkyVisualization.project(star, centreX, centreY, radius);
+
+                    int starSize = 5;
+                    graphics2D.fillOval(
+                            pos.x - starSize / 2,
+                            pos.y - starSize / 2,
+                            starSize,
+                            starSize);
+                }
             }
         }
         finally {
