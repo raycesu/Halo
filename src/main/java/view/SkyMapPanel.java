@@ -68,6 +68,8 @@ public class SkyMapPanel extends JPanel {
         {0.55, 0.10}
     };
 
+    private List<Star> stars;
+
     public SkyMapPanel() {
         setBackground(new Color(7, 7, 9));
     }
