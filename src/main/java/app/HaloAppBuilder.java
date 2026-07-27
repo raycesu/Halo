@@ -2,9 +2,23 @@ package app;
 
 import javax.swing.JFrame;
 
+import data_access.OpenMeteoWeatherDataAccessObject;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.check_conditions.CheckConditionsController;
+import interface_adapter.check_conditions.CheckConditionsPresenter;
+import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.rank_forecast_days.RankForecastDaysController;
+import interface_adapter.rank_forecast_days.RankForecastDaysPresenter;
+import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.SkyViewModel;
+import use_case.check_conditions.CheckConditionsInputBoundary;
+import use_case.check_conditions.CheckConditionsInteractor;
+import use_case.check_conditions.CheckConditionsOutputBoundary;
+import use_case.rank_forecast_days.RankForecastDaysInputBoundary;
+import use_case.rank_forecast_days.RankForecastDaysInteractor;
+import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
+import use_case.weather.WeatherDataAccessInterface;
 import view.LoadingView;
 import view.ObservationSetupView;
 import view.SkyView;
@@ -12,19 +26,42 @@ import view.ViewManager;
 
 public class HaloAppBuilder {
 
-    private static final String initial_view = ViewManagerModel.observation_setup_view;
+    private static final String initial_view = ViewManagerModel.sky_view;
 
     public JFrame build() {
         final ViewManagerModel viewManagerModel = new ViewManagerModel();
         final ObservationSetupViewModel observationSetupViewModel =
                 new ObservationSetupViewModel();
         final SkyViewModel skyViewModel = new SkyViewModel();
+        final CheckConditionsViewModel checkConditionsViewModel = new CheckConditionsViewModel();
+
+        final CheckConditionsOutputBoundary checkConditionsPresenter =
+                new CheckConditionsPresenter(checkConditionsViewModel);
+        final WeatherDataAccessInterface weatherDataAccess = new OpenMeteoWeatherDataAccessObject();
+        final CheckConditionsInputBoundary checkConditionsInteractor =
+                new CheckConditionsInteractor(weatherDataAccess, checkConditionsPresenter);
+        final CheckConditionsController checkConditionsController =
+                new CheckConditionsController(checkConditionsInteractor);
+
+        final RankForecastDaysViewModel rankForecastDaysViewModel = new RankForecastDaysViewModel();
+        final RankForecastDaysOutputBoundary rankForecastDaysPresenter =
+                new RankForecastDaysPresenter(rankForecastDaysViewModel);
+        final RankForecastDaysInputBoundary rankForecastDaysInteractor =
+                new RankForecastDaysInteractor(weatherDataAccess, rankForecastDaysPresenter);
+        final RankForecastDaysController rankForecastDaysController =
+                new RankForecastDaysController(rankForecastDaysInteractor);
 
         final ViewManager viewManager = new ViewManager(viewManagerModel);
         final ObservationSetupView observationSetupView =
                 new ObservationSetupView(observationSetupViewModel);
         final LoadingView loadingView = new LoadingView();
-        final SkyView skyView = new SkyView(skyViewModel);
+        final SkyView skyView =
+                new SkyView(
+                        skyViewModel,
+                        checkConditionsController,
+                        checkConditionsViewModel,
+                        rankForecastDaysController,
+                        rankForecastDaysViewModel);
 
         viewManager.registerView(
                 ViewManagerModel.observation_setup_view, observationSetupView);

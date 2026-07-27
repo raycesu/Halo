@@ -4,5 +4,7 @@ package use_case.check_conditions;
 // This is what the Controller calls. Defining it as an interface is what lets the
 // Controller depend on an abstraction instead of the concrete interactor.
 
-public class CheckConditionsInputBoundary {
+public interface CheckConditionsInputBoundary {
+
+    void checkConditions(CheckConditionsInputData inputData);
 }
