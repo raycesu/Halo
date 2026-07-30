@@ -17,6 +17,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
@@ -41,6 +42,7 @@ import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import interface_adapter.view_sky.SkyViewModel;
+import entity.Star;
 
 public class SkyView extends JPanel implements PropertyChangeListener {
 
@@ -58,6 +60,7 @@ public class SkyView extends JPanel implements PropertyChangeListener {
     private final CheckConditionsViewModel checkConditionsViewModel;
     private final RankForecastDaysController rankForecastDaysController;
     private final RankForecastDaysViewModel rankForecastDaysViewModel;
+    private final SkyMapPanel skyMapPanel = new SkyMapPanel();
     private final JTextField locationField = new JTextField();
     private final JTextField dateField = new JTextField();
     private final JTextField timeField = new JTextField();
@@ -90,9 +93,10 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         setBackground(Color.BLACK);
 
         add(createLeftPanel(), BorderLayout.WEST);
-        add(new SkyMapPanel(), BorderLayout.CENTER);
+        add(skyMapPanel, BorderLayout.CENTER);
         add(createRightSidebar(), BorderLayout.EAST);
 
+        skyMapPanel.setSelectionListener(this::handleObjectSelected);
         updateFromViewModel();
         registerTextFieldListeners();
         viewModel.addPropertyChangeListener(this);
@@ -310,6 +314,8 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         locationField.setText(viewModel.getDisplayedLocation());
         dateField.setText(viewModel.getDisplayedDate());
         timeField.setText(viewModel.getDisplayedTime());
+        skyMapPanel.setStars(viewModel.getStars());
+        skyMapPanel.setSelectedObject(viewModel.getSelectedObject());
         objectNameLabel.setText(textOrPlaceholder(
                 viewModel.getSelectedObjectName(), "No object selected"));
         objectDetailsArea.setText(textOrPlaceholder(
@@ -319,6 +325,78 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         updateRankedDaysFromViewModel();
         revalidate();
         repaint();
+    }
+
+    private void handleObjectSelected(final Star selectedObject) {
+        viewModel.setSelectedObject(selectedObject);
+        viewModel.setSelectedObjectDetails(formatObjectDetails(selectedObject));
+    }
+
+    private String formatObjectDetails(final Star object) {
+        if (object == null) {
+            return "";
+        }
+
+        final StringBuilder details = new StringBuilder();
+
+        if (object.getType() != null) {
+            appendDetail(details, "Type", formatType(object));
+        }
+        appendDetail(details, "Catalogue ID", object.getCatalogueId());
+
+        if (Double.isFinite(object.getApparentMagnitude())) {
+            appendDetail(details, "Magnitude",
+                    String.format(Locale.US, "%.2f", object.getApparentMagnitude()));
+        }
+        appendDetail(details, "Constellation", object.getConstellationRegion());
+        appendDetail(details, "Spectral type", object.getSpectralType());
+
+        if (Double.isFinite(object.getRightAscension())) {
+            appendDetail(details, "Right ascension",
+                    String.format(Locale.US, "%.4f hours", object.getRightAscension()));
+        }
+        if (Double.isFinite(object.getDeclination())) {
+            appendDetail(details, "Declination",
+                    String.format(Locale.US, "%.2f\u00b0", object.getDeclination()));
+        }
+        if (Double.isFinite(object.getAltitude())) {
+            appendDetail(details, "Altitude",
+                    String.format(Locale.US, "%.2f\u00b0", object.getAltitude()));
+        }
+        if (Double.isFinite(object.getAzimuth())) {
+            appendDetail(details, "Azimuth",
+                    String.format(Locale.US, "%.2f\u00b0", object.getAzimuth()));
+        }
+
+        if (object.getDescription() != null && !object.getDescription().isBlank()) {
+            if (details.length() > 0) {
+                details.append("\n\n");
+            }
+            details.append("Description:\n").append(object.getDescription());
+        }
+
+        if (details.length() == 0) {
+            details.append("Details unavailable");
+        }
+
+        return details.toString();
+    }
+
+    private String formatType(final Star object) {
+        final String typeName = object.getType().name().toLowerCase(Locale.US);
+        return Character.toUpperCase(typeName.charAt(0)) + typeName.substring(1);
+    }
+
+    private void appendDetail(
+            final StringBuilder details,
+            final String label,
+            final String value) {
+        if (value != null && !value.isBlank()) {
+            if (details.length() > 0) {
+                details.append('\n');
+            }
+            details.append(label).append(": ").append(value);
+        }
     }
 
     private void updateRankedDaysFromViewModel() {
@@ -471,6 +549,12 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         }
         else if ("displayedTime".equals(event.getPropertyName())) {
             setFieldText(timeField, viewModel.getDisplayedTime());
+        }
+        else if ("stars".equals(event.getPropertyName())) {
+            skyMapPanel.setStars(viewModel.getStars());
+        }
+        else if ("selectedObject".equals(event.getPropertyName())) {
+            skyMapPanel.setSelectedObject(viewModel.getSelectedObject());
         }
         else if ("selectedObjectName".equals(event.getPropertyName())) {
             objectNameLabel.setText(textOrPlaceholder(
