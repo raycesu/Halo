@@ -7,6 +7,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import entity.CelestialBodyType;
 import entity.Star;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -169,6 +170,16 @@ class SkyMapPanelTest {
         assertEquals(panYBeforeReplacement, panel.getPanOffsetY(), 1e-9);
     }
 
+    @Test
+    void celestialBodiesUseCompactWhiteMarkersExceptForTheOrangeSun() {
+        assertMarkerRendering(
+                CelestialBodyType.SUN,
+                new Color(255, 190, 60),
+                5);
+        assertMarkerRendering(CelestialBodyType.MOON, Color.WHITE, 4);
+        assertMarkerRendering(CelestialBodyType.PLANET, Color.WHITE, 3);
+    }
+
     private SkyVisualization.ScreenPosition projectedPosition(final Star object) {
         final int centreX =
                 (int) Math.round(CENTRE + panel.getPanOffsetX());
@@ -180,11 +191,7 @@ class SkyMapPanelTest {
     }
 
     private boolean renderContainsSelectionColor() {
-        final BufferedImage image =
-                new BufferedImage(PANEL_SIZE, PANEL_SIZE, BufferedImage.TYPE_INT_RGB);
-        final Graphics2D graphics = image.createGraphics();
-        panel.paint(graphics);
-        graphics.dispose();
+        final BufferedImage image = renderPanel();
 
         final int selectionRgb = new Color(255, 210, 40).getRGB();
         boolean found = false;
@@ -196,6 +203,28 @@ class SkyMapPanelTest {
         }
 
         return found;
+    }
+
+    private void assertMarkerRendering(
+            final CelestialBodyType type,
+            final Color expectedColor,
+            final int markerRadius) {
+        final Star object = createObservedObject(type);
+        panel.setStars(List.of(object));
+
+        final BufferedImage image = renderPanel();
+
+        assertEquals(expectedColor.getRGB(), image.getRGB(CENTRE, CENTRE));
+        assertEquals(Color.BLACK.getRGB(), image.getRGB(CENTRE + markerRadius, CENTRE));
+    }
+
+    private BufferedImage renderPanel() {
+        final BufferedImage image =
+                new BufferedImage(PANEL_SIZE, PANEL_SIZE, BufferedImage.TYPE_INT_RGB);
+        final Graphics2D graphics = image.createGraphics();
+        panel.paint(graphics);
+        graphics.dispose();
+        return image;
     }
 
     private void wheel(
@@ -265,5 +294,20 @@ class SkyMapPanelTest {
                 "description");
         observedStar.updateHorizontalPosition(altitude, azimuth);
         return observedStar;
+    }
+
+    private Star createObservedObject(final CelestialBodyType type) {
+        final Star observedObject = new Star(
+                type.name(),
+                type.name(),
+                12.0,
+                20.0,
+                1.0,
+                "region",
+                "spectral",
+                "description",
+                type);
+        observedObject.updateHorizontalPosition(90.0, 0.0);
+        return observedObject;
     }
 }

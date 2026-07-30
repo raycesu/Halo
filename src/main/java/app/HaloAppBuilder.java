@@ -2,7 +2,12 @@ package app;
 
 import javax.swing.JFrame;
 
+import astronomy.AltAzCalculator;
+import astronomy.JulianDateCalculator;
+import astronomy.SiderealTimeCalculator;
+import data_access.CsvStarCatalogDataAccessObject;
 import data_access.OpenMeteoWeatherDataAccessObject;
+import data_access.UsnoCelestialBodyDataAccessObject;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsPresenter;
@@ -12,12 +17,20 @@ import interface_adapter.rank_forecast_days.RankForecastDaysPresenter;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.SkyViewModel;
+import interface_adapter.view_sky.ViewSkyController;
+import interface_adapter.view_sky.ViewSkyPresenter;
 import use_case.check_conditions.CheckConditionsInputBoundary;
 import use_case.check_conditions.CheckConditionsInteractor;
 import use_case.check_conditions.CheckConditionsOutputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInteractor;
 import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
+import use_case.sky.CelestialBodyDataAccessInterface;
+import use_case.view_sky.HorizontalCoordinateCalculator;
+import use_case.view_sky.StarCatalogDataAccessInterface;
+import use_case.view_sky.ViewSkyInputBoundary;
+import use_case.view_sky.ViewSkyInteractor;
+import use_case.view_sky.ViewSkyOutputBoundary;
 import use_case.weather.WeatherDataAccessInterface;
 import view.LoadingView;
 import view.ObservationSetupView;
@@ -26,14 +39,45 @@ import view.ViewManager;
 
 public class HaloAppBuilder {
 
-    private static final String initial_view = ViewManagerModel.sky_view;
+    private static final String initial_view = ViewManagerModel.observation_setup_view;
 
     public JFrame build() {
+        final ViewManager viewManager = buildViewManager();
+
+        final JFrame frame = new JFrame("Halo");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(viewManager);
+        frame.setSize(900, 600);
+        frame.setResizable(true);
+        frame.setLocationRelativeTo(null);
+        return frame;
+    }
+
+    ViewManager buildViewManager() {
         final ViewManagerModel viewManagerModel = new ViewManagerModel();
         final ObservationSetupViewModel observationSetupViewModel =
                 new ObservationSetupViewModel();
         final SkyViewModel skyViewModel = new SkyViewModel();
         final CheckConditionsViewModel checkConditionsViewModel = new CheckConditionsViewModel();
+
+        final ViewSkyOutputBoundary viewSkyPresenter =
+                new ViewSkyPresenter(skyViewModel, observationSetupViewModel);
+        final StarCatalogDataAccessInterface starCatalogDataAccess =
+                new CsvStarCatalogDataAccessObject();
+        final CelestialBodyDataAccessInterface celestialBodyDataAccess =
+                new UsnoCelestialBodyDataAccessObject();
+        final HorizontalCoordinateCalculator coordinateCalculator =
+                new AltAzCalculator(
+                        new JulianDateCalculator(),
+                        new SiderealTimeCalculator());
+        final ViewSkyInputBoundary viewSkyInteractor =
+                new ViewSkyInteractor(
+                        starCatalogDataAccess,
+                        celestialBodyDataAccess,
+                        coordinateCalculator,
+                        viewSkyPresenter);
+        final ViewSkyController viewSkyController =
+                new ViewSkyController(viewSkyInteractor, viewSkyPresenter);
 
         final CheckConditionsOutputBoundary checkConditionsPresenter =
                 new CheckConditionsPresenter(checkConditionsViewModel);
@@ -53,7 +97,10 @@ public class HaloAppBuilder {
 
         final ViewManager viewManager = new ViewManager(viewManagerModel);
         final ObservationSetupView observationSetupView =
-                new ObservationSetupView(observationSetupViewModel);
+                new ObservationSetupView(
+                        observationSetupViewModel,
+                        viewSkyController,
+                        viewManagerModel);
         final LoadingView loadingView = new LoadingView();
         final SkyView skyView =
                 new SkyView(
@@ -61,26 +108,15 @@ public class HaloAppBuilder {
                         checkConditionsController,
                         checkConditionsViewModel,
                         rankForecastDaysController,
-                        rankForecastDaysViewModel);
+                        rankForecastDaysViewModel,
+                        viewManagerModel);
 
         viewManager.registerView(
                 ViewManagerModel.observation_setup_view, observationSetupView);
         viewManager.registerView(ViewManagerModel.loading_view, loadingView);
         viewManager.registerView(ViewManagerModel.sky_view, skyView);
 
-        final JFrame frame = new JFrame("Halo");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setContentPane(viewManager);
-        if (ViewManagerModel.sky_view.equals(initial_view)) {
-            frame.setSize(1350, 800);
-        }
-        else {
-            frame.setSize(900, 600);
-        }
-        frame.setResizable(true);
-        frame.setLocationRelativeTo(null);
-
         viewManagerModel.setActiveView(initial_view);
-        return frame;
+        return viewManager;
     }
 }
