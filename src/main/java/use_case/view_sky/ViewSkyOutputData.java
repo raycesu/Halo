@@ -2,22 +2,24 @@ package use_case.view_sky;
 
 import java.util.List;
 
+import entity.Star;
+
 public class ViewSkyOutputData {
 
     private final String location;
     private final String date;
     private final String time;
-    private final List<String> demoStarNames;
+    private final List<Star> stars;
 
     public ViewSkyOutputData(
             final String location,
             final String date,
             final String time,
-            final List<String> demoStarNames) {
+            final List<Star> stars) {
         this.location = location;
         this.date = date;
         this.time = time;
-        this.demoStarNames = List.copyOf(demoStarNames);
+        this.stars = List.copyOf(stars);
     }
 
     public String getLocation() {
@@ -32,7 +34,7 @@ public class ViewSkyOutputData {
         return time;
     }
 
-    public List<String> getDemoStarNames() {
-        return demoStarNames;
+    public List<Star> getStars() {
+        return stars;
     }
 }
