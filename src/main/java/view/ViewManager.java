@@ -5,6 +5,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import interface_adapter.ViewManagerModel;
 
@@ -27,7 +28,18 @@ public class ViewManager extends JPanel implements PropertyChangeListener {
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
         if ("activeView".equals(event.getPropertyName())) {
-            cardLayout.show(this, viewManagerModel.getActiveView());
+            final Runnable showView = () -> {
+                cardLayout.show(this, viewManagerModel.getActiveView());
+                revalidate();
+                repaint();
+            };
+
+            if (SwingUtilities.isEventDispatchThread()) {
+                showView.run();
+            }
+            else {
+                SwingUtilities.invokeLater(showView);
+            }
         }
     }
 }

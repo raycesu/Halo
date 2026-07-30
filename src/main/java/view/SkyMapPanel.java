@@ -25,7 +25,11 @@ public class SkyMapPanel extends JPanel {
     private static final int INITIAL_MARGIN = 20;
     private static final int DRAG_THRESHOLD = 5;
     private static final int CLICK_RADIUS = 12;
+    private static final int SUN_MARKER_SIZE = 10;
+    private static final int MOON_MARKER_SIZE = 8;
+    private static final int PLANET_MARKER_SIZE = 6;
     private static final Color SELECTION_COLOR = new Color(255, 210, 40);
+    private static final Color SUN_COLOR = new Color(255, 190, 60);
 
     private List<Star> stars = List.of();
     private Star selectedObject;
@@ -238,13 +242,13 @@ public class SkyMapPanel extends JPanel {
         final int size;
 
         if (type == CelestialBodyType.SUN) {
-            size = 14;
+            size = SUN_MARKER_SIZE;
         }
         else if (type == CelestialBodyType.MOON) {
-            size = 12;
+            size = MOON_MARKER_SIZE;
         }
         else if (type == CelestialBodyType.PLANET) {
-            size = 9;
+            size = PLANET_MARKER_SIZE;
         }
         else if (Double.isFinite(star.getApparentMagnitude())) {
             size = Math.max(
@@ -263,13 +267,7 @@ public class SkyMapPanel extends JPanel {
         final Color color;
 
         if (type == CelestialBodyType.SUN) {
-            color = new Color(255, 190, 60);
-        }
-        else if (type == CelestialBodyType.MOON) {
-            color = new Color(220, 225, 235);
-        }
-        else if (type == CelestialBodyType.PLANET) {
-            color = new Color(120, 190, 255);
+            color = SUN_COLOR;
         }
         else {
             color = Color.WHITE;
