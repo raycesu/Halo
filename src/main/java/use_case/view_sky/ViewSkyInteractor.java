@@ -89,6 +89,8 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
                 location.getDisplayName(),
                 observationTime.toLocalDate().toString(),
                 observationTime.toLocalTime().toString(),
+                location.getLatitude(),
+                location.getLongitude(),
                 stars);
 
         outputBoundary.prepareSuccessView(outputData);

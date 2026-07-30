@@ -8,6 +8,9 @@ public class ObservationSetupViewModel {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private String location = "Toronto";
+    private String latitude = "43.6532";
+    private String longitude = "-79.3832";
+    private String zoneId = "America/Toronto";
     private String date = "2026-07-24";
     private String time = "18:20";
     private String errorMessage = "";
@@ -20,6 +23,36 @@ public class ObservationSetupViewModel {
         final String oldLocation = this.location;
         this.location = location;
         support.firePropertyChange("location", oldLocation, location);
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(final String latitude) {
+        final String oldLatitude = this.latitude;
+        this.latitude = latitude;
+        support.firePropertyChange("latitude", oldLatitude, latitude);
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(final String longitude) {
+        final String oldLongitude = this.longitude;
+        this.longitude = longitude;
+        support.firePropertyChange("longitude", oldLongitude, longitude);
+    }
+
+    public String getZoneId() {
+        return zoneId;
+    }
+
+    public void setZoneId(final String zoneId) {
+        final String oldZoneId = this.zoneId;
+        this.zoneId = zoneId;
+        support.firePropertyChange("zoneId", oldZoneId, zoneId);
     }
 
     public String getDate() {
