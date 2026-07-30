@@ -2,6 +2,8 @@ package use_case.view_sky;
 
 import java.util.List;
 
+import entity.Star;
+
 public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     private final StarCatalogDataAccessInterface starCatalogDataAccess;
@@ -16,12 +18,12 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     @Override
     public void execute(final ViewSkyInputData inputData) {
-        final List<String> demoStarNames = starCatalogDataAccess.getDemoStarNames();
+        final List<Star> stars = starCatalogDataAccess.findAll();
         final ViewSkyOutputData outputData = new ViewSkyOutputData(
                 inputData.getLocation(),
                 inputData.getDate(),
                 inputData.getTime(),
-                demoStarNames);
+                stars);
         outputBoundary.prepareSuccessView(outputData);
     }
 }
