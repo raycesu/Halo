@@ -64,6 +64,8 @@ class ViewSkyInteractorTest {
         assertEquals("Toronto", presenter.outputData.getLocation());
         assertEquals("2026-07-30", presenter.outputData.getDate());
         assertEquals("23:00", presenter.outputData.getTime());
+        assertEquals(TORONTO_LATITUDE, presenter.outputData.getLatitude(), 1e-9);
+        assertEquals(TORONTO_LONGITUDE, presenter.outputData.getLongitude(), 1e-9);
         assertNull(presenter.warningMessage);
     }
 
