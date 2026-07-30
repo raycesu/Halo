@@ -36,6 +36,10 @@ public final class AltAzCalculator
                 Math.toRadians(observerLocation.getLatitude());
 
         for (Star star : stars) {
+                if (!Double.isFinite(star.getRightAscension())
+                || !Double.isFinite(star.getDeclination())) {
+                continue;
+    }
             final double hourAngleDegrees = normalizeHourAngle(
                     (localSiderealTime - star.getRightAscension()) * 15.0);
             final double hourAngleRadians =
