@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entity.Star;
+import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
+import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import use_case.view_sky.ViewSkyOutputData;
@@ -17,13 +20,18 @@ class ViewSkyPresenterTest {
 
     private SkyViewModel skyViewModel;
     private ObservationSetupViewModel setupViewModel;
+    private CheckConditionsViewModel checkConditionsViewModel;
+    private RankForecastDaysViewModel rankForecastDaysViewModel;
     private ViewSkyPresenter presenter;
 
     @BeforeEach
     void setUp() {
         skyViewModel = new SkyViewModel();
         setupViewModel = new ObservationSetupViewModel();
-        presenter = new ViewSkyPresenter(skyViewModel, setupViewModel);
+        checkConditionsViewModel = new CheckConditionsViewModel();
+        rankForecastDaysViewModel = new RankForecastDaysViewModel();
+        presenter = new ViewSkyPresenter(
+                skyViewModel, setupViewModel, checkConditionsViewModel, rankForecastDaysViewModel);
     }
 
     @Test
@@ -35,6 +43,13 @@ class ViewSkyPresenterTest {
         skyViewModel.setWarningMessage("old warning");
         skyViewModel.setErrorMessage("old error");
         setupViewModel.setErrorMessage("old setup error");
+        checkConditionsViewModel.setCloudCoverText("40% cloud cover");
+        checkConditionsViewModel.setRatingText("Rating: Good");
+        checkConditionsViewModel.setRatingColor("#66BB6A");
+        checkConditionsViewModel.setErrorMessage("old weather error");
+        rankForecastDaysViewModel.setRankedDays(List.of(new RankedDayDisplayItem(
+                1, "Mon, Jan 1", "Rating: Good", "#66BB6A", "Score: 80/100")));
+        rankForecastDaysViewModel.setErrorMessage("old ranking error");
 
         presenter.prepareSuccessView(new ViewSkyOutputData(
                 "Toronto",
@@ -59,6 +74,13 @@ class ViewSkyPresenterTest {
         assertTrue(skyViewModel.getWarningMessage().isEmpty());
         assertTrue(skyViewModel.getErrorMessage().isEmpty());
         assertTrue(setupViewModel.getErrorMessage().isEmpty());
+
+        assertTrue(checkConditionsViewModel.getCloudCoverText().isEmpty());
+        assertTrue(checkConditionsViewModel.getRatingText().isEmpty());
+        assertTrue(checkConditionsViewModel.getRatingColor().isEmpty());
+        assertTrue(checkConditionsViewModel.getErrorMessage().isEmpty());
+        assertTrue(rankForecastDaysViewModel.getRankedDays().isEmpty());
+        assertTrue(rankForecastDaysViewModel.getErrorMessage().isEmpty());
     }
 
     @Test
