@@ -106,4 +106,20 @@ public class CheckConditionsViewModel {
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
+
+    /**
+     * Clears every displayed field back to its initial empty state. Called whenever a new
+     * observation is generated so weather results from a previous location/date/time do not
+     * keep showing on screen.
+     */
+    public void reset() {
+        setCloudCoverText("");
+        setVisibilityText("");
+        setPrecipitationText("");
+        setWeatherCodeText("");
+        setOverallScoreText("");
+        setRatingText("");
+        setRatingColor("");
+        setErrorMessage("");
+    }
 }

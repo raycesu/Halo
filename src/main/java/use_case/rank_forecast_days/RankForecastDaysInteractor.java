@@ -1,5 +1,6 @@
 package use_case.rank_forecast_days;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,14 +18,28 @@ public class RankForecastDaysInteractor implements RankForecastDaysInputBoundary
     // local civil time rather than true astronomical darkness for that location/date.
     private static final int OBSERVATION_HOUR = 23;
 
+    // The Open-Meteo forecast API has no data before today, so a request that includes a past
+    // date is rejected here rather than being sent to the DAO.
+    static final String PAST_DATE_ERROR_MESSAGE =
+            "Forecast ranking is not available for past dates.";
+
     private final WeatherDataAccessInterface weatherDataAccess;
     private final RankForecastDaysOutputBoundary outputBoundary;
+    private final Clock clock;
 
     public RankForecastDaysInteractor(
             final WeatherDataAccessInterface weatherDataAccess,
             final RankForecastDaysOutputBoundary outputBoundary) {
+        this(weatherDataAccess, outputBoundary, Clock.systemDefaultZone());
+    }
+
+    public RankForecastDaysInteractor(
+            final WeatherDataAccessInterface weatherDataAccess,
+            final RankForecastDaysOutputBoundary outputBoundary,
+            final Clock clock) {
         this.weatherDataAccess = weatherDataAccess;
         this.outputBoundary = outputBoundary;
+        this.clock = clock;
     }
 
     @Override
@@ -33,6 +48,14 @@ public class RankForecastDaysInteractor implements RankForecastDaysInputBoundary
         if (selectedDates.isEmpty()) {
             outputBoundary.presentError("Select at least one day to rank.");
             return;
+        }
+
+        final LocalDate today = LocalDate.now(clock);
+        for (final LocalDate date : selectedDates) {
+            if (date.isBefore(today)) {
+                outputBoundary.presentError(PAST_DATE_ERROR_MESSAGE);
+                return;
+            }
         }
 
         try {

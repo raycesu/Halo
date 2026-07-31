@@ -131,6 +131,15 @@ final class CalendarDatePickerDialog extends JDialog {
         dayButton.setMargin(new Insets(2, 2, 2, 2));
         dayButton.setSelected(selectedDates.contains(date));
         applyDayButtonStyle(dayButton);
+
+        // The weather API has no data for dates before today, so past days cannot be selected.
+        if (date.isBefore(LocalDate.now())) {
+            dayButton.setSelected(false);
+            dayButton.setEnabled(false);
+            selectedDates.remove(date);
+            return dayButton;
+        }
+
         dayButton.addActionListener(event -> {
             if (dayButton.isSelected()) {
                 selectedDates.add(date);
