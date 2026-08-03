@@ -16,6 +16,8 @@ import javax.swing.JPanel;
 
 import entity.CelestialBodyType;
 import entity.Star;
+import entity.ConstellationLine;
+import entity.CustomConstellation;
 
 public class SkyMapPanel extends JPanel {
 
@@ -45,6 +47,8 @@ public class SkyMapPanel extends JPanel {
     private int dragStartY;
     private double dragStartPanX;
     private double dragStartPanY;
+    private List<CustomConstellation> customConstellations = List.of();
+    private List<Star> constellationSelection = List.of();
 
     public SkyMapPanel() {
         setBackground(new Color(7, 7, 9));
@@ -99,8 +103,7 @@ public class SkyMapPanel extends JPanel {
             public void mouseClicked(final MouseEvent event) {
                 if (suppressClick) {
                     suppressClick = false;
-                }
-                else {
+                } else {
                     selectObjectAt(event.getX(), event.getY());
                 }
             }
@@ -119,6 +122,22 @@ public class SkyMapPanel extends JPanel {
     public void setStars(final List<Star> stars) {
         this.stars = List.copyOf(stars);
         selectedObject = null;
+        repaint();
+    }
+
+    /**
+     * User-created constellations currently displayed on the sky map.
+     */
+    public void setCustomConstellations(final List<CustomConstellation> customConstellations) {
+        this.customConstellations = List.copyOf(customConstellations);
+        repaint();
+    }
+
+    /**
+     * Stars selected in order, while the user creates a constellation.
+     */
+    public void setConstellationSelection(final List<Star> constellationSelection) {
+        this.constellationSelection = List.copyOf(constellationSelection);
         repaint();
     }
 
@@ -201,14 +220,37 @@ public class SkyMapPanel extends JPanel {
                     circleX - metrics.stringWidth("W") - 10,
                     centreY + metrics.getAscent() / 2);
 
+            drawCustomConstellations(graphics2D, centreX, centreY, radius);
+
             for (final Star star : VisibilityFilter.filterVisible(stars)) {
                 final SkyVisualization.ScreenPosition position =
                         SkyVisualization.project(star, centreX, centreY, radius);
                 drawObject(graphics2D, star, position);
             }
-        }
-        finally {
+        } finally {
             graphics2D.dispose();
+        }
+    }
+
+    /**
+     * Draws saved constellation as line segments between visible stars.
+     */
+    private void drawCustomConstellations(final Graphics2D graphics2D, final int centreX, final int centreY, final int radius) {
+        graphics2D.setColor(new Color(80, 180, 255));
+        graphics2D.setStroke(new BasicStroke(1.5F));
+
+        for (final CustomConstellation constellation : customConstellations) {
+            for (final ConstellationLine constellationLine : constellation.getLines()) {
+                final Star startStar = constellationLine.getStartStar();
+                final Star endStar = constellationLine.getEndStar();
+                // Avoid drawing a segment when either endpoint is below the horizon.
+                if (startStar.isAboveHorizon() && endStar.isAboveHorizon()) {
+                    final SkyVisualization.ScreenPosition start = SkyVisualization.project(startStar, centreX, centreY, radius);
+                    final SkyVisualization.ScreenPosition end = SkyVisualization.project(endStar, centreX, centreY, radius);
+
+                    graphics2D.drawLine(start.x, start.y, end.x, end.y);
+                }
+            }
         }
     }
 
@@ -225,7 +267,7 @@ public class SkyMapPanel extends JPanel {
                 size,
                 size);
 
-        if (star == selectedObject) {
+        if (star == selectedObject || constellationSelection.contains(star)) {
             final int highlightSize = size + 8;
             graphics2D.setColor(SELECTION_COLOR);
             graphics2D.setStroke(new BasicStroke(2.0F));
@@ -243,19 +285,15 @@ public class SkyMapPanel extends JPanel {
 
         if (type == CelestialBodyType.SUN) {
             size = SUN_MARKER_SIZE;
-        }
-        else if (type == CelestialBodyType.MOON) {
+        } else if (type == CelestialBodyType.MOON) {
             size = MOON_MARKER_SIZE;
-        }
-        else if (type == CelestialBodyType.PLANET) {
+        } else if (type == CelestialBodyType.PLANET) {
             size = PLANET_MARKER_SIZE;
-        }
-        else if (Double.isFinite(star.getApparentMagnitude())) {
+        } else if (Double.isFinite(star.getApparentMagnitude())) {
             size = Math.max(
                     3,
                     Math.min(9, (int) Math.round(7.0 - star.getApparentMagnitude())));
-        }
-        else {
+        } else {
             size = 4;
         }
 
@@ -268,8 +306,7 @@ public class SkyMapPanel extends JPanel {
 
         if (type == CelestialBodyType.SUN) {
             color = SUN_COLOR;
-        }
-        else {
+        } else {
             color = Color.WHITE;
         }
 
@@ -351,8 +388,7 @@ public class SkyMapPanel extends JPanel {
             if (maximumPanDistance == 0.0) {
                 panOffsetX = 0.0;
                 panOffsetY = 0.0;
-            }
-            else {
+            } else {
                 final double scale = maximumPanDistance / currentPanDistance;
                 panOffsetX *= scale;
                 panOffsetY *= scale;
