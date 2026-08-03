@@ -35,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
 
 import entity.Star;
 import interface_adapter.ViewManagerModel;
@@ -44,6 +45,8 @@ import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import interface_adapter.view_sky.SkyViewModel;
+import interface_adapter.custom_constellation.ConstellationController;
+import interface_adapter.custom_constellation.ConstellationViewModel;
 
 public class SkyView extends JPanel implements ActionListener, PropertyChangeListener {
 
@@ -77,6 +80,12 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     private final DefaultListModel<RankedDayDisplayItem> rankedDaysListModel = new DefaultListModel<>();
     private final JList<RankedDayDisplayItem> rankedDaysList = new JList<>(rankedDaysListModel);
     private final JLabel rankForecastErrorLabel = new JLabel();
+    private final JButton constellationButton = new JButton("Constellation");
+    private final JLabel constellationStatusLabel = new JLabel();
+    private final List<Star> constellationSelection =  new ArrayList<>();
+    private ConstellationController constellationController;
+    private ConstellationViewModel constellationViewModel;
+    private boolean creatingConstellation;
 
     public SkyView(
             final SkyViewModel viewModel,
@@ -104,6 +113,16 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         viewModel.addPropertyChangeListener(this);
         checkConditionsViewModel.addPropertyChangeListener(this);
         rankForecastDaysViewModel.addPropertyChangeListener(this);
+    }
+
+    public void configureCustomConstellations(final ConstellationController controller,
+                                              final ConstellationViewModel constellationViewModel) {
+        this.constellationController = controller;
+        this.constellationViewModel = constellationViewModel;
+
+        constellationViewModel.addPropertyChangeListener(this);
+        skyMapPanel.setCustomConstellations(constellationViewModel.getConstellations());
+        constellationButton.setEnabled(!viewModel.getStars().isEmpty());
     }
 
     private JPanel createLeftPanel() {
@@ -152,7 +171,6 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         errorLabel.setForeground(new Color(180, 30, 30));
         errorLabel.setAlignmentX(LEFT_ALIGNMENT);
 
-        final JButton constellationButton = new JButton("Custom Constellation");
         constellationButton.setEnabled(false);
 
         final JPanel constellationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -161,6 +179,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         constellationPanel.setMaximumSize(new Dimension(
                 Integer.MAX_VALUE, constellationButton.getPreferredSize().height));
         constellationPanel.add(constellationButton);
+
+        constellationStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
 
         leftPanel.add(searchHeading);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 8)));
@@ -186,6 +206,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         leftPanel.add(errorLabel);
         leftPanel.add(Box.createVerticalGlue());
         leftPanel.add(constellationPanel);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        leftPanel.add(constellationStatusLabel);
         return leftPanel;
     }
 
@@ -335,6 +357,14 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleObjectSelected(final Star selectedObject) {
+        if (creatingConstellation) {
+            if (selectedObject != null && !constellationSelection.contains(selectedObject)) {
+                constellationSelection.add(selectedObject);
+                skyMapPanel.setConstellationSelection(constellationSelection);
+                constellationStatusLabel.setText(constellationSelection.size() + " stars selected");
+            }
+            return;
+        }
         viewModel.setSelectedObject(selectedObject);
         viewModel.setSelectedObjectDetails(formatObjectDetails(selectedObject));
         if (selectedObject != null) {
@@ -453,6 +483,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         checkConditionsButton.addActionListener(this);
         selectDatesButton.addActionListener(this);
         rankForecastButton.addActionListener(this);
+        constellationButton.addActionListener(this);
     }
 
     @Override
@@ -473,6 +504,46 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         else if (event.getSource() == rankForecastButton) {
             handleRankForecastDays();
         }
+        else if (event.getSource() == constellationButton) {
+            handleConstellationAction();
+        }
+    }
+
+    private void handleConstellationAction() {
+        if (creatingConstellation) {
+            saveConstellation();
+        }
+        else {
+            startConstellationCreation();
+        }
+    }
+    private void startConstellationCreation() {
+        creatingConstellation = true;
+        constellationSelection.clear();
+        skyMapPanel.setConstellationSelection(constellationSelection);
+        constellationButton.setText("Save Constellation");
+        constellationStatusLabel.setForeground(Color.BLACK);
+        constellationStatusLabel.setText("Select stars in order");
+    }
+    private void saveConstellation() {
+        final String name = JOptionPane.showInputDialog(this, "Enter a name for the constellation:");
+
+        // Press Cancel ends creation without saving
+        if (name == null) {
+            finishConstellationCreation();
+            return;
+        }
+        constellationController.createConstellation(name, constellationSelection);
+        // Keep creation mode active when validation fails
+        if (constellationViewModel.getErrorMessage().isBlank()){
+            finishConstellationCreation();
+        }
+    }
+    private void finishConstellationCreation() {
+        creatingConstellation = false;
+        constellationSelection.clear();
+        skyMapPanel.setConstellationSelection(List.of());
+        constellationButton.setText("Custom Constellation");
     }
 
     private void handleSearch() {
@@ -575,7 +646,18 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
             SwingUtilities.invokeLater(() -> propertyChange(event));
             return;
         }
-
+        if (event.getSource() == constellationViewModel) {
+            skyMapPanel.setCustomConstellations(constellationViewModel.getConstellations());
+            if (!constellationViewModel.getErrorMessage().isBlank()) {
+                constellationStatusLabel.setForeground(new Color(180, 30, 30));
+                constellationStatusLabel.setText(constellationViewModel.getErrorMessage());
+            }
+            else {
+                constellationStatusLabel.setForeground(new Color(20, 130, 60));
+                constellationStatusLabel.setText(constellationViewModel.getSuccessMessage());
+            }
+            return;
+        }
         if (event.getSource() == checkConditionsViewModel) {
             updateWeatherFromViewModel();
             return;
@@ -596,6 +678,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         else if ("stars".equals(event.getPropertyName())) {
             skyMapPanel.setStars(viewModel.getStars());
             searchButton.setEnabled(!viewModel.getStars().isEmpty());
+            constellationButton.setEnabled(constellationController != null
+                    && !viewModel.getStars().isEmpty());
         }
         else if ("selectedObject".equals(event.getPropertyName())) {
             skyMapPanel.setSelectedObject(viewModel.getSelectedObject());

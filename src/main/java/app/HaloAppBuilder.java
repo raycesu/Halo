@@ -1,17 +1,19 @@
 package app;
 
-import javax.swing.JFrame;
-
 import astronomy.AltAzCalculator;
 import astronomy.JulianDateCalculator;
 import astronomy.SiderealTimeCalculator;
 import data_access.CsvStarCatalogDataAccessObject;
+import data_access.InMemoryConstellationDataAccessObject;
 import data_access.OpenMeteoWeatherDataAccessObject;
 import data_access.UsnoCelestialBodyDataAccessObject;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsPresenter;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.custom_constellation.ConstellationController;
+import interface_adapter.custom_constellation.ConstellationPresenter;
+import interface_adapter.custom_constellation.ConstellationViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysPresenter;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
@@ -22,20 +24,25 @@ import interface_adapter.view_sky.ViewSkyPresenter;
 import use_case.check_conditions.CheckConditionsInputBoundary;
 import use_case.check_conditions.CheckConditionsInteractor;
 import use_case.check_conditions.CheckConditionsOutputBoundary;
+import use_case.custom_constellation.ConstellationDataAccessInterface;
+import use_case.custom_constellation.ConstellationInputBoundary;
+import use_case.custom_constellation.ConstellationInteractor;
+import use_case.custom_constellation.ConstellationOutputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInteractor;
 import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
 import use_case.sky.CelestialBodyDataAccessInterface;
-import use_case.view_sky.HorizontalCoordinateCalculator;
-import use_case.view_sky.StarCatalogDataAccessInterface;
-import use_case.view_sky.ViewSkyInputBoundary;
-import use_case.view_sky.ViewSkyInteractor;
-import use_case.view_sky.ViewSkyOutputBoundary;
 import use_case.weather.WeatherDataAccessInterface;
 import view.LoadingView;
 import view.ObservationSetupView;
 import view.SkyView;
 import view.ViewManager;
+import javax.swing.JFrame;
+import use_case.view_sky.HorizontalCoordinateCalculator;
+import use_case.view_sky.StarCatalogDataAccessInterface;
+import use_case.view_sky.ViewSkyInputBoundary;
+import use_case.view_sky.ViewSkyInteractor;
+import use_case.view_sky.ViewSkyOutputBoundary;
 
 public class HaloAppBuilder {
 
@@ -94,7 +101,13 @@ public class HaloAppBuilder {
                 new RankForecastDaysInteractor(weatherDataAccess, rankForecastDaysPresenter);
         final RankForecastDaysController rankForecastDaysController =
                 new RankForecastDaysController(rankForecastDaysInteractor);
-
+        final ConstellationViewModel constellationViewModel = new ConstellationViewModel();
+        final ConstellationOutputBoundary constellationPresenter = new ConstellationPresenter(constellationViewModel);
+        final ConstellationDataAccessInterface constellationDataAccess = new InMemoryConstellationDataAccessObject();
+        final ConstellationInputBoundary constellationInteractor =
+                new ConstellationInteractor(constellationDataAccess, constellationPresenter);
+        final ConstellationController constellationController =
+                new ConstellationController(constellationInteractor);
         final ViewManager viewManager = new ViewManager(viewManagerModel);
         final ObservationSetupView observationSetupView =
                 new ObservationSetupView(
@@ -110,6 +123,9 @@ public class HaloAppBuilder {
                         rankForecastDaysController,
                         rankForecastDaysViewModel,
                         viewManagerModel);
+        skyView.configureCustomConstellations(
+                constellationController,
+                constellationViewModel);
 
         viewManager.registerView(
                 ViewManagerModel.observation_setup_view, observationSetupView);
