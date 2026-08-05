@@ -2,51 +2,30 @@ package interface_adapter.view_sky;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.time.LocalDate;
 import java.util.List;
 
+import entity.ObserverLocation;
 import entity.Star;
 
 public class SkyViewModel {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    /** What the map draws: the objects above the horizon, brightest first. */
+    private String displayedLocation = "";
+    private String displayedDate = "";
+    private String displayedTime = "";
+    private double latitude = Double.NaN;
+    private double longitude = Double.NaN;
+
+    /** The observed place, kept whole so weather requests carry its time zone as well. */
+    private ObserverLocation observerLocation;
     private List<Star> stars = List.of();
-
-    private String displayedLocation = "Toronto";
-
-    // Today in the machine's own zone, so the app opens on a date the forecast actually covers.
-    private String displayedDate = LocalDate.now().toString();
-    private String displayedTime = "18:20";
-    private boolean sidebarVisible = true;
-    private String selectedObjectName = "Sirius";
-    private String selectedObjectDetails =
-            "Catalogue ID: HIP 32349\n"
-            + "RA: 06h 45m 09s\n"
-            + "DEC: -16\u00b0 42' 58\"\n"
-            + "Altitude: 31.4\u00b0\n"
-            + "Azimuth: 152.7\u00b0\n"
-            + "Magnitude: -1.46\n\n"
-            + "Description: Sirius is the brightest star in Earth's night sky.";
-    private String weatherOrObservabilityText =
-            "Conditions: Clear\n"
-            + "Temperature: 19\u00b0C\n"
-            + "Cloud cover: 12%\n"
-            + "Humidity: 58%\n"
-            + "Wind: 9 km/h\n"
-            + "Observability: Good";
+    private Star selectedObject;
+    private String selectedObjectName = "";
+    private String selectedObjectDetails = "";
+    private String weatherOrObservabilityText = "";
+    private String warningMessage = "";
     private String errorMessage = "";
-
-    public List<Star> getStars() {
-        return stars;
-    }
-
-    public void setStars(final List<Star> stars) {
-        final List<Star> oldStars = this.stars;
-        this.stars = List.copyOf(stars);
-        support.firePropertyChange("stars", oldStars, this.stars);
-    }
 
     public String getDisplayedLocation() {
         return displayedLocation;
@@ -78,14 +57,57 @@ public class SkyViewModel {
         support.firePropertyChange("displayedTime", oldTime, displayedTime);
     }
 
-    public boolean isSidebarVisible() {
-        return sidebarVisible;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setSidebarVisible(final boolean sidebarVisible) {
-        final boolean oldSidebarVisible = this.sidebarVisible;
-        this.sidebarVisible = sidebarVisible;
-        support.firePropertyChange("sidebarVisible", oldSidebarVisible, sidebarVisible);
+    public void setLatitude(final double latitude) {
+        final double oldLatitude = this.latitude;
+        this.latitude = latitude;
+        support.firePropertyChange("latitude", oldLatitude, latitude);
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(final double longitude) {
+        final double oldLongitude = this.longitude;
+        this.longitude = longitude;
+        support.firePropertyChange("longitude", oldLongitude, longitude);
+    }
+
+    public ObserverLocation getObserverLocation() {
+        return observerLocation;
+    }
+
+    public void setObserverLocation(final ObserverLocation observerLocation) {
+        final ObserverLocation oldLocation = this.observerLocation;
+        this.observerLocation = observerLocation;
+        support.firePropertyChange("observerLocation", oldLocation, observerLocation);
+    }
+
+    public List<Star> getStars() {
+        return stars;
+    }
+
+    public void setStars(final List<Star> stars) {
+        final List<Star> oldStars = this.stars;
+        this.stars = List.copyOf(stars);
+        support.firePropertyChange("stars", oldStars, this.stars);
+    }
+
+    public Star getSelectedObject() {
+        return selectedObject;
+    }
+
+    public void setSelectedObject(final Star selectedObject) {
+        final Star oldObject = this.selectedObject;
+        this.selectedObject = selectedObject;
+        support.firePropertyChange("selectedObject", oldObject, selectedObject);
+
+        final String name = selectedObject == null ? "" : selectedObject.getDisplayName();
+        setSelectedObjectName(name);
     }
 
     public String getSelectedObjectName() {
@@ -116,6 +138,16 @@ public class SkyViewModel {
         final String oldText = this.weatherOrObservabilityText;
         this.weatherOrObservabilityText = weatherOrObservabilityText;
         support.firePropertyChange("weatherOrObservabilityText", oldText, weatherOrObservabilityText);
+    }
+
+    public String getWarningMessage() {
+        return warningMessage;
+    }
+
+    public void setWarningMessage(final String warningMessage) {
+        final String oldWarningMessage = this.warningMessage;
+        this.warningMessage = warningMessage;
+        support.firePropertyChange("warningMessage", oldWarningMessage, warningMessage);
     }
 
     public String getErrorMessage() {

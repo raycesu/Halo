@@ -5,7 +5,7 @@ import java.util.List;
 import entity.Star;
 
 public class VisibilityFilter {
-    private static final double MIN_VISIBLE_ALTITUDE = 20.0;
+    private static final double MIN_VISIBLE_ALTITUDE = 0.0;
 
     public static List<Star> filterVisible(List<Star> allstars) {
         List<Star> visible =  new ArrayList<>();

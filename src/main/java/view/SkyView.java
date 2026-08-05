@@ -2,12 +2,15 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Component;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
@@ -17,6 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
@@ -25,6 +29,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -32,65 +37,72 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.JOptionPane;
 
 import entity.ObserverLocation;
+import entity.Star;
+import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import interface_adapter.view_sky.SkyViewModel;
-import interface_adapter.view_sky.ViewSkyController;
-import use_case.location.LocationDataAccessInterface;
+import interface_adapter.custom_constellation.ConstellationController;
+import interface_adapter.custom_constellation.ConstellationViewModel;
 
-public class SkyView extends JPanel implements PropertyChangeListener {
+public class SkyView extends JPanel implements ActionListener, PropertyChangeListener {
 
-    /** How many nights the forecast ranking starts out comparing. */
-    private static final int DEFAULT_RANK_FORECAST_NIGHTS = 3;
+    private static final int DEFAULT_RANK_FORECAST_DAY_COUNT = 3;
+    private static final Color SIDEBAR_BACKGROUND = new Color(238, 241, 246);
 
     private final SkyViewModel viewModel;
-    private final ViewSkyController viewSkyController;
     private final CheckConditionsController checkConditionsController;
     private final CheckConditionsViewModel checkConditionsViewModel;
     private final RankForecastDaysController rankForecastDaysController;
     private final RankForecastDaysViewModel rankForecastDaysViewModel;
-    private final CityAutocompleteField locationField;
+    private final ViewManagerModel viewManagerModel;
     private final SkyMapPanel skyMapPanel = new SkyMapPanel();
-    private final JButton viewSkyButton = new JButton("View Sky");
+    private final JTextField searchField = new JTextField();
+    private final JButton searchButton = new JButton("Search");
+    private final JTextField locationField = new JTextField();
     private final JTextField dateField = new JTextField();
     private final JTextField timeField = new JTextField();
+    private final JButton changeObservationButton = new JButton("Change Observation");
     private final JLabel objectNameLabel = new JLabel();
     private final JTextArea objectDetailsArea = new JTextArea();
     private final JTextArea weatherArea = new JTextArea();
     private final JButton checkConditionsButton = new JButton("Check Conditions");
+    private final JButton forecastRankingButton = new JButton("Forecast Ranking");
     private final JLabel errorLabel = new JLabel();
-    private final List<LocalDate> selectedForecastDates = new ArrayList<>(defaultForecastDates());
+    private final List<LocalDate> selectedForecastDates = defaultForecastDates();
     private final JButton selectDatesButton = new JButton("Select Dates");
     private final JLabel selectedDatesSummaryLabel = new JLabel();
     private final JButton rankForecastButton = new JButton("Rank Nights");
     private final DefaultListModel<RankedDayDisplayItem> rankedDaysListModel = new DefaultListModel<>();
     private final JList<RankedDayDisplayItem> rankedDaysList = new JList<>(rankedDaysListModel);
     private final JLabel rankForecastErrorLabel = new JLabel();
-    private boolean updatingFields;
+    private JDialog forecastRankingDialog;
+    private final JButton constellationButton = new JButton("Constellation");
+    private final JLabel constellationStatusLabel = new JLabel();
+    private final List<Star> constellationSelection =  new ArrayList<>();
+    private ConstellationController constellationController;
+    private ConstellationViewModel constellationViewModel;
+    private boolean creatingConstellation;
 
     public SkyView(
             final SkyViewModel viewModel,
-            final ViewSkyController viewSkyController,
-            final LocationDataAccessInterface locationDataAccess,
-            final ObserverLocation initialLocation,
             final CheckConditionsController checkConditionsController,
             final CheckConditionsViewModel checkConditionsViewModel,
             final RankForecastDaysController rankForecastDaysController,
-            final RankForecastDaysViewModel rankForecastDaysViewModel) {
+            final RankForecastDaysViewModel rankForecastDaysViewModel,
+            final ViewManagerModel viewManagerModel) {
         this.viewModel = viewModel;
-        this.viewSkyController = viewSkyController;
         this.checkConditionsController = checkConditionsController;
         this.checkConditionsViewModel = checkConditionsViewModel;
         this.rankForecastDaysController = rankForecastDaysController;
         this.rankForecastDaysViewModel = rankForecastDaysViewModel;
-        this.locationField = new CityAutocompleteField(locationDataAccess);
+        this.viewManagerModel = viewManagerModel;
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
@@ -98,15 +110,22 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         add(skyMapPanel, BorderLayout.CENTER);
         add(createRightSidebar(), BorderLayout.EAST);
 
-        // Start on a resolved place so the first request works without the user picking one, while
-        // still going through the same selection the autocomplete produces.
-        locationField.setSelectedLocation(initialLocation);
-
+        skyMapPanel.setSelectionListener(this::handleObjectSelected);
         updateFromViewModel();
-        registerTextFieldListeners();
+        registerActions();
         viewModel.addPropertyChangeListener(this);
         checkConditionsViewModel.addPropertyChangeListener(this);
         rankForecastDaysViewModel.addPropertyChangeListener(this);
+    }
+
+    public void configureCustomConstellations(final ConstellationController controller,
+                                              final ConstellationViewModel constellationViewModel) {
+        this.constellationController = controller;
+        this.constellationViewModel = constellationViewModel;
+
+        constellationViewModel.addPropertyChangeListener(this);
+        skyMapPanel.setCustomConstellations(constellationViewModel.getConstellations());
+        constellationButton.setEnabled(!viewModel.getStars().isEmpty());
     }
 
     private JPanel createLeftPanel() {
@@ -120,10 +139,8 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         searchHeading.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
         searchHeading.setAlignmentX(LEFT_ALIGNMENT);
 
-        final JTextField searchField = new JTextField();
-
-        final JButton searchButton = new JButton("Search");
         searchButton.setEnabled(false);
+        searchField.setName("searchField");
 
         final JPanel searchPanel = new JPanel(new BorderLayout(8, 0));
         searchPanel.setOpaque(false);
@@ -144,17 +161,19 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         dateField.setMaximumSize(fieldSize);
         timeField.setPreferredSize(fieldSize);
         timeField.setMaximumSize(fieldSize);
+        locationField.setEditable(false);
+        dateField.setEditable(false);
+        timeField.setEditable(false);
+        locationField.setName("locationDisplayField");
+        dateField.setName("dateDisplayField");
+        timeField.setName("timeDisplayField");
         locationField.setAlignmentX(LEFT_ALIGNMENT);
         dateField.setAlignmentX(LEFT_ALIGNMENT);
         timeField.setAlignmentX(LEFT_ALIGNMENT);
 
-        viewSkyButton.setAlignmentX(LEFT_ALIGNMENT);
-        viewSkyButton.addActionListener(event -> handleViewSky());
-
         errorLabel.setForeground(new Color(180, 30, 30));
         errorLabel.setAlignmentX(LEFT_ALIGNMENT);
 
-        final JButton constellationButton = new JButton("Custom Constellation");
         constellationButton.setEnabled(false);
 
         final JPanel constellationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -163,6 +182,8 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         constellationPanel.setMaximumSize(new Dimension(
                 Integer.MAX_VALUE, constellationButton.getPreferredSize().height));
         constellationPanel.add(constellationButton);
+
+        constellationStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
 
         leftPanel.add(searchHeading);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 8)));
@@ -182,18 +203,21 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         leftPanel.add(timeField);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        leftPanel.add(viewSkyButton);
+        changeObservationButton.setAlignmentX(LEFT_ALIGNMENT);
+        leftPanel.add(changeObservationButton);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 12)));
         leftPanel.add(errorLabel);
         leftPanel.add(Box.createVerticalGlue());
         leftPanel.add(constellationPanel);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        leftPanel.add(constellationStatusLabel);
         return leftPanel;
     }
 
     private JPanel createRightSidebar() {
-        final JPanel sidebar = new JPanel(new GridLayout(3, 1, 0, 15));
+        final JPanel sidebar = new JPanel(new GridLayout(2, 1, 0, 15));
         sidebar.setPreferredSize(new Dimension(260, 0));
-        sidebar.setBackground(new Color(238, 241, 246));
+        sidebar.setBackground(SIDEBAR_BACKGROUND);
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
 
         final JPanel starPanel = new JPanel(new BorderLayout(0, 10));
@@ -209,12 +233,15 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         weatherPanel.setBorder(BorderFactory.createTitledBorder("Weather"));
         configureTextArea(weatherArea);
         weatherPanel.add(weatherArea, BorderLayout.CENTER);
-        weatherPanel.add(checkConditionsButton, BorderLayout.SOUTH);
-        checkConditionsButton.addActionListener(event -> handleCheckConditions());
+
+        final JPanel weatherButtonColumn = new JPanel(new GridLayout(2, 1, 0, 8));
+        weatherButtonColumn.setOpaque(false);
+        weatherButtonColumn.add(checkConditionsButton);
+        weatherButtonColumn.add(forecastRankingButton);
+        weatherPanel.add(weatherButtonColumn, BorderLayout.SOUTH);
 
         sidebar.add(starPanel);
         sidebar.add(weatherPanel);
-        sidebar.add(createForecastRankingPanel(sidebar.getBackground()));
         return sidebar;
     }
 
@@ -229,10 +256,8 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         selectedDatesSummaryLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         dateSelectionRow.add(selectedDatesSummaryLabel, BorderLayout.CENTER);
         dateSelectionRow.add(selectDatesButton, BorderLayout.EAST);
-        selectDatesButton.addActionListener(event -> openDatePicker());
 
         rankForecastButton.setAlignmentX(LEFT_ALIGNMENT);
-        rankForecastButton.addActionListener(event -> handleRankForecastDays());
 
         rankedDaysList.setCellRenderer(new RankedDayCellRenderer());
         rankedDaysList.setVisibleRowCount(4);
@@ -256,6 +281,31 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         return forecastPanel;
     }
 
+    private void toggleForecastRankingDialog() {
+        final JDialog dialog = forecastRankingDialogInstance();
+        dialog.setVisible(!dialog.isVisible());
+    }
+
+    private JDialog forecastRankingDialogInstance() {
+        if (forecastRankingDialog == null) {
+            final Window owner = SwingUtilities.getWindowAncestor(this);
+            final JDialog dialog = new JDialog(owner, "Forecast Ranking", Dialog.ModalityType.MODELESS);
+            dialog.setContentPane(createForecastRankingPanel(SIDEBAR_BACKGROUND));
+            dialog.setSize(320, 380);
+            dialog.setLocationRelativeTo(this);
+            forecastRankingDialog = dialog;
+        }
+        return forecastRankingDialog;
+    }
+
+    /**
+     * Package-private so {@code SkyViewTest} can reach the buttons inside the popup dialog,
+     * which is a top-level window and therefore not part of this panel's component tree.
+     */
+    JDialog getForecastRankingDialogForTesting() {
+        return forecastRankingDialogInstance();
+    }
+
     private void openDatePicker() {
         final Window owner = SwingUtilities.getWindowAncestor(this);
         final CalendarDatePickerDialog datePickerDialog =
@@ -265,6 +315,15 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         selectedForecastDates.clear();
         selectedForecastDates.addAll(datePickerDialog.getSelectedDates());
         updateSelectedDatesSummaryLabel();
+    }
+
+    private static List<LocalDate> defaultForecastDates() {
+        final LocalDate today = LocalDate.now();
+        final List<LocalDate> defaultDates = new ArrayList<>(DEFAULT_RANK_FORECAST_DAY_COUNT);
+        for (int offset = 0; offset < DEFAULT_RANK_FORECAST_DAY_COUNT; offset++) {
+            defaultDates.add(today.plusDays(offset));
+        }
+        return defaultDates;
     }
 
     private void updateSelectedDatesSummaryLabel() {
@@ -321,10 +380,12 @@ public class SkyView extends JPanel implements PropertyChangeListener {
     }
 
     private void updateFromViewModel() {
-        // The location field is not refreshed from the view model: it owns a resolved choice, and
-        // overwriting its text would silently discard the coordinates that came with it.
+        locationField.setText(viewModel.getDisplayedLocation());
         dateField.setText(viewModel.getDisplayedDate());
         timeField.setText(viewModel.getDisplayedTime());
+        skyMapPanel.setStars(viewModel.getStars());
+        skyMapPanel.setSelectedObject(viewModel.getSelectedObject());
+        searchButton.setEnabled(!viewModel.getStars().isEmpty());
         objectNameLabel.setText(textOrPlaceholder(
                 viewModel.getSelectedObjectName(), "No object selected"));
         objectDetailsArea.setText(textOrPlaceholder(
@@ -334,6 +395,89 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         updateRankedDaysFromViewModel();
         revalidate();
         repaint();
+    }
+
+    private void handleObjectSelected(final Star selectedObject) {
+        if (creatingConstellation) {
+            if (selectedObject != null && !constellationSelection.contains(selectedObject)) {
+                constellationSelection.add(selectedObject);
+                skyMapPanel.setConstellationSelection(constellationSelection);
+                constellationStatusLabel.setText(constellationSelection.size() + " stars selected");
+            }
+            return;
+        }
+        viewModel.setSelectedObject(selectedObject);
+        viewModel.setSelectedObjectDetails(formatObjectDetails(selectedObject));
+        if (selectedObject != null) {
+            viewModel.setErrorMessage("");
+        }
+    }
+
+    private String formatObjectDetails(final Star object) {
+        if (object == null) {
+            return "";
+        }
+
+        final StringBuilder details = new StringBuilder();
+
+        if (object.getType() != null) {
+            appendDetail(details, "Type", formatType(object));
+        }
+        appendDetail(details, "Catalogue ID", object.getCatalogueId());
+
+        if (Double.isFinite(object.getApparentMagnitude())) {
+            appendDetail(details, "Magnitude",
+                    String.format(Locale.US, "%.2f", object.getApparentMagnitude()));
+        }
+        appendDetail(details, "Constellation", object.getConstellationRegion());
+        appendDetail(details, "Spectral type", object.getSpectralType());
+
+        if (Double.isFinite(object.getRightAscension())) {
+            appendDetail(details, "Right ascension",
+                    String.format(Locale.US, "%.4f hours", object.getRightAscension()));
+        }
+        if (Double.isFinite(object.getDeclination())) {
+            appendDetail(details, "Declination",
+                    String.format(Locale.US, "%.2f\u00b0", object.getDeclination()));
+        }
+        if (Double.isFinite(object.getAltitude())) {
+            appendDetail(details, "Altitude",
+                    String.format(Locale.US, "%.2f\u00b0", object.getAltitude()));
+        }
+        if (Double.isFinite(object.getAzimuth())) {
+            appendDetail(details, "Azimuth",
+                    String.format(Locale.US, "%.2f\u00b0", object.getAzimuth()));
+        }
+
+        if (object.getDescription() != null && !object.getDescription().isBlank()) {
+            if (details.length() > 0) {
+                details.append("\n\n");
+            }
+            details.append("Description:\n").append(object.getDescription());
+        }
+
+        if (details.length() == 0) {
+            details.append("Details unavailable");
+        }
+
+        return details.toString();
+    }
+
+    private String formatType(final Star object) {
+        final String typeName = object.getType().name().toLowerCase(Locale.US);
+        return Character.toUpperCase(typeName.charAt(0)) + typeName.substring(1);
+    }
+
+    private void appendDetail(
+            final StringBuilder details,
+            final String label,
+            final String value) {
+        if (value != null && !value.isBlank()) {
+            if (details.length() > 0) {
+                details.append('\n');
+            }
+            details.append(label).append(": ").append(value);
+        }
     }
 
     private void updateRankedDaysFromViewModel() {
@@ -374,65 +518,109 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         return color;
     }
 
-    private void registerTextFieldListeners() {
-        final DocumentListener listener = new DocumentListener() {
-            @Override
-            public void insertUpdate(final DocumentEvent event) {
-                updateObservationValues();
-            }
-
-            @Override
-            public void removeUpdate(final DocumentEvent event) {
-                updateObservationValues();
-            }
-
-            @Override
-            public void changedUpdate(final DocumentEvent event) {
-                updateObservationValues();
-            }
-        };
-
-        locationField.getTextField().getDocument().addDocumentListener(listener);
-        dateField.getDocument().addDocumentListener(listener);
-        timeField.getDocument().addDocumentListener(listener);
+    private void registerActions() {
+        searchButton.addActionListener(this);
+        changeObservationButton.addActionListener(this);
+        checkConditionsButton.addActionListener(this);
+        forecastRankingButton.addActionListener(this);
+        selectDatesButton.addActionListener(this);
+        rankForecastButton.addActionListener(this);
+        constellationButton.addActionListener(this);
     }
 
-    private void updateObservationValues() {
-        if (!updatingFields) {
-            viewModel.setDisplayedLocation(locationField.getText());
-            viewModel.setDisplayedDate(dateField.getText());
-            viewModel.setDisplayedTime(timeField.getText());
+    @Override
+    public void actionPerformed(final ActionEvent event) {
+        if (event.getSource() == searchButton) {
+            handleSearch();
+        }
+        else if (event.getSource() == changeObservationButton) {
+            viewManagerModel.setActiveView(ViewManagerModel.observation_setup_view);
+            resizeWindow(900, 600);
+        }
+        else if (event.getSource() == checkConditionsButton) {
+            handleCheckConditions();
+        }
+        else if (event.getSource() == forecastRankingButton) {
+            toggleForecastRankingDialog();
+        }
+        else if (event.getSource() == selectDatesButton) {
+            openDatePicker();
+        }
+        else if (event.getSource() == rankForecastButton) {
+            handleRankForecastDays();
+        }
+        else if (event.getSource() == constellationButton) {
+            handleConstellationAction();
         }
     }
 
-    /**
-     * Builds the sky for the chosen place and moment.
-     *
-     * <p>Runs off the event dispatch thread because the interactor reaches the ephemeris service
-     * over the network, which would otherwise freeze the window until it answered. The presenter
-     * writes to the view model from that worker, so the property change handler hops back to the
-     * dispatch thread before touching Swing.
-     */
-    private void handleViewSky() {
-        viewSkyButton.setEnabled(false);
-        new Thread(() -> {
-            try {
-                viewSkyController.viewSky(
-                        locationField.getSelectedLocation(),
-                        viewModel.getDisplayedDate(),
-                        viewModel.getDisplayedTime());
+    private void handleConstellationAction() {
+        if (creatingConstellation) {
+            saveConstellation();
+        }
+        else {
+            startConstellationCreation();
+        }
+    }
+    private void startConstellationCreation() {
+        creatingConstellation = true;
+        constellationSelection.clear();
+        skyMapPanel.setConstellationSelection(constellationSelection);
+        constellationButton.setText("Save Constellation");
+        constellationStatusLabel.setForeground(Color.BLACK);
+        constellationStatusLabel.setText("Select stars in order");
+    }
+    private void saveConstellation() {
+        final String name = JOptionPane.showInputDialog(this, "Enter a name for the constellation:");
+
+        // Press Cancel ends creation without saving
+        if (name == null) {
+            finishConstellationCreation();
+            return;
+        }
+        constellationController.createConstellation(name, constellationSelection);
+        // Keep creation mode active when validation fails
+        if (constellationViewModel.getErrorMessage().isBlank()){
+            finishConstellationCreation();
+        }
+    }
+    private void finishConstellationCreation() {
+        creatingConstellation = false;
+        constellationSelection.clear();
+        skyMapPanel.setConstellationSelection(List.of());
+        constellationButton.setText("Custom Constellation");
+    }
+
+    private void handleSearch() {
+        final String requestedName = searchField.getText().trim();
+        if (requestedName.isEmpty()) {
+            viewModel.setErrorMessage("Enter an object name to search.");
+            return;
+        }
+
+        Star matchingObject = null;
+        for (final Star object : viewModel.getStars()) {
+            if (object.getDisplayName() != null
+                    && object.getDisplayName().equalsIgnoreCase(requestedName)) {
+                matchingObject = object;
+                break;
             }
-            finally {
-                SwingUtilities.invokeLater(() -> viewSkyButton.setEnabled(true));
-            }
-        }, "view-sky-worker").start();
+        }
+
+        if (matchingObject == null) {
+            viewModel.setErrorMessage(
+                    "No displayed object matches \"" + requestedName + "\".");
+        }
+        else {
+            handleObjectSelected(matchingObject);
+        }
     }
 
     private void handleCheckConditions() {
-        final ObserverLocation location = locationField.getSelectedLocation();
+        final ObserverLocation location = viewModel.getObserverLocation();
         if (location == null) {
             checkConditionsViewModel.setErrorMessage(
-                    "Choose a location from the suggestions before checking conditions.");
+                    "Set an observation location before checking conditions.");
             return;
         }
 
@@ -459,9 +647,9 @@ public class SkyView extends JPanel implements PropertyChangeListener {
     }
 
     private void handleRankForecastDays() {
-        final ObserverLocation location = locationField.getSelectedLocation();
+        final ObserverLocation location = viewModel.getObserverLocation();
         if (location == null) {
-            rankForecastErrorLabel.setText("Choose a location from the suggestions first.");
+            rankForecastErrorLabel.setText("Set an observation location first.");
             return;
         }
         if (selectedForecastDates.isEmpty()) {
@@ -484,25 +672,16 @@ public class SkyView extends JPanel implements PropertyChangeListener {
 
     private void setFieldText(final JTextField field, final String text) {
         if (!field.getText().equals(text)) {
-            updatingFields = true;
             field.setText(text);
-            updatingFields = false;
         }
     }
 
-    /**
-     * The nights the ranking panel starts on: tonight and the two after it.
-     *
-     * <p>Computed rather than fixed, because the weather service only forecasts forward. A hard
-     * coded date is correct for a day and then silently ranks nothing.
-     */
-    private static List<LocalDate> defaultForecastDates() {
-        final LocalDate today = LocalDate.now();
-        final List<LocalDate> dates = new ArrayList<>(DEFAULT_RANK_FORECAST_NIGHTS);
-        for (int offset = 0; offset < DEFAULT_RANK_FORECAST_NIGHTS; offset++) {
-            dates.add(today.plusDays(offset));
+    private void resizeWindow(final int width, final int height) {
+        final Window window = SwingUtilities.getWindowAncestor(this);
+        if (window != null) {
+            window.setSize(width, height);
+            window.setLocationRelativeTo(null);
         }
-        return dates;
     }
 
     private String textOrPlaceholder(final String text, final String placeholder) {
@@ -514,32 +693,47 @@ public class SkyView extends JPanel implements PropertyChangeListener {
 
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
-        if (event.getSource() == checkConditionsViewModel) {
-            // Presenter updates may arrive on a background thread (see handleCheckConditions()),
-            // so defer the Swing mutation to the Event Dispatch Thread.
-            SwingUtilities.invokeLater(this::updateWeatherFromViewModel);
-            return;
-        }
-        if (event.getSource() == rankForecastDaysViewModel) {
-            // Presenter updates may arrive on a background thread (see handleRankForecastDays()),
-            // so defer the Swing mutation to the Event Dispatch Thread.
-            SwingUtilities.invokeLater(this::updateRankedDaysFromViewModel);
-            return;
-        }
         if (!SwingUtilities.isEventDispatchThread()) {
-            // The sky presenter writes from the worker started in handleViewSky(), so re-enter on
-            // the Event Dispatch Thread before any of the branches below touch a component.
             SwingUtilities.invokeLater(() -> propertyChange(event));
             return;
         }
-        if ("stars".equals(event.getPropertyName())) {
-            skyMapPanel.setStars(viewModel.getStars());
+        if (event.getSource() == constellationViewModel) {
+            skyMapPanel.setCustomConstellations(constellationViewModel.getConstellations());
+            if (!constellationViewModel.getErrorMessage().isBlank()) {
+                constellationStatusLabel.setForeground(new Color(180, 30, 30));
+                constellationStatusLabel.setText(constellationViewModel.getErrorMessage());
+            }
+            else {
+                constellationStatusLabel.setForeground(new Color(20, 130, 60));
+                constellationStatusLabel.setText(constellationViewModel.getSuccessMessage());
+            }
+            return;
+        }
+        if (event.getSource() == checkConditionsViewModel) {
+            updateWeatherFromViewModel();
+            return;
+        }
+        if (event.getSource() == rankForecastDaysViewModel) {
+            updateRankedDaysFromViewModel();
+            return;
+        }
+        if ("displayedLocation".equals(event.getPropertyName())) {
+            setFieldText(locationField, viewModel.getDisplayedLocation());
         }
         else if ("displayedDate".equals(event.getPropertyName())) {
             setFieldText(dateField, viewModel.getDisplayedDate());
         }
         else if ("displayedTime".equals(event.getPropertyName())) {
             setFieldText(timeField, viewModel.getDisplayedTime());
+        }
+        else if ("stars".equals(event.getPropertyName())) {
+            skyMapPanel.setStars(viewModel.getStars());
+            searchButton.setEnabled(!viewModel.getStars().isEmpty());
+            constellationButton.setEnabled(constellationController != null
+                    && !viewModel.getStars().isEmpty());
+        }
+        else if ("selectedObject".equals(event.getPropertyName())) {
+            skyMapPanel.setSelectedObject(viewModel.getSelectedObject());
         }
         else if ("selectedObjectName".equals(event.getPropertyName())) {
             objectNameLabel.setText(textOrPlaceholder(

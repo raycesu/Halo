@@ -1,43 +1,56 @@
 package interface_adapter.view_sky;
 
+import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import use_case.view_sky.ViewSkyOutputBoundary;
 import use_case.view_sky.ViewSkyOutputData;
 
-/**
- * Moves a finished sky into the view model the map reads from.
- *
- * <p>Holds no logic of its own beyond deciding what the user is told. The three paths differ in
- * what survives: a success replaces the map and clears any old message, a warning keeps the map
- * that was just presented and adds a note, and a failure leaves the previous map alone rather
- * than blanking the screen over a mistyped date.
- */
 public class ViewSkyPresenter implements ViewSkyOutputBoundary {
 
-    private final SkyViewModel viewModel;
+    private final SkyViewModel skyViewModel;
+    private final ObservationSetupViewModel observationSetupViewModel;
+    private final CheckConditionsViewModel checkConditionsViewModel;
+    private final RankForecastDaysViewModel rankForecastDaysViewModel;
 
-    public ViewSkyPresenter(final SkyViewModel viewModel) {
-        this.viewModel = viewModel;
+    public ViewSkyPresenter(
+            final SkyViewModel skyViewModel,
+            final ObservationSetupViewModel observationSetupViewModel,
+            final CheckConditionsViewModel checkConditionsViewModel,
+            final RankForecastDaysViewModel rankForecastDaysViewModel) {
+        this.skyViewModel = skyViewModel;
+        this.observationSetupViewModel = observationSetupViewModel;
+        this.checkConditionsViewModel = checkConditionsViewModel;
+        this.rankForecastDaysViewModel = rankForecastDaysViewModel;
     }
 
     @Override
     public void prepareSuccessView(final ViewSkyOutputData outputData) {
-        viewModel.setDisplayedLocation(outputData.getLocation());
-        viewModel.setDisplayedDate(outputData.getDate());
-        viewModel.setDisplayedTime(outputData.getTime());
-        viewModel.setErrorMessage("");
+        skyViewModel.setDisplayedLocation(outputData.getLocation());
+        skyViewModel.setDisplayedDate(outputData.getDate());
+        skyViewModel.setDisplayedTime(outputData.getTime());
+        skyViewModel.setLatitude(outputData.getLatitude());
+        skyViewModel.setLongitude(outputData.getLongitude());
+        skyViewModel.setObserverLocation(outputData.getObserverLocation());
+        skyViewModel.setStars(outputData.getStars());
+        skyViewModel.setSelectedObject(null);
+        skyViewModel.setSelectedObjectDetails("");
+        skyViewModel.setWarningMessage("");
+        skyViewModel.setErrorMessage("");
+        observationSetupViewModel.setErrorMessage("");
 
-        // Set last: this is what the map listens for, so everything it might read alongside the
-        // stars is already in place by the time the repaint is triggered.
-        viewModel.setStars(outputData.getStars());
+        // A new observation must not keep showing weather/forecast results from whatever
+        // location, date, or time was previously selected.
+        checkConditionsViewModel.reset();
+        rankForecastDaysViewModel.reset();
     }
 
     @Override
     public void prepareFailView(final String errorMessage) {
-        viewModel.setErrorMessage(errorMessage);
+        observationSetupViewModel.setErrorMessage(errorMessage);
     }
 
     @Override
     public void prepareWarning(final String warningMessage) {
-        viewModel.setErrorMessage(warningMessage);
+        skyViewModel.setWarningMessage(warningMessage);
     }
 }

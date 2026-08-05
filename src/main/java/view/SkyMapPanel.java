@@ -2,97 +2,195 @@ package view;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.JPanel;
 
+import entity.CelestialBodyType;
 import entity.Star;
+import entity.ConstellationLine;
+import entity.CustomConstellation;
 
 public class SkyMapPanel extends JPanel {
 
-    private static final double[][] demo_star_positions = {
-        {-0.72, -0.45},
-        {-0.55, -0.66},
-        {-0.30, -0.75},
-        {-0.05, -0.82},
-        {0.20, -0.72},
-        {0.45, -0.66},
-        {0.68, -0.48},
-        {-0.82, -0.15},
-        {-0.62, -0.30},
-        {-0.40, -0.45},
-        {-0.18, -0.55},
-        {0.08, -0.52},
-        {0.32, -0.50},
-        {0.58, -0.32},
-        {0.78, -0.18},
-        {-0.88, 0.05},
-        {-0.70, 0.12},
-        {-0.50, 0.00},
-        {-0.28, -0.10},
-        {-0.08, -0.20},
-        {0.15, -0.16},
-        {0.38, -0.08},
-        {0.60, 0.02},
-        {0.82, 0.10},
-        {-0.80, 0.32},
-        {-0.60, 0.38},
-        {-0.38, 0.20},
-        {-0.18, 0.10},
-        {0.02, 0.05},
-        {0.25, 0.12},
-        {0.48, 0.22},
-        {0.68, 0.34},
-        {-0.68, 0.55},
-        {-0.45, 0.58},
-        {-0.22, 0.42},
-        {0.05, 0.32},
-        {0.28, 0.38},
-        {0.50, 0.48},
-        {0.62, 0.62},
-        {-0.50, 0.72},
-        {-0.25, 0.68},
-        {0.02, 0.62},
-        {0.30, 0.70},
-        {-0.10, -0.35},
-        {0.42, -0.28},
-        {-0.35, 0.05},
-        {0.10, 0.22},
-        {0.72, 0.18},
-        {-0.72, -0.05},
-        {0.55, 0.10}
-    };
+    private static final double MIN_ZOOM = 1.0;
+    private static final double MAX_ZOOM = 6.0;
+    private static final double ZOOM_STEP = 1.15;
+    private static final int INITIAL_MARGIN = 20;
+    private static final int DRAG_THRESHOLD = 5;
+    private static final int CLICK_RADIUS = 12;
+    private static final int SUN_MARKER_SIZE = 10;
+    private static final int MOON_MARKER_SIZE = 8;
+    private static final int PLANET_MARKER_SIZE = 6;
+    private static final Color SELECTION_COLOR = new Color(255, 210, 40);
+    private static final Color SUN_COLOR = new Color(255, 190, 60);
 
-    private List<Star> stars;
+    private List<Star> stars = List.of();
+    private Star selectedObject;
+    private SelectionListener selectionListener;
+    private double zoom = MIN_ZOOM;
+    private double panOffsetX;
+    private double panOffsetY;
+    private boolean viewInitialized;
+    private boolean mousePressed;
+    private boolean dragging;
+    private boolean suppressClick;
+    private int dragStartX;
+    private int dragStartY;
+    private double dragStartPanX;
+    private double dragStartPanY;
+    private List<CustomConstellation> customConstellations = List.of();
+    private List<Star> constellationSelection = List.of();
 
     public SkyMapPanel() {
         setBackground(new Color(7, 7, 9));
+
+        final MouseAdapter mouseHandler = new MouseAdapter() {
+            @Override
+            public void mousePressed(final MouseEvent event) {
+                ensureViewInitialized();
+                mousePressed = true;
+                dragging = false;
+                suppressClick = false;
+                dragStartX = event.getX();
+                dragStartY = event.getY();
+                dragStartPanX = panOffsetX;
+                dragStartPanY = panOffsetY;
+            }
+
+            @Override
+            public void mouseDragged(final MouseEvent event) {
+                if (!mousePressed || !viewInitialized) {
+                    return;
+                }
+
+                final int differenceX = event.getX() - dragStartX;
+                final int differenceY = event.getY() - dragStartY;
+
+                if (!dragging
+                        && Math.hypot(differenceX, differenceY) >= DRAG_THRESHOLD) {
+                    dragging = true;
+                    setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                }
+
+                if (dragging) {
+                    panOffsetX = dragStartPanX + differenceX;
+                    panOffsetY = dragStartPanY + differenceY;
+                    clampPanOffsets();
+                    repaint();
+                }
+            }
+
+            @Override
+            public void mouseReleased(final MouseEvent event) {
+                if (dragging) {
+                    suppressClick = true;
+                }
+                mousePressed = false;
+                dragging = false;
+                setCursor(Cursor.getDefaultCursor());
+            }
+
+            @Override
+            public void mouseClicked(final MouseEvent event) {
+                if (suppressClick) {
+                    suppressClick = false;
+                } else {
+                    selectObjectAt(event.getX(), event.getY());
+                }
+            }
+
+            @Override
+            public void mouseWheelMoved(final java.awt.event.MouseWheelEvent event) {
+                zoomAt(event.getX(), event.getY(), event.getWheelRotation());
+            }
+        };
+
+        addMouseListener(mouseHandler);
+        addMouseMotionListener(mouseHandler);
+        addMouseWheelListener(mouseHandler);
     }
 
-    public void setStars(List<Star> stars) {
-        this.stars = stars;
+    public void setStars(final List<Star> stars) {
+        this.stars = List.copyOf(stars);
+        selectedObject = null;
         repaint();
+    }
+
+    /**
+     * User-created constellations currently displayed on the sky map.
+     */
+    public void setCustomConstellations(final List<CustomConstellation> customConstellations) {
+        this.customConstellations = List.copyOf(customConstellations);
+        repaint();
+    }
+
+    /**
+     * Stars selected in order, while the user creates a constellation.
+     */
+    public void setConstellationSelection(final List<Star> constellationSelection) {
+        this.constellationSelection = List.copyOf(constellationSelection);
+        repaint();
+    }
+
+    public Star getSelectedObject() {
+        return selectedObject;
+    }
+
+    public void setSelectedObject(final Star selectedObject) {
+        this.selectedObject = selectedObject;
+        repaint();
+    }
+
+    public void setSelectionListener(final SelectionListener selectionListener) {
+        this.selectionListener = selectionListener;
+    }
+
+    public void resetView() {
+        panOffsetX = 0.0;
+        panOffsetY = 0.0;
+        viewInitialized = false;
+        zoom = MIN_ZOOM;
+        ensureViewInitialized();
+        repaint();
+    }
+
+    double getZoom() {
+        ensureViewInitialized();
+        return zoom;
+    }
+
+    double getPanOffsetX() {
+        return panOffsetX;
+    }
+
+    double getPanOffsetY() {
+        return panOffsetY;
     }
 
     @Override
     protected void paintComponent(final Graphics graphics) {
         super.paintComponent(graphics);
+        ensureViewInitialized();
 
         final Graphics2D graphics2D = (Graphics2D) graphics.create();
         try {
             graphics2D.setRenderingHint(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            final int diameter = Math.max(
-                    0, Math.min(getWidth() - 80, getHeight() - 60));
-            final int radius = diameter / 2;
-            final int centreX = getWidth() / 2;
-            final int centreY = getHeight() / 2;
+
+            final int radius = effectiveRadius();
+            final int diameter = radius * 2;
+            final int centreX = adjustedCentreX();
+            final int centreY = adjustedCentreY();
             final int circleX = centreX - radius;
             final int circleY = centreY - radius;
 
@@ -122,27 +220,224 @@ public class SkyMapPanel extends JPanel {
                     circleX - metrics.stringWidth("W") - 10,
                     centreY + metrics.getAscent() / 2);
 
-            graphics2D.fillOval(centreX - 3, centreY - 3, 6, 6);
+            drawCustomConstellations(graphics2D, centreX, centreY, radius);
 
-            if (stars != null) {
-                graphics2D.setColor(Color.WHITE);
-                List<Star> visibleStars = VisibilityFilter.filterVisible(stars);
+            for (final Star star : VisibilityFilter.filterVisible(stars)) {
+                final SkyVisualization.ScreenPosition position =
+                        SkyVisualization.project(star, centreX, centreY, radius);
+                drawObject(graphics2D, star, position);
+            }
+        } finally {
+            graphics2D.dispose();
+        }
+    }
 
-                for (Star star : visibleStars) {
-                    SkyVisualization.ScreenPosition pos =
-                            SkyVisualization.project(star, centreX, centreY, radius);
+    /**
+     * Draws saved constellation as line segments between visible stars.
+     */
+    private void drawCustomConstellations(final Graphics2D graphics2D, final int centreX, final int centreY, final int radius) {
+        graphics2D.setColor(new Color(80, 180, 255));
+        graphics2D.setStroke(new BasicStroke(1.5F));
 
-                    int starSize = 5;
-                    graphics2D.fillOval(
-                            pos.x - starSize / 2,
-                            pos.y - starSize / 2,
-                            starSize,
-                            starSize);
+        for (final CustomConstellation constellation : customConstellations) {
+            for (final ConstellationLine constellationLine : constellation.getLines()) {
+                final Star startStar = constellationLine.getStartStar();
+                final Star endStar = constellationLine.getEndStar();
+                // Avoid drawing a segment when either endpoint is below the horizon.
+                if (startStar.isAboveHorizon() && endStar.isAboveHorizon()) {
+                    final SkyVisualization.ScreenPosition start = SkyVisualization.project(startStar, centreX, centreY, radius);
+                    final SkyVisualization.ScreenPosition end = SkyVisualization.project(endStar, centreX, centreY, radius);
+
+                    graphics2D.drawLine(start.x, start.y, end.x, end.y);
                 }
             }
         }
-        finally {
-            graphics2D.dispose();
+    }
+
+    private void drawObject(
+            final Graphics2D graphics2D,
+            final Star star,
+            final SkyVisualization.ScreenPosition position) {
+        final int size = objectSize(star);
+
+        graphics2D.setColor(objectColor(star));
+        graphics2D.fillOval(
+                position.x - size / 2,
+                position.y - size / 2,
+                size,
+                size);
+
+        if (star == selectedObject || constellationSelection.contains(star)) {
+            final int highlightSize = size + 8;
+            graphics2D.setColor(SELECTION_COLOR);
+            graphics2D.setStroke(new BasicStroke(2.0F));
+            graphics2D.drawOval(
+                    position.x - highlightSize / 2,
+                    position.y - highlightSize / 2,
+                    highlightSize,
+                    highlightSize);
         }
+    }
+
+    private int objectSize(final Star star) {
+        final CelestialBodyType type = star.getType();
+        final int size;
+
+        if (type == CelestialBodyType.SUN) {
+            size = SUN_MARKER_SIZE;
+        } else if (type == CelestialBodyType.MOON) {
+            size = MOON_MARKER_SIZE;
+        } else if (type == CelestialBodyType.PLANET) {
+            size = PLANET_MARKER_SIZE;
+        } else if (Double.isFinite(star.getApparentMagnitude())) {
+            size = Math.max(
+                    3,
+                    Math.min(9, (int) Math.round(7.0 - star.getApparentMagnitude())));
+        } else {
+            size = 4;
+        }
+
+        return size;
+    }
+
+    private Color objectColor(final Star star) {
+        final CelestialBodyType type = star.getType();
+        final Color color;
+
+        if (type == CelestialBodyType.SUN) {
+            color = SUN_COLOR;
+        } else {
+            color = Color.WHITE;
+        }
+
+        return color;
+    }
+
+    private void selectObjectAt(final int mouseX, final int mouseY) {
+        ensureViewInitialized();
+        final int radius = effectiveRadius();
+        final int centreX = adjustedCentreX();
+        final int centreY = adjustedCentreY();
+        final double maximumDistanceSquared = CLICK_RADIUS * CLICK_RADIUS;
+
+        Star nearestObject = null;
+        double nearestDistanceSquared = maximumDistanceSquared;
+
+        for (final Star star : VisibilityFilter.filterVisible(stars)) {
+            final SkyVisualization.ScreenPosition position =
+                    SkyVisualization.project(star, centreX, centreY, radius);
+            final double differenceX = position.x - mouseX;
+            final double differenceY = position.y - mouseY;
+            final double distanceSquared =
+                    differenceX * differenceX + differenceY * differenceY;
+
+            if (distanceSquared <= nearestDistanceSquared) {
+                nearestObject = star;
+                nearestDistanceSquared = distanceSquared;
+            }
+        }
+
+        selectedObject = nearestObject;
+        repaint();
+
+        if (selectionListener != null) {
+            selectionListener.objectSelected(nearestObject);
+        }
+    }
+
+    private void zoomAt(
+            final int mouseX,
+            final int mouseY,
+            final int wheelRotation) {
+        ensureViewInitialized();
+
+        if (!viewInitialized || wheelRotation == 0) {
+            return;
+        }
+
+        final double oldZoom = zoom;
+        final double requestedZoom =
+                oldZoom * Math.pow(ZOOM_STEP, -wheelRotation);
+        final double newZoom =
+                Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, requestedZoom));
+
+        if (newZoom == oldZoom) {
+            return;
+        }
+
+        final double panelCentreX = getWidth() / 2.0;
+        final double panelCentreY = getHeight() / 2.0;
+        final double scaleChange = newZoom / oldZoom;
+
+        panOffsetX = mouseX - panelCentreX
+                - scaleChange * (mouseX - panelCentreX - panOffsetX);
+        panOffsetY = mouseY - panelCentreY
+                - scaleChange * (mouseY - panelCentreY - panOffsetY);
+        zoom = newZoom;
+        clampPanOffsets();
+        repaint();
+    }
+
+    private void clampPanOffsets() {
+        final double maximumPanDistance =
+                Math.max(0.0, baseRadius() * zoom - baseRadius());
+        final double currentPanDistance =
+                Math.hypot(panOffsetX, panOffsetY);
+
+        if (currentPanDistance > maximumPanDistance) {
+            if (maximumPanDistance == 0.0) {
+                panOffsetX = 0.0;
+                panOffsetY = 0.0;
+            } else {
+                final double scale = maximumPanDistance / currentPanDistance;
+                panOffsetX *= scale;
+                panOffsetY *= scale;
+            }
+        }
+    }
+
+    private void ensureViewInitialized() {
+        final int baseRadius = baseRadius();
+
+        if (!viewInitialized && getWidth() > 0 && getHeight() > 0 && baseRadius > 0) {
+            final double cornerDistance =
+                    Math.hypot(getWidth() / 2.0, getHeight() / 2.0);
+            final double requiredZoom =
+                    (cornerDistance + INITIAL_MARGIN) / baseRadius;
+
+            zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, requiredZoom));
+            panOffsetX = 0.0;
+            panOffsetY = 0.0;
+            viewInitialized = true;
+        }
+
+        if (viewInitialized) {
+            clampPanOffsets();
+        }
+    }
+
+    private int adjustedCentreX() {
+        return (int) Math.round(getWidth() / 2.0 + panOffsetX);
+    }
+
+    private int adjustedCentreY() {
+        return (int) Math.round(getHeight() / 2.0 + panOffsetY);
+    }
+
+    private int effectiveRadius() {
+        return (int) Math.round(baseRadius() * zoom);
+    }
+
+    private int baseRadius() {
+        return mapDiameter() / 2;
+    }
+
+    private int mapDiameter() {
+        return Math.max(0, Math.min(getWidth() - 80, getHeight() - 60));
+    }
+
+    public interface SelectionListener {
+
+        void objectSelected(Star star);
     }
 }
