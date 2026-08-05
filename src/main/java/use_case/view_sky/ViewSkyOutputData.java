@@ -2,6 +2,7 @@ package use_case.view_sky;
 
 import java.util.List;
 
+import entity.ObserverLocation;
 import entity.Star;
 
 public class ViewSkyOutputData {
@@ -11,6 +12,7 @@ public class ViewSkyOutputData {
     private final String time;
     private final double latitude;
     private final double longitude;
+    private final ObserverLocation observerLocation;
     private final List<Star> stars;
 
     public ViewSkyOutputData(
@@ -33,6 +35,27 @@ public class ViewSkyOutputData {
         this.time = time;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.observerLocation = null;
+        this.stars = List.copyOf(stars);
+    }
+
+    /**
+     * Carries the observed place as a whole, so that a caller needing to ask another service
+     * about it — the weather, say — gets the time zone along with the coordinates instead of
+     * having to guess one from the latitude and longitude.
+     */
+    public ViewSkyOutputData(
+            final String location,
+            final String date,
+            final String time,
+            final ObserverLocation observerLocation,
+            final List<Star> stars) {
+        this.location = location;
+        this.date = date;
+        this.time = time;
+        this.latitude = observerLocation.getLatitude();
+        this.longitude = observerLocation.getLongitude();
+        this.observerLocation = observerLocation;
         this.stars = List.copyOf(stars);
     }
 
@@ -54,6 +77,13 @@ public class ViewSkyOutputData {
 
     public double getLongitude() {
         return longitude;
+    }
+
+    /**
+     * The observed place, or null when the result was built from coordinates alone.
+     */
+    public ObserverLocation getObserverLocation() {
+        return observerLocation;
     }
 
     public List<Star> getStars() {

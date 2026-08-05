@@ -3,6 +3,7 @@ package view;
 import java.awt.Component;
 import java.awt.Container;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import entity.ObserverLocation;
 import entity.Star;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
@@ -53,6 +55,11 @@ class SkyViewTest {
         skyViewModel.setDisplayedTime("22:15");
         skyViewModel.setLatitude(LATITUDE);
         skyViewModel.setLongitude(LONGITUDE);
+
+        // Weather and ranking now take the observed place whole, so that the request can name the
+        // time zone rather than leaving the service to infer one from the coordinates.
+        skyViewModel.setObserverLocation(new ObserverLocation(
+                "Istanbul", LATITUDE, LONGITUDE, ZoneId.of("Europe/Istanbul")));
 
         sirius = new Star(
                 "HIP 32349",
@@ -141,10 +148,10 @@ class SkyViewTest {
         assertTrue(rankForecastDays.called.await(
                 TIMEOUT_SECONDS, TimeUnit.SECONDS));
 
-        assertEquals(LATITUDE, checkConditions.inputData.getLatitude(), 1e-9);
-        assertEquals(LONGITUDE, checkConditions.inputData.getLongitude(), 1e-9);
-        assertEquals(LATITUDE, rankForecastDays.inputData.getLatitude(), 1e-9);
-        assertEquals(LONGITUDE, rankForecastDays.inputData.getLongitude(), 1e-9);
+        assertEquals(LATITUDE, checkConditions.inputData.getLocation().getLatitude(), 1e-9);
+        assertEquals(LONGITUDE, checkConditions.inputData.getLocation().getLongitude(), 1e-9);
+        assertEquals(LATITUDE, rankForecastDays.inputData.getLocation().getLatitude(), 1e-9);
+        assertEquals(LONGITUDE, rankForecastDays.inputData.getLocation().getLongitude(), 1e-9);
         final LocalDate today = LocalDate.now();
         assertEquals(
                 List.of(today, today.plusDays(1), today.plusDays(2)),

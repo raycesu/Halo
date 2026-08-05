@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 
+import entity.ObserverLocation;
 import entity.Star;
 
 public class SkyViewModel {
@@ -15,6 +16,9 @@ public class SkyViewModel {
     private String displayedTime = "";
     private double latitude = Double.NaN;
     private double longitude = Double.NaN;
+
+    /** The observed place, kept whole so weather requests carry its time zone as well. */
+    private ObserverLocation observerLocation;
     private List<Star> stars = List.of();
     private Star selectedObject;
     private String selectedObjectName = "";
@@ -71,6 +75,16 @@ public class SkyViewModel {
         final double oldLongitude = this.longitude;
         this.longitude = longitude;
         support.firePropertyChange("longitude", oldLongitude, longitude);
+    }
+
+    public ObserverLocation getObserverLocation() {
+        return observerLocation;
+    }
+
+    public void setObserverLocation(final ObserverLocation observerLocation) {
+        final ObserverLocation oldLocation = this.observerLocation;
+        this.observerLocation = observerLocation;
+        support.firePropertyChange("observerLocation", oldLocation, observerLocation);
     }
 
     public List<Star> getStars() {

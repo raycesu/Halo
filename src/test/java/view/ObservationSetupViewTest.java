@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
@@ -20,6 +21,7 @@ import interface_adapter.view_sky.SkyViewModel;
 import interface_adapter.view_sky.ViewSkyController;
 import interface_adapter.view_sky.ViewSkyPresenter;
 import org.junit.jupiter.api.Test;
+import use_case.location.LocationDataAccessInterface;
 import use_case.view_sky.ViewSkyInputBoundary;
 import use_case.view_sky.ViewSkyInputData;
 import use_case.view_sky.ViewSkyOutputBoundary;
@@ -34,6 +36,30 @@ class ObservationSetupViewTest {
 
     private static final long TIMEOUT_SECONDS = 3;
 
+    /**
+     * The place the stub geocoder resolves. The screen no longer accepts typed coordinates, so a
+     * test supplies a location the same way the user does: by choosing an already-resolved one.
+     */
+    private static final ObserverLocation ISTANBUL = new ObserverLocation(
+            "Istanbul", 41.0082, 28.9784, ZoneId.of("Europe/Istanbul"));
+
+    /** Stands in for the bundled city dataset; these tests exercise the screen, not the lookup. */
+    private static final class StubLocationDataAccess implements LocationDataAccessInterface {
+
+        @Override
+        public List<ObserverLocation> findByName(final String query, final int limit) {
+            final List<ObserverLocation> matches;
+            if (query != null && !query.isBlank() && limit > 0
+                    && ISTANBUL.getDisplayName().toLowerCase().startsWith(query.toLowerCase())) {
+                matches = List.of(ISTANBUL);
+            }
+            else {
+                matches = List.of();
+            }
+            return matches;
+        }
+    }
+
     @Test
     void validSubmissionShowsLoadingPassesInputsAndThenShowsSky() throws Exception {
         final TestContext context = createContext(false);
@@ -41,10 +67,7 @@ class ObservationSetupViewTest {
                 activeViewLatch(context.viewManagerModel, ViewManagerModel.sky_view);
 
         SwingUtilities.invokeAndWait(() -> {
-            textField(context.view, "locationField").setText("Istanbul");
-            textField(context.view, "latitudeField").setText("41.0082");
-            textField(context.view, "longitudeField").setText("28.9784");
-            textField(context.view, "zoneIdField").setText("Europe/Istanbul");
+            context.view.getLocationField().setSelectedLocation(ISTANBUL);
             textField(context.view, "dateField").setText("2026-08-12");
             textField(context.view, "timeField").setText("22:15");
             button(context.view, "View Sky").doClick();
@@ -70,9 +93,7 @@ class ObservationSetupViewTest {
         assertEquals(ViewManagerModel.sky_view,
                 context.viewManagerModel.getActiveView());
         assertEquals("Istanbul", context.setupViewModel.getLocation());
-        assertEquals("41.0082", context.setupViewModel.getLatitude());
-        assertEquals("28.9784", context.setupViewModel.getLongitude());
-        assertEquals("Europe/Istanbul", context.setupViewModel.getZoneId());
+        assertEquals(ISTANBUL, context.setupViewModel.getSelectedLocation());
         assertEquals("Istanbul", context.skyViewModel.getDisplayedLocation());
     }
 
@@ -102,6 +123,10 @@ class ObservationSetupViewTest {
     private TestContext createContext(final boolean fail) throws Exception {
         final ObservationSetupViewModel setupViewModel =
                 new ObservationSetupViewModel();
+
+        // The screen opens on an already-resolved place, as the app does, so that a test which
+        // only cares about submission does not have to drive the suggestion list first.
+        setupViewModel.setSelectedLocation(ISTANBUL);
         final SkyViewModel skyViewModel = new SkyViewModel();
         final ViewManagerModel viewManagerModel = new ViewManagerModel();
         final ViewSkyOutputBoundary presenter =
@@ -121,7 +146,8 @@ class ObservationSetupViewTest {
                 new ObservationSetupView(
                         setupViewModel,
                         controller,
-                        viewManagerModel)));
+                        viewManagerModel,
+                        new StubLocationDataAccess())));
 
         return new TestContext(
                 viewReference.get(),

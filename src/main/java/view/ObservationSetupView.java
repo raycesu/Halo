@@ -2,6 +2,7 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,9 +22,11 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.ViewSkyController;
+import use_case.location.LocationDataAccessInterface;
 
 public class ObservationSetupView extends JPanel
         implements ActionListener, PropertyChangeListener {
@@ -31,10 +34,7 @@ public class ObservationSetupView extends JPanel
     private final ObservationSetupViewModel viewModel;
     private final ViewSkyController viewSkyController;
     private final ViewManagerModel viewManagerModel;
-    private final JTextField locationField;
-    private final JTextField latitudeField;
-    private final JTextField longitudeField;
-    private final JTextField zoneIdField;
+    private final CityAutocompleteField locationField;
     private final JTextField dateField;
     private final JTextField timeField;
     private final JButton viewSkyButton = new JButton("View Sky");
@@ -44,15 +44,17 @@ public class ObservationSetupView extends JPanel
     public ObservationSetupView(
             final ObservationSetupViewModel viewModel,
             final ViewSkyController viewSkyController,
-            final ViewManagerModel viewManagerModel) {
+            final ViewManagerModel viewManagerModel,
+            final LocationDataAccessInterface locationDataAccess) {
         this.viewModel = viewModel;
         this.viewSkyController = viewSkyController;
         this.viewManagerModel = viewManagerModel;
 
-        locationField = createField("locationField", viewModel.getLocation());
-        latitudeField = createField("latitudeField", viewModel.getLatitude());
-        longitudeField = createField("longitudeField", viewModel.getLongitude());
-        zoneIdField = createField("zoneIdField", viewModel.getZoneId());
+        locationField = new CityAutocompleteField(locationDataAccess);
+        locationField.setName("locationField");
+        locationField.getTextField().setName("locationTextField");
+        locationField.setSelectedLocation(viewModel.getSelectedLocation());
+
         dateField = createField("dateField", viewModel.getDate());
         timeField = createField("timeField", viewModel.getTime());
         errorLabel = new JLabel(viewModel.getErrorMessage());
@@ -74,14 +76,11 @@ public class ObservationSetupView extends JPanel
         constraints.anchor = GridBagConstraints.WEST;
 
         addFieldRow(formPanel, constraints, 0, "Location:", locationField);
-        addFieldRow(formPanel, constraints, 1, "Latitude:", latitudeField);
-        addFieldRow(formPanel, constraints, 2, "Longitude:", longitudeField);
-        addFieldRow(formPanel, constraints, 3, "Time zone:", zoneIdField);
-        addFieldRow(formPanel, constraints, 4, "Date (yyyy-MM-dd):", dateField);
-        addFieldRow(formPanel, constraints, 5, "Time (HH:mm):", timeField);
+        addFieldRow(formPanel, constraints, 1, "Date (yyyy-MM-dd):", dateField);
+        addFieldRow(formPanel, constraints, 2, "Time (HH:mm):", timeField);
 
         constraints.gridx = 0;
-        constraints.gridy = 6;
+        constraints.gridy = 3;
         constraints.gridwidth = 2;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.CENTER;
@@ -90,7 +89,7 @@ public class ObservationSetupView extends JPanel
 
         errorLabel.setForeground(new Color(180, 30, 30));
         errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        constraints.gridy = 7;
+        constraints.gridy = 4;
         constraints.fill = GridBagConstraints.HORIZONTAL;
         formPanel.add(errorLabel, constraints);
 
@@ -101,6 +100,11 @@ public class ObservationSetupView extends JPanel
 
         viewSkyButton.addActionListener(this);
         viewModel.addPropertyChangeListener(this);
+    }
+
+    /** The location input, exposed so a caller can seed or read the chosen place. */
+    public CityAutocompleteField getLocationField() {
+        return locationField;
     }
 
     private JTextField createField(final String name, final String value) {
@@ -114,7 +118,7 @@ public class ObservationSetupView extends JPanel
             final GridBagConstraints constraints,
             final int row,
             final String label,
-            final JTextField field) {
+            final Component field) {
         constraints.gridx = 0;
         constraints.gridy = row;
         constraints.gridwidth = 1;
@@ -136,17 +140,18 @@ public class ObservationSetupView extends JPanel
             return;
         }
 
-        final String location = locationField.getText();
-        final String latitude = latitudeField.getText();
-        final String longitude = longitudeField.getText();
-        final String zoneId = zoneIdField.getText();
+        final ObserverLocation location = locationField.getSelectedLocation();
         final String date = dateField.getText();
         final String time = timeField.getText();
 
-        viewModel.setLocation(location);
-        viewModel.setLatitude(latitude);
-        viewModel.setLongitude(longitude);
-        viewModel.setZoneId(zoneId);
+        // A location that was never chosen from the list is reported here rather than sent on,
+        // since there are no coordinates to send.
+        if (location == null) {
+            viewModel.setErrorMessage("Choose a location from the suggestions first.");
+            return;
+        }
+
+        viewModel.setSelectedLocation(location);
         viewModel.setDate(date);
         viewModel.setTime(time);
         viewModel.setErrorMessage("");
@@ -157,13 +162,7 @@ public class ObservationSetupView extends JPanel
         viewSkyWorker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
-                viewSkyController.viewSky(
-                        location,
-                        latitude,
-                        longitude,
-                        zoneId,
-                        date,
-                        time);
+                viewSkyController.viewSky(location, date, time);
                 return null;
             }
 
@@ -205,10 +204,8 @@ public class ObservationSetupView extends JPanel
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
         final Runnable updateFields = () -> {
-            locationField.setText(viewModel.getLocation());
-            latitudeField.setText(viewModel.getLatitude());
-            longitudeField.setText(viewModel.getLongitude());
-            zoneIdField.setText(viewModel.getZoneId());
+            // The location field is left alone: it owns the resolved choice, and rewriting its
+            // text from the view model would discard the coordinates that came with it.
             dateField.setText(viewModel.getDate());
             timeField.setText(viewModel.getTime());
             errorLabel.setText(viewModel.getErrorMessage());
