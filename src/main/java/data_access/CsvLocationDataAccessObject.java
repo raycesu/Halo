@@ -18,16 +18,22 @@ import use_case.location.LocationDataAccessInterface;
 
 /**
  * Resolves place names against a bundled extract of the GeoNames {@code cities15000} dataset,
- * which covers roughly 34,000 places of population 15,000 or more.
+ * trimmed to 1,000 places.
  *
  * <p>A local dataset rather than a web service, because unlike weather and ephemerides this data
  * does not change: a city's coordinates are the same today as last year. Keeping it local means
  * the lookup cannot fail on a dropped connection, needs no API budget, and is fast enough to run
  * on every keystroke, which is what makes an as-you-type list of suggestions possible.
  *
- * <p>The trade is coverage. Somewhere below 15,000 people is not in here, and the remedy is
- * another implementation of {@link LocationDataAccessInterface} backed by a geocoding service.
- * Nothing above this class would need to change.
+ * <p>Which 1,000, in order: the largest cities of North America, weighted towards Canada since
+ * that is where the application's users are; then the largest city of every remaining country, so
+ * that nowhere on earth is unreachable; then the most populous cities left over. Canadian coverage
+ * therefore reaches down to towns of about 37,000, while somewhere small and far away resolves
+ * only if it is the biggest place in its country.
+ *
+ * <p>The trade is coverage, and the remedy is another implementation of
+ * {@link LocationDataAccessInterface} backed by a geocoding service. Nothing above this class
+ * would need to change.
  */
 public class CsvLocationDataAccessObject implements LocationDataAccessInterface {
 

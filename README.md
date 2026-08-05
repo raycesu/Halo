@@ -23,10 +23,20 @@ ephemeris service, and the coordinate conversion behind the star map. A place na
 user has, so `LocationDataAccessInterface` bridges the two.
 
 `CsvLocationDataAccessObject` resolves names against a bundled extract of the GeoNames
-`cities15000` dataset (~34,000 places of population 15,000 or more), trimmed to name, region,
+`cities15000` dataset, trimmed to 1,000 places and to the columns Halo needs: name, region,
 country, coordinates, IANA time zone and population. A local dataset rather than a geocoding
 service, because unlike weather and ephemerides this data does not change, the lookup cannot fail
 on a dropped connection, and it is fast enough to run on every keystroke.
+
+The 1,000 are chosen in order:
+
+1. the largest cities of North America — 200 Canadian, 250 American, 50 Mexican — weighted
+   towards Canada because that is where the application's users are
+2. the largest city of every remaining country, so nowhere on earth is unreachable
+3. the most populous cities left over, worldwide
+
+Canadian coverage therefore reaches down to towns of about 37,000 (Guelph, Barrie, Kingston),
+American to about 127,000, while all 243 countries remain represented.
 
 Matching is ranked in tiers — exact name, then prefix, then substring — and within a tier by
 population, so "York" surfaces York before New York and "Springfield" leads with the largest one.
@@ -42,7 +52,7 @@ infer one from the coordinates.
 
 ### Coverage
 
-Places below about 15,000 people are not in the dataset. The remedy is another implementation of
+Places outside the bundled 1,000 are not resolvable. The remedy is another implementation of
 `LocationDataAccessInterface` backed by a geocoding service; nothing above the DAO would change.
 
 ## Viewing quality rating (Check Conditions)
