@@ -31,8 +31,7 @@ public class CheckConditionsInteractor implements CheckConditionsInputBoundary {
     public void checkConditions(final CheckConditionsInputData inputData) {
         try {
             final WeatherCondition condition = weatherDataAccess.getWeatherCondition(
-                    inputData.getLatitude(),
-                    inputData.getLongitude(),
+                    inputData.getLocation(),
                     inputData.getObservationDateTime());
 
             final double overallScore = ViewingQualityRating.calculateOverallScore(condition);

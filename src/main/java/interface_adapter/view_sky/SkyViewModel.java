@@ -2,13 +2,22 @@ package interface_adapter.view_sky;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.time.LocalDate;
+import java.util.List;
+
+import entity.Star;
 
 public class SkyViewModel {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
+    /** What the map draws: the objects above the horizon, brightest first. */
+    private List<Star> stars = List.of();
+
     private String displayedLocation = "Toronto";
-    private String displayedDate = "2026-07-24";
+
+    // Today in the machine's own zone, so the app opens on a date the forecast actually covers.
+    private String displayedDate = LocalDate.now().toString();
     private String displayedTime = "18:20";
     private boolean sidebarVisible = true;
     private String selectedObjectName = "Sirius";
@@ -28,6 +37,16 @@ public class SkyViewModel {
             + "Wind: 9 km/h\n"
             + "Observability: Good";
     private String errorMessage = "";
+
+    public List<Star> getStars() {
+        return stars;
+    }
+
+    public void setStars(final List<Star> stars) {
+        final List<Star> oldStars = this.stars;
+        this.stars = List.copyOf(stars);
+        support.firePropertyChange("stars", oldStars, this.stars);
+    }
 
     public String getDisplayedLocation() {
         return displayedLocation;

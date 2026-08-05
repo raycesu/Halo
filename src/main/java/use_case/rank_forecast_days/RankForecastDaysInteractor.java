@@ -42,8 +42,7 @@ public class RankForecastDaysInteractor implements RankForecastDaysInputBoundary
             }
 
             final List<WeatherCondition> conditions = weatherDataAccess.getWeatherConditions(
-                    inputData.getLatitude(),
-                    inputData.getLongitude(),
+                    inputData.getLocation(),
                     dateTimes);
 
             final List<ScoredDay> scoredDays = new ArrayList<>(selectedDates.size());

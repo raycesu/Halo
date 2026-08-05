@@ -2,13 +2,16 @@ package interface_adapter.view_sky;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.time.LocalDate;
 
 public class ObservationSetupViewModel {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private String location = "Toronto";
-    private String date = "2026-07-24";
+
+    // Today in the machine's own zone, so the app opens on a date the forecast actually covers.
+    private String date = LocalDate.now().toString();
     private String time = "18:20";
     private String errorMessage = "";
 

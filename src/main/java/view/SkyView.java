@@ -35,30 +35,30 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import entity.ObserverLocation;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import interface_adapter.view_sky.SkyViewModel;
+import interface_adapter.view_sky.ViewSkyController;
+import use_case.location.LocationDataAccessInterface;
 
 public class SkyView extends JPanel implements PropertyChangeListener {
 
-    // Temporary placeholder until a real geocoding/location use case supplies lat/lon
-    // for the observation location the user typed in.
-    private static final double TORONTO_LATITUDE = 43.6532;
-    private static final double TORONTO_LONGITUDE = -79.3832;
-    private static final List<LocalDate> DEFAULT_RANK_FORECAST_DATES = List.of(
-            LocalDate.of(2026, 7, 25),
-            LocalDate.of(2026, 7, 26),
-            LocalDate.of(2026, 7, 27));
+    /** How many nights the forecast ranking starts out comparing. */
+    private static final int DEFAULT_RANK_FORECAST_NIGHTS = 3;
 
     private final SkyViewModel viewModel;
+    private final ViewSkyController viewSkyController;
     private final CheckConditionsController checkConditionsController;
     private final CheckConditionsViewModel checkConditionsViewModel;
     private final RankForecastDaysController rankForecastDaysController;
     private final RankForecastDaysViewModel rankForecastDaysViewModel;
-    private final JTextField locationField = new JTextField();
+    private final CityAutocompleteField locationField;
+    private final SkyMapPanel skyMapPanel = new SkyMapPanel();
+    private final JButton viewSkyButton = new JButton("View Sky");
     private final JTextField dateField = new JTextField();
     private final JTextField timeField = new JTextField();
     private final JLabel objectNameLabel = new JLabel();
@@ -66,7 +66,7 @@ public class SkyView extends JPanel implements PropertyChangeListener {
     private final JTextArea weatherArea = new JTextArea();
     private final JButton checkConditionsButton = new JButton("Check Conditions");
     private final JLabel errorLabel = new JLabel();
-    private final List<LocalDate> selectedForecastDates = new ArrayList<>(DEFAULT_RANK_FORECAST_DATES);
+    private final List<LocalDate> selectedForecastDates = new ArrayList<>(defaultForecastDates());
     private final JButton selectDatesButton = new JButton("Select Dates");
     private final JLabel selectedDatesSummaryLabel = new JLabel();
     private final JButton rankForecastButton = new JButton("Rank Nights");
@@ -77,21 +77,30 @@ public class SkyView extends JPanel implements PropertyChangeListener {
 
     public SkyView(
             final SkyViewModel viewModel,
+            final ViewSkyController viewSkyController,
+            final LocationDataAccessInterface locationDataAccess,
+            final ObserverLocation initialLocation,
             final CheckConditionsController checkConditionsController,
             final CheckConditionsViewModel checkConditionsViewModel,
             final RankForecastDaysController rankForecastDaysController,
             final RankForecastDaysViewModel rankForecastDaysViewModel) {
         this.viewModel = viewModel;
+        this.viewSkyController = viewSkyController;
         this.checkConditionsController = checkConditionsController;
         this.checkConditionsViewModel = checkConditionsViewModel;
         this.rankForecastDaysController = rankForecastDaysController;
         this.rankForecastDaysViewModel = rankForecastDaysViewModel;
+        this.locationField = new CityAutocompleteField(locationDataAccess);
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
         add(createLeftPanel(), BorderLayout.WEST);
-        add(new SkyMapPanel(), BorderLayout.CENTER);
+        add(skyMapPanel, BorderLayout.CENTER);
         add(createRightSidebar(), BorderLayout.EAST);
+
+        // Start on a resolved place so the first request works without the user picking one, while
+        // still going through the same selection the autocomplete produces.
+        locationField.setSelectedLocation(initialLocation);
 
         updateFromViewModel();
         registerTextFieldListeners();
@@ -139,6 +148,9 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         dateField.setAlignmentX(LEFT_ALIGNMENT);
         timeField.setAlignmentX(LEFT_ALIGNMENT);
 
+        viewSkyButton.setAlignmentX(LEFT_ALIGNMENT);
+        viewSkyButton.addActionListener(event -> handleViewSky());
+
         errorLabel.setForeground(new Color(180, 30, 30));
         errorLabel.setAlignmentX(LEFT_ALIGNMENT);
 
@@ -169,6 +181,8 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         leftPanel.add(new JLabel("Time"));
         leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         leftPanel.add(timeField);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 12)));
+        leftPanel.add(viewSkyButton);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 12)));
         leftPanel.add(errorLabel);
         leftPanel.add(Box.createVerticalGlue());
@@ -307,7 +321,8 @@ public class SkyView extends JPanel implements PropertyChangeListener {
     }
 
     private void updateFromViewModel() {
-        locationField.setText(viewModel.getDisplayedLocation());
+        // The location field is not refreshed from the view model: it owns a resolved choice, and
+        // overwriting its text would silently discard the coordinates that came with it.
         dateField.setText(viewModel.getDisplayedDate());
         timeField.setText(viewModel.getDisplayedTime());
         objectNameLabel.setText(textOrPlaceholder(
@@ -377,7 +392,7 @@ public class SkyView extends JPanel implements PropertyChangeListener {
             }
         };
 
-        locationField.getDocument().addDocumentListener(listener);
+        locationField.getTextField().getDocument().addDocumentListener(listener);
         dateField.getDocument().addDocumentListener(listener);
         timeField.getDocument().addDocumentListener(listener);
     }
@@ -390,7 +405,37 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Builds the sky for the chosen place and moment.
+     *
+     * <p>Runs off the event dispatch thread because the interactor reaches the ephemeris service
+     * over the network, which would otherwise freeze the window until it answered. The presenter
+     * writes to the view model from that worker, so the property change handler hops back to the
+     * dispatch thread before touching Swing.
+     */
+    private void handleViewSky() {
+        viewSkyButton.setEnabled(false);
+        new Thread(() -> {
+            try {
+                viewSkyController.viewSky(
+                        locationField.getSelectedLocation(),
+                        viewModel.getDisplayedDate(),
+                        viewModel.getDisplayedTime());
+            }
+            finally {
+                SwingUtilities.invokeLater(() -> viewSkyButton.setEnabled(true));
+            }
+        }, "view-sky-worker").start();
+    }
+
     private void handleCheckConditions() {
+        final ObserverLocation location = locationField.getSelectedLocation();
+        if (location == null) {
+            checkConditionsViewModel.setErrorMessage(
+                    "Choose a location from the suggestions before checking conditions.");
+            return;
+        }
+
         final LocalDateTime observationDateTime;
         try {
             observationDateTime = LocalDateTime.of(
@@ -405,8 +450,7 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         checkConditionsButton.setEnabled(false);
         new Thread(() -> {
             try {
-                checkConditionsController.checkConditions(
-                        TORONTO_LATITUDE, TORONTO_LONGITUDE, observationDateTime);
+                checkConditionsController.checkConditions(location, observationDateTime);
             }
             finally {
                 SwingUtilities.invokeLater(() -> checkConditionsButton.setEnabled(true));
@@ -415,6 +459,11 @@ public class SkyView extends JPanel implements PropertyChangeListener {
     }
 
     private void handleRankForecastDays() {
+        final ObserverLocation location = locationField.getSelectedLocation();
+        if (location == null) {
+            rankForecastErrorLabel.setText("Choose a location from the suggestions first.");
+            return;
+        }
         if (selectedForecastDates.isEmpty()) {
             rankForecastErrorLabel.setText("Select at least one date to rank.");
             return;
@@ -425,8 +474,7 @@ public class SkyView extends JPanel implements PropertyChangeListener {
         rankForecastButton.setEnabled(false);
         new Thread(() -> {
             try {
-                rankForecastDaysController.rankForecastDays(
-                        TORONTO_LATITUDE, TORONTO_LONGITUDE, datesToRank);
+                rankForecastDaysController.rankForecastDays(location, datesToRank);
             }
             finally {
                 SwingUtilities.invokeLater(() -> rankForecastButton.setEnabled(true));
@@ -440,6 +488,21 @@ public class SkyView extends JPanel implements PropertyChangeListener {
             field.setText(text);
             updatingFields = false;
         }
+    }
+
+    /**
+     * The nights the ranking panel starts on: tonight and the two after it.
+     *
+     * <p>Computed rather than fixed, because the weather service only forecasts forward. A hard
+     * coded date is correct for a day and then silently ranks nothing.
+     */
+    private static List<LocalDate> defaultForecastDates() {
+        final LocalDate today = LocalDate.now();
+        final List<LocalDate> dates = new ArrayList<>(DEFAULT_RANK_FORECAST_NIGHTS);
+        for (int offset = 0; offset < DEFAULT_RANK_FORECAST_NIGHTS; offset++) {
+            dates.add(today.plusDays(offset));
+        }
+        return dates;
     }
 
     private String textOrPlaceholder(final String text, final String placeholder) {
@@ -463,8 +526,14 @@ public class SkyView extends JPanel implements PropertyChangeListener {
             SwingUtilities.invokeLater(this::updateRankedDaysFromViewModel);
             return;
         }
-        if ("displayedLocation".equals(event.getPropertyName())) {
-            setFieldText(locationField, viewModel.getDisplayedLocation());
+        if (!SwingUtilities.isEventDispatchThread()) {
+            // The sky presenter writes from the worker started in handleViewSky(), so re-enter on
+            // the Event Dispatch Thread before any of the branches below touch a component.
+            SwingUtilities.invokeLater(() -> propertyChange(event));
+            return;
+        }
+        if ("stars".equals(event.getPropertyName())) {
+            skyMapPanel.setStars(viewModel.getStars());
         }
         else if ("displayedDate".equals(event.getPropertyName())) {
             setFieldText(dateField, viewModel.getDisplayedDate());
