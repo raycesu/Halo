@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -127,9 +128,12 @@ class SkyViewTest {
 
     @Test
     void weatherAndRankingUseCoordinatesFromSkyViewModel() throws Exception {
+        final AtomicReference<JDialog> forecastDialogReference =
+                new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> {
             button(view, "Check Conditions").doClick();
-            button(view, "Rank Nights").doClick();
+            forecastDialogReference.set(view.getForecastRankingDialogForTesting());
+            button(forecastDialogReference.get(), "Rank Nights").doClick();
         });
 
         assertTrue(checkConditions.called.await(
@@ -141,11 +145,9 @@ class SkyViewTest {
         assertEquals(LONGITUDE, checkConditions.inputData.getLongitude(), 1e-9);
         assertEquals(LATITUDE, rankForecastDays.inputData.getLatitude(), 1e-9);
         assertEquals(LONGITUDE, rankForecastDays.inputData.getLongitude(), 1e-9);
+        final LocalDate today = LocalDate.now();
         assertEquals(
-                List.of(
-                        LocalDate.of(2026, 7, 25),
-                        LocalDate.of(2026, 7, 26),
-                        LocalDate.of(2026, 7, 27)),
+                List.of(today, today.plusDays(1), today.plusDays(2)),
                 rankForecastDays.inputData.getSelectedDates());
     }
 

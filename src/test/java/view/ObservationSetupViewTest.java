@@ -13,6 +13,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.SkyViewModel;
 import interface_adapter.view_sky.ViewSkyController;
@@ -103,7 +105,11 @@ class ObservationSetupViewTest {
         final SkyViewModel skyViewModel = new SkyViewModel();
         final ViewManagerModel viewManagerModel = new ViewManagerModel();
         final ViewSkyOutputBoundary presenter =
-                new ViewSkyPresenter(skyViewModel, setupViewModel);
+                new ViewSkyPresenter(
+                        skyViewModel,
+                        setupViewModel,
+                        new CheckConditionsViewModel(),
+                        new RankForecastDaysViewModel());
         final BlockingViewSkyUseCase useCase =
                 new BlockingViewSkyUseCase(presenter, fail);
         final ViewSkyController controller =
