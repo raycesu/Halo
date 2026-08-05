@@ -4,25 +4,46 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.time.LocalDate;
 
+import entity.ObserverLocation;
+
 public class ObservationSetupViewModel {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    private String location = "Toronto";
+    /**
+     * The place the user picked from the suggestion list, or null if they have not picked one.
+     *
+     * <p>Replaces the separate latitude, longitude and time zone entries this screen used to ask
+     * for. Those are not things a person knows offhand, and a mistyped one is accepted silently by
+     * every service downstream, so the place is resolved once and then carried whole.
+     */
+    private ObserverLocation selectedLocation;
 
     // Today in the machine's own zone, so the app opens on a date the forecast actually covers.
     private String date = LocalDate.now().toString();
     private String time = "18:20";
     private String errorMessage = "";
 
-    public String getLocation() {
-        return location;
+    public ObserverLocation getSelectedLocation() {
+        return selectedLocation;
     }
 
-    public void setLocation(final String location) {
-        final String oldLocation = this.location;
-        this.location = location;
-        support.firePropertyChange("location", oldLocation, location);
+    public void setSelectedLocation(final ObserverLocation selectedLocation) {
+        final ObserverLocation oldLocation = this.selectedLocation;
+        this.selectedLocation = selectedLocation;
+        support.firePropertyChange("selectedLocation", oldLocation, selectedLocation);
+    }
+
+    /** The chosen place's label, or an empty string when nothing has been chosen. */
+    public String getLocation() {
+        final String location;
+        if (selectedLocation == null) {
+            location = "";
+        }
+        else {
+            location = selectedLocation.getDisplayName();
+        }
+        return location;
     }
 
     public String getDate() {

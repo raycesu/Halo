@@ -46,6 +46,15 @@ public class RankForecastDaysViewModel {
         support.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Clears the ranked-day results and any error message. Called whenever a new observation is
+     * generated so ranking results from a previous location/date/time do not keep showing.
+     */
+    public void reset() {
+        setRankedDays(Collections.emptyList());
+        setErrorMessage("");
+    }
+
     public static final class RankedDayDisplayItem {
 
         private final int rank;

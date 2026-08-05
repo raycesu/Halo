@@ -12,6 +12,7 @@ import use_case.view_sky.ViewSkyOutputBoundary;
 import use_case.view_sky.ViewSkyOutputData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,102 +21,111 @@ class ViewSkyControllerTest {
 
     private static final double COORDINATE_TOLERANCE = 1.0e-9;
 
-    private RecordingInteractor interactor;
-    private RecordingOutputBoundary outputBoundary;
+    private FakeInputBoundary inputBoundary;
+    private FakeOutputBoundary outputBoundary;
     private ViewSkyController controller;
 
     @BeforeEach
     void setUp() {
-        interactor = new RecordingInteractor();
-        outputBoundary = new RecordingOutputBoundary();
-        controller = new ViewSkyController(interactor, outputBoundary);
+        inputBoundary = new FakeInputBoundary();
+        outputBoundary = new FakeOutputBoundary();
+        controller = new ViewSkyController(inputBoundary, outputBoundary);
+    }
+
+    private static ObserverLocation toronto() {
+        return new ObserverLocation(
+                "Toronto, Ontario, Canada", 43.6532, -79.3832, ZoneId.of("America/Toronto"));
     }
 
     @Test
-    void passesAParsedRequestToTheInteractor() {
-        final ObserverLocation toronto = new ObserverLocation(
-                "Toronto, Ontario, Canada", 43.7064, -79.3986, ZoneId.of("America/Toronto"));
+    void passesTheResolvedPlaceAndParsedTimeToTheInteractor() {
+        controller.viewSky(toronto(), "2026-07-24", "18:20");
 
-        controller.viewSky(toronto, "2026-07-30", "23:15");
+        assertNotNull(inputBoundary.inputData);
+        assertEquals("Toronto, Ontario, Canada", inputBoundary.inputData.getLocationName());
+        assertEquals(43.6532, inputBoundary.inputData.getLatitude(), COORDINATE_TOLERANCE);
+        assertEquals(-79.3832, inputBoundary.inputData.getLongitude(), COORDINATE_TOLERANCE);
+        assertEquals("America/Toronto", inputBoundary.inputData.getZoneId().getId());
+        assertEquals("2026-07-24T18:20",
+                inputBoundary.inputData.getObservationDateTime().toString());
+        assertFalse(outputBoundary.failCalled);
+    }
 
-        assertNotNull(interactor.received, "The interactor should have been called.");
-        assertEquals("Toronto, Ontario, Canada", interactor.received.getLocationName());
-        assertEquals(43.7064, interactor.received.getLatitude(), COORDINATE_TOLERANCE);
-        assertEquals(-79.3986, interactor.received.getLongitude(), COORDINATE_TOLERANCE);
-        assertEquals(ZoneId.of("America/Toronto"), interactor.received.getZoneId());
-        assertEquals("2026-07-30", interactor.received.getDate());
-        assertEquals("23:15", interactor.received.getTime());
-        assertNull(outputBoundary.errorMessage, "A valid request should not report an error.");
+    @Test
+    void toleratesSurroundingSpaceInTheDateAndTime() {
+        controller.viewSky(toronto(), "  2026-07-24 ", " 18:20  ");
+
+        assertNotNull(inputBoundary.inputData);
+        assertFalse(outputBoundary.failCalled);
     }
 
     /**
-     * The reason the autocomplete hands back a location rather than a string: without one there is
-     * nothing to geocode against, and guessing would query the wrong place silently.
+     * The reason the field hands back a location rather than a string: with nothing chosen there
+     * are no coordinates to send, and guessing would query somewhere else without saying so.
      */
     @Test
     void refusesToRunWithoutAResolvedLocation() {
-        controller.viewSky(null, "2026-07-30", "23:15");
+        controller.viewSky(null, "2026-07-24", "18:20");
 
-        assertNull(interactor.received, "The use case should never run without a location.");
-        assertNotNull(outputBoundary.errorMessage);
+        assertNull(inputBoundary.inputData);
+        assertTrue(outputBoundary.failCalled);
         assertTrue(outputBoundary.errorMessage.toLowerCase().contains("location"));
     }
 
     @Test
-    void rejectsAnUnparseableDateBeforeReachingTheUseCase() {
-        controller.viewSky(anyLocation(), "30-07-2026", "23:15");
+    void reportsAnUnparseableDateWithoutCallingTheInteractor() {
+        controller.viewSky(toronto(), "24-07-2026", "18:20");
 
-        assertNull(interactor.received);
-        assertNotNull(outputBoundary.errorMessage);
+        assertNull(inputBoundary.inputData);
+        assertTrue(outputBoundary.failCalled);
+        assertEquals(
+                "Enter a valid date (yyyy-MM-dd) and time (HH:mm).",
+                outputBoundary.errorMessage);
     }
 
     @Test
-    void rejectsAnUnparseableTimeBeforeReachingTheUseCase() {
-        controller.viewSky(anyLocation(), "2026-07-30", "11:15pm");
+    void reportsAnUnparseableTimeWithoutCallingTheInteractor() {
+        controller.viewSky(toronto(), "2026-07-24", "6:20pm");
 
-        assertNull(interactor.received);
-        assertNotNull(outputBoundary.errorMessage);
+        assertNull(inputBoundary.inputData);
+        assertTrue(outputBoundary.failCalled);
     }
 
     @Test
-    void rejectsMissingDateAndTime() {
-        controller.viewSky(anyLocation(), null, null);
+    void reportsMissingDateAndTimeWithoutCallingTheInteractor() {
+        controller.viewSky(toronto(), null, null);
 
-        assertNull(interactor.received);
-        assertNotNull(outputBoundary.errorMessage);
+        assertNull(inputBoundary.inputData);
+        assertTrue(outputBoundary.failCalled);
     }
 
-    private ObserverLocation anyLocation() {
-        return new ObserverLocation("Toronto", 43.7064, -79.3986, ZoneId.of("America/Toronto"));
-    }
+    private static class FakeInputBoundary implements ViewSkyInputBoundary {
 
-    private static final class RecordingInteractor implements ViewSkyInputBoundary {
-
-        private ViewSkyInputData received;
+        private ViewSkyInputData inputData;
 
         @Override
         public void execute(final ViewSkyInputData inputData) {
-            received = inputData;
+            this.inputData = inputData;
         }
     }
 
-    private static final class RecordingOutputBoundary implements ViewSkyOutputBoundary {
+    private static class FakeOutputBoundary implements ViewSkyOutputBoundary {
 
+        private boolean failCalled;
         private String errorMessage;
 
         @Override
         public void prepareSuccessView(final ViewSkyOutputData outputData) {
-            // Not exercised here: the controller never presents a result itself.
         }
 
         @Override
-        public void prepareFailView(final String message) {
-            errorMessage = message;
+        public void prepareFailView(final String errorMessage) {
+            failCalled = true;
+            this.errorMessage = errorMessage;
         }
 
         @Override
-        public void prepareWarning(final String message) {
-            // Not exercised here: warnings only come from the use case.
+        public void prepareWarning(final String warningMessage) {
         }
     }
 }

@@ -3,15 +3,18 @@ package use_case.view_sky;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import astronomy.AltAzCalculator;
+import astronomy.JulianDateCalculator;
+import astronomy.SiderealTimeCalculator;
 import entity.CelestialBodyType;
 import entity.ObserverLocation;
 import entity.Star;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import use_case.sky.CelestialBodyDataAccessInterface;
 import use_case.sky.CelestialDataUnavailableException;
 
@@ -27,25 +30,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ViewSkyInteractorTest {
 
-    private static final ZoneId TORONTO_ZONE = ZoneId.of("America/Toronto");
+    private static final ZoneId TORONTO_ZONE =
+            ZoneId.of("America/Toronto");
     private static final double TORONTO_LATITUDE = 43.6532;
     private static final double TORONTO_LONGITUDE = -79.3832;
-    private static final LocalDateTime OBSERVED_AT = LocalDateTime.of(2026, 7, 30, 23, 0);
+    private static final LocalDateTime OBSERVED_AT =
+            LocalDateTime.of(2026, 7, 30, 23, 0);
 
     private FakeStarCatalog catalogue;
     private FakeCelestialBodies ephemeris;
     private FakeViewSkyOutputBoundary presenter;
+    private HorizontalCoordinateCalculator coordinateCalculator;
 
     @BeforeEach
     void setUp() {
         catalogue = new FakeStarCatalog();
         ephemeris = new FakeCelestialBodies();
         presenter = new FakeViewSkyOutputBoundary();
+
+        coordinateCalculator = new AltAzCalculator(
+                new JulianDateCalculator(),
+                new SiderealTimeCalculator());
     }
 
     @Test
     void passesObservationDetailsThroughToTheOutput() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
 
         execute();
 
@@ -53,25 +64,72 @@ class ViewSkyInteractorTest {
         assertEquals("Toronto", presenter.outputData.getLocation());
         assertEquals("2026-07-30", presenter.outputData.getDate());
         assertEquals("23:00", presenter.outputData.getTime());
+        assertEquals(TORONTO_LATITUDE, presenter.outputData.getLatitude(), 1e-9);
+        assertEquals(TORONTO_LONGITUDE, presenter.outputData.getLongitude(), 1e-9);
         assertNull(presenter.warningMessage);
     }
 
     @Test
+    void passesCatalogueStarsAndObservationToCoordinateCalculator() {
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+
+        final FakeHorizontalCoordinateCalculator fakeCalculator =
+                new FakeHorizontalCoordinateCalculator();
+        coordinateCalculator = fakeCalculator;
+
+        execute();
+
+        assertTrue(fakeCalculator.wasCalled);
+        assertEquals(
+                TORONTO_LATITUDE,
+                fakeCalculator.observerLocation.getLatitude(),
+                1e-9);
+        assertEquals(
+                TORONTO_LONGITUDE,
+                fakeCalculator.observerLocation.getLongitude(),
+                1e-9);
+        assertEquals(
+                OBSERVED_AT.atZone(TORONTO_ZONE),
+                fakeCalculator.observationTime);
+        assertEquals(1, fakeCalculator.stars.size());
+
+        assertEquals(
+                20.0,
+                presenter.outputData.getStars().get(0).getAltitude(),
+                1e-9);
+        assertEquals(
+                120.0,
+                presenter.outputData.getStars().get(0).getAzimuth(),
+                1e-9);
+    }
+
+    @Test
     void positionsCatalogueStarsForTheObserver() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
 
         execute();
 
         final Star vega = presenter.outputData.getStars().get(0);
+
         // Vega is high in the east over Toronto on a late July evening.
-        assertTrue(vega.getAltitude() > 40.0, "altitude was " + vega.getAltitude());
-        assertTrue(vega.getAzimuth() > 0.0 && vega.getAzimuth() < 180.0);
-        assertEquals(18.61561111, vega.getRightAscension(), 1e-9);
+        assertTrue(
+                vega.getAltitude() > 40.0,
+                "altitude was " + vega.getAltitude());
+        assertTrue(
+                vega.getAzimuth() > 0.0
+                        && vega.getAzimuth() < 180.0);
+        assertEquals(
+                18.61561111,
+                vega.getRightAscension(),
+                1e-9);
     }
 
     @Test
     void leavesTheCatalogueUnpositioned() {
-        final Star vega = catalogueStar("Vega", 18.61561111, 38.784, 0.03);
+        final Star vega =
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03);
         catalogue.stars.add(vega);
 
         execute();
@@ -84,9 +142,12 @@ class ViewSkyInteractorTest {
 
     @Test
     void dropsObjectsBelowTheHorizon() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+
         // Deep southern declination never rises for a northern observer.
-        catalogue.stars.add(catalogueStar("Acrux", 12.44333333, -63.099, 0.77));
+        catalogue.stars.add(
+                catalogueStar("Acrux", 12.44333333, -63.099, 0.77));
 
         execute();
 
@@ -95,23 +156,40 @@ class ViewSkyInteractorTest {
 
     @Test
     void ordersByBrightnessWithUnknownMagnitudesLast() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
-        catalogue.stars.add(catalogueStar("Deneb", 20.69053333, 45.280, 1.25));
-        catalogue.stars.add(catalogueStar("Altair", 19.84640000, 8.868, 0.77));
-        ephemeris.bodies.add(observedBody("Jupiter", CelestialBodyType.PLANET, 50.0, 120.0));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Deneb", 20.69053333, 45.280, 1.25));
+        catalogue.stars.add(
+                catalogueStar("Altair", 19.84640000, 8.868, 0.77));
+
+        ephemeris.bodies.add(
+                observedBody(
+                        "Jupiter",
+                        CelestialBodyType.PLANET,
+                        50.0,
+                        120.0));
 
         execute();
 
-        assertEquals(List.of("Vega", "Altair", "Deneb", "Jupiter"), displayedNames());
+        assertEquals(
+                List.of("Vega", "Altair", "Deneb", "Jupiter"),
+                displayedNames());
     }
 
     @Test
     void includesMovingBodiesFromTheEphemeris() {
-        ephemeris.bodies.add(observedBody("Saturn", CelestialBodyType.PLANET, 30.0, 150.0));
+        ephemeris.bodies.add(
+                observedBody(
+                        "Saturn",
+                        CelestialBodyType.PLANET,
+                        30.0,
+                        150.0));
 
         execute();
 
         final Star saturn = presenter.outputData.getStars().get(0);
+
         assertEquals("Saturn", saturn.getDisplayName());
         assertEquals(CelestialBodyType.PLANET, saturn.getType());
         assertEquals(30.0, saturn.getAltitude(), 1e-9);
@@ -122,8 +200,14 @@ class ViewSkyInteractorTest {
     void passesTheObserverAndInstantToTheEphemeris() {
         execute();
 
-        assertEquals(TORONTO_LATITUDE, ephemeris.requestedLocation.getLatitude(), 1e-9);
-        assertEquals(TORONTO_LONGITUDE, ephemeris.requestedLocation.getLongitude(), 1e-9);
+        assertEquals(
+                TORONTO_LATITUDE,
+                ephemeris.requestedLocation.getLatitude(),
+                1e-9);
+        assertEquals(
+                TORONTO_LONGITUDE,
+                ephemeris.requestedLocation.getLongitude(),
+                1e-9);
         assertEquals(
                 OBSERVED_AT.atZone(TORONTO_ZONE).toInstant(),
                 ephemeris.requestedInstant);
@@ -135,35 +219,55 @@ class ViewSkyInteractorTest {
      */
     @Test
     void prefersTheCatalogueEntryOverADuplicateFromTheEphemeris() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+
         // Same star, differently cased, and with no magnitude, as the service reports it.
-        ephemeris.bodies.add(observedBody("VEGA", CelestialBodyType.STAR, 41.96, 72.12));
+        ephemeris.bodies.add(
+                observedBody(
+                        "VEGA",
+                        CelestialBodyType.STAR,
+                        41.96,
+                        72.12));
 
         execute();
 
         assertEquals(List.of("Vega"), displayedNames());
-        // Keeping the catalogue entry is what preserves the magnitude and the description.
-        assertEquals(0.03, presenter.outputData.getStars().get(0).getApparentMagnitude(), 1e-9);
+
+        // Keeping the catalogue entry preserves the magnitude and description.
+        assertEquals(
+                0.03,
+                presenter.outputData
+                        .getStars()
+                        .get(0)
+                        .getApparentMagnitude(),
+                1e-9);
     }
 
     @Test
     void stillProducesAMapWhenTheEphemerisIsUnavailable() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
-        ephemeris.failureMessage = "Could not reach the celestial data service.";
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+
+        ephemeris.failureMessage =
+                "Could not reach the celestial data service.";
 
         execute();
 
         assertTrue(presenter.successCalled);
         assertFalse(presenter.failCalled);
         assertEquals(List.of("Vega"), displayedNames());
-        assertTrue(presenter.warningMessage
-                .contains("Could not reach the celestial data service."));
+        assertTrue(
+                presenter.warningMessage.contains(
+                        "Could not reach the celestial data service."));
     }
 
     @Test
     void skipsCatalogueEntriesWithUnusableCoordinates() {
-        catalogue.stars.add(catalogueStar("Broken", Double.NaN, 10.0, 1.0));
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Broken", Double.NaN, 10.0, 1.0));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
 
         execute();
 
@@ -172,8 +276,13 @@ class ViewSkyInteractorTest {
 
     @Test
     void failsWhenTheObserverCoordinatesAreOutOfRange() {
-        interactor().execute(new ViewSkyInputData(
-                "Nowhere", 91.0, 0.0, TORONTO_ZONE, OBSERVED_AT));
+        interactor().execute(
+                new ViewSkyInputData(
+                        "Nowhere",
+                        91.0,
+                        0.0,
+                        TORONTO_ZONE,
+                        OBSERVED_AT));
 
         assertTrue(presenter.failCalled);
         assertFalse(presenter.successCalled);
@@ -196,7 +305,8 @@ class ViewSkyInteractorTest {
      */
     @Test
     void returnsAListThatCannotBeRestructured() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
 
         execute();
 
@@ -207,12 +317,19 @@ class ViewSkyInteractorTest {
 
     @Test
     void repositioningAReturnedStarDoesNotAffectLaterRequests() {
-        catalogue.stars.add(catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+        catalogue.stars.add(
+                catalogueStar("Vega", 18.61561111, 38.784, 0.03));
+
         execute();
-        final double originalAltitude = presenter.outputData.getStars().get(0).getAltitude();
+
+        final double originalAltitude =
+                presenter.outputData.getStars().get(0).getAltitude();
 
         // A misbehaving presenter or view repositioning what it was handed.
-        presenter.outputData.getStars().get(0).updateHorizontalPosition(1.0, 1.0);
+        presenter.outputData
+                .getStars()
+                .get(0)
+                .updateHorizontalPosition(1.0, 1.0);
 
         presenter = new FakeViewSkyOutputBoundary();
         execute();
@@ -224,19 +341,30 @@ class ViewSkyInteractorTest {
     }
 
     private void execute() {
-        interactor().execute(new ViewSkyInputData(
-                "Toronto", TORONTO_LATITUDE, TORONTO_LONGITUDE, TORONTO_ZONE, OBSERVED_AT));
+        interactor().execute(
+                new ViewSkyInputData(
+                        "Toronto",
+                        TORONTO_LATITUDE,
+                        TORONTO_LONGITUDE,
+                        TORONTO_ZONE,
+                        OBSERVED_AT));
     }
 
     private ViewSkyInteractor interactor() {
-        return new ViewSkyInteractor(catalogue, ephemeris, presenter);
+        return new ViewSkyInteractor(
+                catalogue,
+                ephemeris,
+                coordinateCalculator,
+                presenter);
     }
 
     private List<String> displayedNames() {
         final List<String> names = new ArrayList<>();
+
         for (final Star object : presenter.outputData.getStars()) {
             names.add(object.getDisplayName());
         }
+
         return names;
     }
 
@@ -246,8 +374,15 @@ class ViewSkyInteractorTest {
             final double declination,
             final double magnitude) {
 
-        return new Star("HIP test", name, rightAscension, declination, magnitude,
-                "region", "spectral", "description");
+        return new Star(
+                "HIP test",
+                name,
+                rightAscension,
+                declination,
+                magnitude,
+                "region",
+                "spectral",
+                "description");
     }
 
     private static Star observedBody(
@@ -256,12 +391,23 @@ class ViewSkyInteractorTest {
             final double altitude,
             final double azimuth) {
 
-        final Star body = new Star("", name, 0.0, 0.0, Double.NaN, "", "", "", type);
+        final Star body = new Star(
+                "",
+                name,
+                0.0,
+                0.0,
+                Double.NaN,
+                "",
+                "",
+                "",
+                type);
+
         body.updateHorizontalPosition(altitude, azimuth);
         return body;
     }
 
-    private static class FakeStarCatalog implements StarCatalogDataAccessInterface {
+    private static class FakeStarCatalog
+            implements StarCatalogDataAccessInterface {
 
         private final List<Star> stars = new ArrayList<>();
 
@@ -271,7 +417,8 @@ class ViewSkyInteractorTest {
         }
     }
 
-    private static class FakeCelestialBodies implements CelestialBodyDataAccessInterface {
+    private static class FakeCelestialBodies
+            implements CelestialBodyDataAccessInterface {
 
         private final List<Star> bodies = new ArrayList<>();
         private String failureMessage;
@@ -280,19 +427,49 @@ class ViewSkyInteractorTest {
 
         @Override
         public List<Star> getCelestialBodies(
-                final ObserverLocation location, final Instant instant)
+                final ObserverLocation location,
+                final Instant instant)
                 throws CelestialDataUnavailableException {
 
             requestedLocation = location;
             requestedInstant = instant;
+
             if (failureMessage != null) {
-                throw new CelestialDataUnavailableException(failureMessage);
+                throw new CelestialDataUnavailableException(
+                        failureMessage);
             }
+
             return bodies;
         }
     }
 
-    private static class FakeViewSkyOutputBoundary implements ViewSkyOutputBoundary {
+    private static class FakeHorizontalCoordinateCalculator
+            implements HorizontalCoordinateCalculator {
+
+        private boolean wasCalled;
+        private List<Star> stars;
+        private ObserverLocation observerLocation;
+        private ZonedDateTime observationTime;
+
+        @Override
+        public void updateHorizontalPositions(
+                final List<Star> stars,
+                final ObserverLocation observerLocation,
+                final ZonedDateTime observationTime) {
+
+            wasCalled = true;
+            this.stars = stars;
+            this.observerLocation = observerLocation;
+            this.observationTime = observationTime;
+
+            for (final Star star : stars) {
+                star.updateHorizontalPosition(20.0, 120.0);
+            }
+        }
+    }
+
+    private static class FakeViewSkyOutputBoundary
+            implements ViewSkyOutputBoundary {
 
         private boolean successCalled;
         private boolean failCalled;
@@ -301,19 +478,25 @@ class ViewSkyInteractorTest {
         private String warningMessage;
 
         @Override
-        public void prepareSuccessView(final ViewSkyOutputData outputData) {
+        public void prepareSuccessView(
+                final ViewSkyOutputData outputData) {
+
             successCalled = true;
             this.outputData = outputData;
         }
 
         @Override
-        public void prepareFailView(final String errorMessage) {
+        public void prepareFailView(
+                final String errorMessage) {
+
             failCalled = true;
             this.errorMessage = errorMessage;
         }
 
         @Override
-        public void prepareWarning(final String warningMessage) {
+        public void prepareWarning(
+                final String warningMessage) {
+
             this.warningMessage = warningMessage;
         }
     }
