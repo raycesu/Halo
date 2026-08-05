@@ -5,18 +5,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import entity.ObserverLocation;
+
 public class RankForecastDaysInputData {
 
-    private final double latitude;
-    private final double longitude;
+    private final ObserverLocation location;
     private final List<LocalDate> selectedDates;
 
     public RankForecastDaysInputData(
-            final double latitude,
-            final double longitude,
+            final ObserverLocation location,
             final List<LocalDate> selectedDates) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.location = location;
         if (selectedDates == null) {
             this.selectedDates = Collections.emptyList();
         }
@@ -25,12 +24,8 @@ public class RankForecastDaysInputData {
         }
     }
 
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
+    public ObserverLocation getLocation() {
+        return location;
     }
 
     public List<LocalDate> getSelectedDates() {

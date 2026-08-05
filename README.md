@@ -16,6 +16,35 @@ The current goal is to establish the application's Clean Architecture
 foundation, create its major views and ViewModels, add in-memory data access
 objects, and begin implementing tested use cases.
 
+## Location resolution
+
+Every data source Halo talks to is addressed by latitude and longitude: Open-Meteo, the USNO
+ephemeris service, and the coordinate conversion behind the star map. A place name is what the
+user has, so `LocationDataAccessInterface` bridges the two.
+
+`CsvLocationDataAccessObject` resolves names against a bundled extract of the GeoNames
+`cities15000` dataset (~34,000 places of population 15,000 or more), trimmed to name, region,
+country, coordinates, IANA time zone and population. A local dataset rather than a geocoding
+service, because unlike weather and ephemerides this data does not change, the lookup cannot fail
+on a dropped connection, and it is fast enough to run on every keystroke.
+
+Matching is ranked in tiers — exact name, then prefix, then substring — and within a tier by
+population, so "York" surfaces York before New York and "Springfield" leads with the largest one.
+Names are folded to strip case and accents, so "sao paulo" finds São Paulo.
+
+`CityAutocompleteField` shows the matches as the user types. It hands back an `ObserverLocation`
+only when a suggestion is actually chosen, and clears it again if the text is edited afterwards,
+so a half-typed name can never be silently resolved to somewhere else.
+
+The resolved `ObserverLocation` is what travels into the use cases, carrying the time zone with
+it. That is what lets the weather request name its zone explicitly rather than having Open-Meteo
+infer one from the coordinates.
+
+### Coverage
+
+Places below about 15,000 people are not in the dataset. The remedy is another implementation of
+`LocationDataAccessInterface` backed by a geocoding service; nothing above the DAO would change.
+
 ## Viewing quality rating (Check Conditions)
 
 Halo rates how suitable forecast weather is for stargazing. The Check
@@ -124,6 +153,7 @@ The overall 0–100 score is bucketed into a label for display:
 
 ### Where this lives in the code
 
+- `entity.ObserverLocation` — the resolved place: name, coordinates, time zone
 - `entity.weather.WeatherCondition` — holds the four weather factors
 - `entity.weather.ViewingQualityRating` — pure scoring/rubric (unit-testable, no network)
 - `use_case.check_conditions.CheckConditionsInteractor` — fetch → score → present one moment

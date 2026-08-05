@@ -6,6 +6,7 @@ package interface_adapter.check_conditions;
 
 import java.time.LocalDateTime;
 
+import entity.ObserverLocation;
 import use_case.check_conditions.CheckConditionsInputBoundary;
 import use_case.check_conditions.CheckConditionsInputData;
 
@@ -18,11 +19,10 @@ public class CheckConditionsController {
     }
 
     public void checkConditions(
-            final double latitude,
-            final double longitude,
+            final ObserverLocation location,
             final LocalDateTime observationDateTime) {
         final CheckConditionsInputData inputData =
-                new CheckConditionsInputData(latitude, longitude, observationDateTime);
+                new CheckConditionsInputData(location, observationDateTime);
         inputBoundary.checkConditions(inputData);
     }
 }
