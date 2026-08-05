@@ -66,9 +66,14 @@ public class HaloAppBuilder {
                 new ObservationSetupViewModel();
         final SkyViewModel skyViewModel = new SkyViewModel();
         final CheckConditionsViewModel checkConditionsViewModel = new CheckConditionsViewModel();
+        final RankForecastDaysViewModel rankForecastDaysViewModel = new RankForecastDaysViewModel();
 
         final ViewSkyOutputBoundary viewSkyPresenter =
-                new ViewSkyPresenter(skyViewModel, observationSetupViewModel);
+                new ViewSkyPresenter(
+                        skyViewModel,
+                        observationSetupViewModel,
+                        checkConditionsViewModel,
+                        rankForecastDaysViewModel);
         final StarCatalogDataAccessInterface starCatalogDataAccess =
                 new CsvStarCatalogDataAccessObject();
         final CelestialBodyDataAccessInterface celestialBodyDataAccess =
@@ -94,7 +99,6 @@ public class HaloAppBuilder {
         final CheckConditionsController checkConditionsController =
                 new CheckConditionsController(checkConditionsInteractor);
 
-        final RankForecastDaysViewModel rankForecastDaysViewModel = new RankForecastDaysViewModel();
         final RankForecastDaysOutputBoundary rankForecastDaysPresenter =
                 new RankForecastDaysPresenter(rankForecastDaysViewModel);
         final RankForecastDaysInputBoundary rankForecastDaysInteractor =

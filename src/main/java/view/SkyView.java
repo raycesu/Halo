@@ -2,6 +2,7 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -28,6 +29,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -50,10 +52,8 @@ import interface_adapter.custom_constellation.ConstellationViewModel;
 
 public class SkyView extends JPanel implements ActionListener, PropertyChangeListener {
 
-    private static final List<LocalDate> DEFAULT_RANK_FORECAST_DATES = List.of(
-            LocalDate.of(2026, 7, 25),
-            LocalDate.of(2026, 7, 26),
-            LocalDate.of(2026, 7, 27));
+    private static final int DEFAULT_RANK_FORECAST_DAY_COUNT = 3;
+    private static final Color SIDEBAR_BACKGROUND = new Color(238, 241, 246);
 
     private final SkyViewModel viewModel;
     private final CheckConditionsController checkConditionsController;
@@ -72,14 +72,16 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     private final JTextArea objectDetailsArea = new JTextArea();
     private final JTextArea weatherArea = new JTextArea();
     private final JButton checkConditionsButton = new JButton("Check Conditions");
+    private final JButton forecastRankingButton = new JButton("Forecast Ranking");
     private final JLabel errorLabel = new JLabel();
-    private final List<LocalDate> selectedForecastDates = new ArrayList<>(DEFAULT_RANK_FORECAST_DATES);
+    private final List<LocalDate> selectedForecastDates = defaultForecastDates();
     private final JButton selectDatesButton = new JButton("Select Dates");
     private final JLabel selectedDatesSummaryLabel = new JLabel();
     private final JButton rankForecastButton = new JButton("Rank Nights");
     private final DefaultListModel<RankedDayDisplayItem> rankedDaysListModel = new DefaultListModel<>();
     private final JList<RankedDayDisplayItem> rankedDaysList = new JList<>(rankedDaysListModel);
     private final JLabel rankForecastErrorLabel = new JLabel();
+    private JDialog forecastRankingDialog;
     private final JButton constellationButton = new JButton("Constellation");
     private final JLabel constellationStatusLabel = new JLabel();
     private final List<Star> constellationSelection =  new ArrayList<>();
@@ -212,9 +214,9 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private JPanel createRightSidebar() {
-        final JPanel sidebar = new JPanel(new GridLayout(3, 1, 0, 15));
+        final JPanel sidebar = new JPanel(new GridLayout(2, 1, 0, 15));
         sidebar.setPreferredSize(new Dimension(260, 0));
-        sidebar.setBackground(new Color(238, 241, 246));
+        sidebar.setBackground(SIDEBAR_BACKGROUND);
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
 
         final JPanel starPanel = new JPanel(new BorderLayout(0, 10));
@@ -230,11 +232,15 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         weatherPanel.setBorder(BorderFactory.createTitledBorder("Weather"));
         configureTextArea(weatherArea);
         weatherPanel.add(weatherArea, BorderLayout.CENTER);
-        weatherPanel.add(checkConditionsButton, BorderLayout.SOUTH);
+
+        final JPanel weatherButtonColumn = new JPanel(new GridLayout(2, 1, 0, 8));
+        weatherButtonColumn.setOpaque(false);
+        weatherButtonColumn.add(checkConditionsButton);
+        weatherButtonColumn.add(forecastRankingButton);
+        weatherPanel.add(weatherButtonColumn, BorderLayout.SOUTH);
 
         sidebar.add(starPanel);
         sidebar.add(weatherPanel);
-        sidebar.add(createForecastRankingPanel(sidebar.getBackground()));
         return sidebar;
     }
 
@@ -274,6 +280,31 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         return forecastPanel;
     }
 
+    private void toggleForecastRankingDialog() {
+        final JDialog dialog = forecastRankingDialogInstance();
+        dialog.setVisible(!dialog.isVisible());
+    }
+
+    private JDialog forecastRankingDialogInstance() {
+        if (forecastRankingDialog == null) {
+            final Window owner = SwingUtilities.getWindowAncestor(this);
+            final JDialog dialog = new JDialog(owner, "Forecast Ranking", Dialog.ModalityType.MODELESS);
+            dialog.setContentPane(createForecastRankingPanel(SIDEBAR_BACKGROUND));
+            dialog.setSize(320, 380);
+            dialog.setLocationRelativeTo(this);
+            forecastRankingDialog = dialog;
+        }
+        return forecastRankingDialog;
+    }
+
+    /**
+     * Package-private so {@code SkyViewTest} can reach the buttons inside the popup dialog,
+     * which is a top-level window and therefore not part of this panel's component tree.
+     */
+    JDialog getForecastRankingDialogForTesting() {
+        return forecastRankingDialogInstance();
+    }
+
     private void openDatePicker() {
         final Window owner = SwingUtilities.getWindowAncestor(this);
         final CalendarDatePickerDialog datePickerDialog =
@@ -283,6 +314,15 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         selectedForecastDates.clear();
         selectedForecastDates.addAll(datePickerDialog.getSelectedDates());
         updateSelectedDatesSummaryLabel();
+    }
+
+    private static List<LocalDate> defaultForecastDates() {
+        final LocalDate today = LocalDate.now();
+        final List<LocalDate> defaultDates = new ArrayList<>(DEFAULT_RANK_FORECAST_DAY_COUNT);
+        for (int offset = 0; offset < DEFAULT_RANK_FORECAST_DAY_COUNT; offset++) {
+            defaultDates.add(today.plusDays(offset));
+        }
+        return defaultDates;
     }
 
     private void updateSelectedDatesSummaryLabel() {
@@ -481,6 +521,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         searchButton.addActionListener(this);
         changeObservationButton.addActionListener(this);
         checkConditionsButton.addActionListener(this);
+        forecastRankingButton.addActionListener(this);
         selectDatesButton.addActionListener(this);
         rankForecastButton.addActionListener(this);
         constellationButton.addActionListener(this);
@@ -497,6 +538,9 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         }
         else if (event.getSource() == checkConditionsButton) {
             handleCheckConditions();
+        }
+        else if (event.getSource() == forecastRankingButton) {
+            toggleForecastRankingDialog();
         }
         else if (event.getSource() == selectDatesButton) {
             openDatePicker();

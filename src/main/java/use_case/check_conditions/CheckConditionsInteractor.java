@@ -10,6 +10,9 @@ package use_case.check_conditions;
 // It depends only on interfaces (WeatherDataAccessInterface,
 // CheckConditionsOutputBoundary) — never on the concrete DAO or Presenter classes.
 
+import java.time.Clock;
+import java.time.LocalDate;
+
 import entity.weather.ViewingQualityRating;
 import entity.weather.WeatherCondition;
 import use_case.weather.WeatherDataAccessInterface;
@@ -17,18 +20,38 @@ import use_case.weather.WeatherUnavailableException;
 
 public class CheckConditionsInteractor implements CheckConditionsInputBoundary {
 
+    // The Open-Meteo forecast API has no data before today, so a request for a past date is
+    // rejected here rather than being sent to the DAO.
+    static final String PAST_DATE_ERROR_MESSAGE =
+            "Weather conditions are not available for past dates.";
+
     private final WeatherDataAccessInterface weatherDataAccess;
     private final CheckConditionsOutputBoundary outputBoundary;
+    private final Clock clock;
 
     public CheckConditionsInteractor(
             final WeatherDataAccessInterface weatherDataAccess,
             final CheckConditionsOutputBoundary outputBoundary) {
+        this(weatherDataAccess, outputBoundary, Clock.systemDefaultZone());
+    }
+
+    public CheckConditionsInteractor(
+            final WeatherDataAccessInterface weatherDataAccess,
+            final CheckConditionsOutputBoundary outputBoundary,
+            final Clock clock) {
         this.weatherDataAccess = weatherDataAccess;
         this.outputBoundary = outputBoundary;
+        this.clock = clock;
     }
 
     @Override
     public void checkConditions(final CheckConditionsInputData inputData) {
+        final LocalDate observationDate = inputData.getObservationDateTime().toLocalDate();
+        if (observationDate.isBefore(LocalDate.now(clock))) {
+            outputBoundary.presentError(PAST_DATE_ERROR_MESSAGE);
+            return;
+        }
+
         try {
             final WeatherCondition condition = weatherDataAccess.getWeatherCondition(
                     inputData.getLatitude(),
