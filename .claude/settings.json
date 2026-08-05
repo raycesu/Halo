@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sS -m 15 -o /private/tmp/claude-501/-Users-bryankim-Documents-CSC207-Halo/1c9d50e9-23c5-40d8-86de-2334cd26ad50/scratchpad/cities15000.zip -w \"%{http_code} %{size_download}\\\\n\" https://download.geonames.org/export/dump/cities15000.zip)",
+      "Bash(git fetch *)",
+      "Bash(git rev-list *)",
+      "Bash(awk '{print $NF}')",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'WIP: city geocoding, autocomplete, and ObserverLocation refactor *)"
+    ]
+  }
+}
