@@ -75,36 +75,48 @@ class CsvLocationDataAccessObjectTest {
 
     /**
      * The ranking that makes an as-you-type list usable: what was typed exactly comes first, so
-     * "York" does not surface New York ahead of York itself.
+     * "Ottawa" offers Ottawa itself rather than leading with Ottawa South.
      */
     @Test
     void exactMatchesOutrankPartialOnes() {
-        final List<ObserverLocation> matches = locationDataAccess.findByName("York", 5);
+        final List<ObserverLocation> matches = locationDataAccess.findByName("Ottawa", 5);
 
-        assertTrue(matches.get(0).getDisplayName().startsWith("York,"),
-                "Expected an exact match first but got: " + matches.get(0).getDisplayName());
-        assertTrue(matches.get(1).getDisplayName().startsWith("York,"),
-                "Expected both exact matches before partial ones.");
+        assertEquals("Ottawa, Ontario, Canada", matches.get(0).getDisplayName(),
+                "Expected the exact match first.");
+        assertTrue(matches.size() > 1, "Ottawa South should still be offered, just later.");
     }
 
     @Test
     void ranksTheLargestCityFirstAmongEqualQualityMatches() {
-        final List<ObserverLocation> matches = locationDataAccess.findByName("Springfield", 3);
+        final List<ObserverLocation> matches = locationDataAccess.findByName("London", 3);
 
-        assertEquals("Springfield, Missouri, United States", matches.get(0).getDisplayName());
+        assertEquals("London, England, United Kingdom", matches.get(0).getDisplayName());
     }
 
     /** Ambiguous names are what the region and country in the label exist to resolve. */
     @Test
     void distinguishesPlacesThatShareAName() {
-        final List<ObserverLocation> matches = locationDataAccess.findByName("Springfield", 8);
+        final List<ObserverLocation> matches = locationDataAccess.findByName("Kingston", 8);
         final Set<String> displayNames = new HashSet<>();
         for (final ObserverLocation match : matches) {
             displayNames.add(match.getDisplayName());
         }
 
-        assertTrue(matches.size() > 1, "There is more than one Springfield.");
-        assertEquals(matches.size(), displayNames.size(), "Every suggestion should be readable as distinct.");
+        assertTrue(matches.size() > 1, "There is more than one Kingston.");
+        assertEquals(matches.size(), displayNames.size(),
+                "Every suggestion should be readable as distinct.");
+    }
+
+    /**
+     * The dataset leans towards North America, where the application's users are, so a mid-sized
+     * Canadian city has to resolve and not just the handful of largest ones.
+     */
+    @Test
+    void coversMidSizedCanadianCities() {
+        for (final String city : List.of("Hamilton", "Markham", "Kitchener", "Halifax", "Guelph")) {
+            assertFalse(locationDataAccess.findByName(city, 1).isEmpty(),
+                    city + " should be in the bundled dataset.");
+        }
     }
 
     @Test
