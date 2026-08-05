@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
+import entity.ObserverLocation;
 import entity.weather.ViewingQualityRating;
 import entity.weather.WeatherCondition;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,8 @@ class CheckConditionsInteractorTest {
     private static final ZoneId ZONE = ZoneId.of("America/Toronto");
     private static final double LATITUDE = 43.6532;
     private static final double LONGITUDE = -79.3832;
+    private static final ObserverLocation LOCATION =
+            new ObserverLocation("Toronto", LATITUDE, LONGITUDE, ZoneId.of("America/Toronto"));
 
     // "Now" is fixed at 2026-07-30 for every test so past/future comparisons are deterministic.
     private static final Clock FIXED_CLOCK = Clock.fixed(
@@ -46,7 +49,7 @@ class CheckConditionsInteractorTest {
         final LocalDateTime observationDateTime = LocalDateTime.of(2026, 7, 30, 23, 0);
 
         interactor().checkConditions(
-                new CheckConditionsInputData(LATITUDE, LONGITUDE, observationDateTime));
+                new CheckConditionsInputData(LOCATION, observationDateTime));
 
         assertTrue(outputBoundary.successCalled);
         assertFalse(outputBoundary.errorCalled);
@@ -71,7 +74,7 @@ class CheckConditionsInteractorTest {
         weatherDataAccess.conditionToReturn = new WeatherCondition(0.0, 20_000.0, 0.0, 0);
 
         interactor().checkConditions(new CheckConditionsInputData(
-                LATITUDE, LONGITUDE, LocalDateTime.of(2026, 7, 30, 0, 0)));
+                LOCATION, LocalDateTime.of(2026, 7, 30, 0, 0)));
 
         assertTrue(weatherDataAccess.wasCalled);
         assertTrue(outputBoundary.successCalled);
@@ -82,7 +85,7 @@ class CheckConditionsInteractorTest {
         weatherDataAccess.failureMessage = "Could not reach the weather service.";
 
         interactor().checkConditions(new CheckConditionsInputData(
-                LATITUDE, LONGITUDE, LocalDateTime.of(2026, 7, 30, 23, 0)));
+                LOCATION, LocalDateTime.of(2026, 7, 30, 23, 0)));
 
         assertFalse(outputBoundary.successCalled);
         assertTrue(outputBoundary.errorCalled);
@@ -92,7 +95,7 @@ class CheckConditionsInteractorTest {
     @Test
     void rejectsAPastDateWithoutCallingTheDataAccessObject() {
         interactor().checkConditions(new CheckConditionsInputData(
-                LATITUDE, LONGITUDE, LocalDateTime.of(2026, 7, 29, 23, 0)));
+                LOCATION, LocalDateTime.of(2026, 7, 29, 23, 0)));
 
         assertFalse(weatherDataAccess.wasCalled);
         assertFalse(outputBoundary.successCalled);
@@ -118,11 +121,11 @@ class CheckConditionsInteractorTest {
 
         @Override
         public WeatherCondition getWeatherCondition(
-                final double latitude, final double longitude, final LocalDateTime dateTime)
+                final ObserverLocation location, final LocalDateTime dateTime)
                 throws WeatherUnavailableException {
             wasCalled = true;
-            requestedLatitude = latitude;
-            requestedLongitude = longitude;
+            requestedLatitude = location.getLatitude();
+            requestedLongitude = location.getLongitude();
             requestedDateTime = dateTime;
 
             if (failureMessage != null) {
@@ -133,7 +136,7 @@ class CheckConditionsInteractorTest {
 
         @Override
         public List<WeatherCondition> getWeatherConditions(
-                final double latitude, final double longitude, final List<LocalDateTime> dateTimes)
+                final ObserverLocation location, final List<LocalDateTime> dateTimes)
                 throws WeatherUnavailableException {
             throw new UnsupportedOperationException(
                     "CheckConditionsInteractor should only call getWeatherCondition.");

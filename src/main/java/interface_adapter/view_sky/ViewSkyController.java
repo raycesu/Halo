@@ -4,12 +4,23 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 
+import entity.ObserverLocation;
 import use_case.view_sky.ViewSkyInputBoundary;
 import use_case.view_sky.ViewSkyInputData;
 import use_case.view_sky.ViewSkyOutputBoundary;
 
+/**
+ * Turns what the user chose and typed into the values the sky use case works in.
+ *
+ * <p>The place arrives already resolved, as an {@link ObserverLocation} picked from the suggestion
+ * list rather than as coordinates typed by hand. That is deliberate: latitude, longitude and time
+ * zone are not things a person can be expected to know, and a mistyped one is accepted silently by
+ * every service downstream. Only the date and time are still parsed here.
+ *
+ * <p>Rejections go out through {@link ViewSkyOutputBoundary#prepareFailView}, the same path the
+ * use case uses, so the view reads errors from one place regardless of how far a request got.
+ */
 public class ViewSkyController {
 
     private final ViewSkyInputBoundary inputBoundary;
@@ -22,28 +33,31 @@ public class ViewSkyController {
         this.outputBoundary = outputBoundary;
     }
 
-    public void viewSky(
-            final String locationName,
-            final String latitude,
-            final String longitude,
-            final String zoneId,
-            final String date,
-            final String time) {
+    /**
+     * Requests the sky at a resolved place and a typed date and time.
+     *
+     * @param location the place the user picked; null if they never picked one
+     * @param date the observation date, ISO {@code yyyy-MM-dd}
+     * @param time the observation time, ISO {@code HH:mm}
+     */
+    public void viewSky(final ObserverLocation location, final String date, final String time) {
+        if (location == null) {
+            outputBoundary.prepareFailView("Choose a location from the suggestions first.");
+            return;
+        }
+
         try {
-            final ViewSkyInputData inputData = new ViewSkyInputData(
-                    locationName.trim(),
-                    Double.parseDouble(latitude.trim()),
-                    Double.parseDouble(longitude.trim()),
-                    ZoneId.of(zoneId.trim()),
+            inputBoundary.execute(new ViewSkyInputData(
+                    location.getDisplayName(),
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    location.getZoneId(),
                     LocalDateTime.of(
                             LocalDate.parse(date.trim()),
-                            LocalTime.parse(time.trim())));
-
-            inputBoundary.execute(inputData);
+                            LocalTime.parse(time.trim()))));
         }
-        catch (NumberFormatException | DateTimeException | NullPointerException exception) {
-            outputBoundary.prepareFailView(
-                    "Enter valid latitude, longitude, time zone, date, and time.");
+        catch (DateTimeException | NullPointerException exception) {
+            outputBoundary.prepareFailView("Enter a valid date (yyyy-MM-dd) and time (HH:mm).");
         }
     }
 }

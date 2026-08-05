@@ -6,9 +6,11 @@ package data_access;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import entity.ObserverLocation;
 import entity.weather.WeatherCondition;
 import use_case.weather.WeatherDataAccessInterface;
 import use_case.weather.WeatherUnavailableException;
@@ -42,24 +45,26 @@ public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterf
 
     @Override
     public WeatherCondition getWeatherCondition(
-            final double latitude, final double longitude, final LocalDateTime dateTime)
+            final ObserverLocation location, final LocalDateTime dateTime)
             throws WeatherUnavailableException {
         final List<WeatherCondition> conditions =
-                getWeatherConditions(latitude, longitude, List.of(dateTime));
+                getWeatherConditions(location, List.of(dateTime));
         return conditions.get(0);
     }
 
     @Override
     public List<WeatherCondition> getWeatherConditions(
-            final double latitude,
-            final double longitude,
+            final ObserverLocation location,
             final List<LocalDateTime> dateTimes)
             throws WeatherUnavailableException {
+        if (location == null) {
+            throw new WeatherUnavailableException("An observation location is required.");
+        }
         if (dateTimes == null || dateTimes.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final String responseBody = sendRequest(buildRequestUrl(latitude, longitude));
+        final String responseBody = sendRequest(buildRequestUrl(location));
 
         final List<String> times = extractStringArray(responseBody, "time");
         final List<String> cloudCover = extractNumberArray(responseBody, "cloud_cover");
@@ -84,12 +89,21 @@ public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterf
         return conditions;
     }
 
-    private String buildRequestUrl(final double latitude, final double longitude) {
+    /**
+     * Builds the forecast query.
+     *
+     * <p>The time zone is named explicitly rather than left to Open-Meteo's {@code auto}, which
+     * infers it from the coordinates. Both usually agree, but the hourly timestamps come back in
+     * whichever zone the service chose and are then matched against a {@link LocalDateTime} read
+     * in the location's zone. Sending the zone the caller actually means removes the guess.
+     */
+    private String buildRequestUrl(final ObserverLocation location) {
         return FORECAST_URL
-                + "?latitude=" + latitude
-                + "&longitude=" + longitude
+                + "?latitude=" + location.getLatitude()
+                + "&longitude=" + location.getLongitude()
                 + "&hourly=" + HOURLY_FIELDS
-                + "&timezone=auto";
+                + "&timezone=" + URLEncoder.encode(
+                        location.getZoneId().getId(), StandardCharsets.UTF_8);
     }
 
     private String sendRequest(final String requestUrl) throws WeatherUnavailableException {

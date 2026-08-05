@@ -1,12 +1,16 @@
 package app;
 
+import java.util.List;
+
 import astronomy.AltAzCalculator;
 import astronomy.JulianDateCalculator;
 import astronomy.SiderealTimeCalculator;
+import data_access.CsvLocationDataAccessObject;
 import data_access.CsvStarCatalogDataAccessObject;
 import data_access.InMemoryConstellationDataAccessObject;
 import data_access.OpenMeteoWeatherDataAccessObject;
 import data_access.UsnoCelestialBodyDataAccessObject;
+import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsPresenter;
@@ -38,6 +42,7 @@ import view.ObservationSetupView;
 import view.SkyView;
 import view.ViewManager;
 import javax.swing.JFrame;
+import use_case.location.LocationDataAccessInterface;
 import use_case.view_sky.HorizontalCoordinateCalculator;
 import use_case.view_sky.StarCatalogDataAccessInterface;
 import use_case.view_sky.ViewSkyInputBoundary;
@@ -47,6 +52,9 @@ import use_case.view_sky.ViewSkyOutputBoundary;
 public class HaloAppBuilder {
 
     private static final String initial_view = ViewManagerModel.observation_setup_view;
+
+    /** The place the app opens on, so the first request works before the user picks anything. */
+    private static final String default_location = "Toronto";
 
     public JFrame build() {
         final ViewManager viewManager = buildViewManager();
@@ -60,10 +68,23 @@ public class HaloAppBuilder {
         return frame;
     }
 
+    /**
+     * Looks up the place the app opens on, or null if the dataset does not contain it, in which
+     * case the user simply picks one before the first request.
+     */
+    private ObserverLocation resolveDefaultLocation(
+            final LocationDataAccessInterface locationDataAccess) {
+        final List<ObserverLocation> matches = locationDataAccess.findByName(default_location, 1);
+        return matches.isEmpty() ? null : matches.get(0);
+    }
+
     ViewManager buildViewManager() {
         final ViewManagerModel viewManagerModel = new ViewManagerModel();
+        final LocationDataAccessInterface locationDataAccess = new CsvLocationDataAccessObject();
         final ObservationSetupViewModel observationSetupViewModel =
                 new ObservationSetupViewModel();
+        observationSetupViewModel.setSelectedLocation(
+                resolveDefaultLocation(locationDataAccess));
         final SkyViewModel skyViewModel = new SkyViewModel();
         final CheckConditionsViewModel checkConditionsViewModel = new CheckConditionsViewModel();
         final RankForecastDaysViewModel rankForecastDaysViewModel = new RankForecastDaysViewModel();
@@ -117,7 +138,8 @@ public class HaloAppBuilder {
                 new ObservationSetupView(
                         observationSetupViewModel,
                         viewSkyController,
-                        viewManagerModel);
+                        viewManagerModel,
+                        locationDataAccess);
         final LoadingView loadingView = new LoadingView();
         final SkyView skyView =
                 new SkyView(

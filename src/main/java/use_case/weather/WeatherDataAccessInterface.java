@@ -3,11 +3,20 @@ package use_case.weather;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import entity.ObserverLocation;
 import entity.weather.WeatherCondition;
 
 public interface WeatherDataAccessInterface {
 
-    WeatherCondition getWeatherCondition(double latitude, double longitude, LocalDateTime dateTime)
+    /**
+     * Fetches the weather at one place and moment.
+     *
+     * <p>The moment is a {@link LocalDateTime} read in the location's own zone, because a local
+     * date and time is what a user means when they ask about tonight at 11pm. Taking the place as
+     * an {@link ObserverLocation} rather than a pair of coordinates is what makes that resolvable:
+     * the location carries the zone with it.
+     */
+    WeatherCondition getWeatherCondition(ObserverLocation location, LocalDateTime dateTime)
             throws WeatherUnavailableException;
 
     /**
@@ -15,6 +24,6 @@ public interface WeatherDataAccessInterface {
      * Returned conditions are ordered to match {@code dateTimes}.
      */
     List<WeatherCondition> getWeatherConditions(
-            double latitude, double longitude, List<LocalDateTime> dateTimes)
+            ObserverLocation location, List<LocalDateTime> dateTimes)
             throws WeatherUnavailableException;
 }

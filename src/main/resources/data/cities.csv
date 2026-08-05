@@ -1,0 +1,1001 @@
+name,region,country,latitude,longitude,timezone,population
+Shanghai,,China,31.2222,121.4581,Asia/Shanghai,24874500
+Beijing,,China,39.9075,116.3972,Asia/Shanghai,18960744
+Shenzhen,Guangdong,China,22.5455,114.0683,Asia/Shanghai,17494398
+Guangzhou,Guangdong,China,23.1167,113.25,Asia/Shanghai,16096724
+Kinshasa,,Democratic Republic of the Congo,-4.3276,15.3136,Africa/Kinshasa,16000000
+Istanbul,,Turkey,41.0138,28.9497,Europe/Istanbul,15701602
+Lagos,,Nigeria,6.4541,3.3947,Africa/Lagos,15388000
+Ho Chi Minh City,Ho Chi Minh City (HCMC),Vietnam,10.823,106.6296,Asia/Ho_Chi_Minh,14002598
+Chengdu,Sichuan,China,30.6667,104.0667,Asia/Shanghai,13568357
+Lahore,Punjab,Pakistan,31.558,74.3507,Asia/Karachi,13004135
+Mumbai,Maharashtra,India,19.0728,72.8826,Asia/Kolkata,12691836
+São Paulo,,Brazil,-23.5475,-46.6361,America/Sao_Paulo,12400232
+Mexico City,,Mexico,19.4285,-99.1277,America/Mexico_City,12294193
+Karachi,Sindh,Pakistan,24.8608,67.0104,Asia/Karachi,11624219
+Tianjin,,China,39.1422,117.1767,Asia/Shanghai,11090314
+Delhi,,India,28.6519,77.2315,Asia/Kolkata,11034555
+Wuhan,Hubei,China,30.5833,114.2667,Asia/Shanghai,10392693
+Moscow,,Russia,55.752,37.6178,Europe/Moscow,10381222
+Dhaka,Dhaka Division,Bangladesh,23.7104,90.4074,Asia/Dhaka,10356500
+Seoul,,South Korea,37.566,126.9784,Asia/Seoul,10349312
+Tokyo,,Japan,35.6895,139.6917,Asia/Tokyo,9733276
+Dongguan,Guangdong,China,23.018,113.7487,Asia/Shanghai,9644871
+Cairo,,Egypt,30.0626,31.2497,Africa/Cairo,9606916
+Xi’an,Shaanxi,China,34.2583,108.9286,Asia/Shanghai,9600000
+Johannesburg,Gauteng,South Africa,-26.2023,28.0436,Africa/Johannesburg,9418183
+Nanjing,Jiangsu,China,32.0617,118.7778,Asia/Shanghai,9314685
+Hangzhou,Zhejiang,China,30.2936,120.1614,Asia/Shanghai,9236032
+Foshan,Guangdong,China,23.0268,113.1315,Asia/Shanghai,9042509
+London,England,United Kingdom,51.5085,-0.1257,Europe/London,8961989
+New York City,New York,United States,40.7143,-74.006,America/New_York,8804190
+Jakarta,,Indonesia,-6.2146,106.8451,Asia/Jakarta,8540121
+Bengaluru,Karnataka,India,12.9719,77.5937,Asia/Kolkata,8495492
+Hanoi,,Vietnam,21.0245,105.8412,Asia/Bangkok,8053663
+Taipei,Taiwan,Taiwan,25.0531,121.5264,Asia/Taipei,7871900
+Lima,Lima Province,Peru,-12.0432,-77.0282,America/Lima,7737002
+Bogotá,Bogota D.C.,Colombia,4.6097,-74.0817,America/Bogota,7674366
+Chongqing,,China,29.5603,106.5577,Asia/Shanghai,7457599
+Hong Kong,,Hong Kong,22.2783,114.1747,Asia/Hong_Kong,7396076
+Baghdad,,Iraq,33.3406,44.4009,Asia/Baghdad,7216000
+Wuzhong,Ningxia,China,37.9867,106.201,Asia/Shanghai,7202654
+Qingdao,Shandong,China,36.0649,120.3804,Asia/Shanghai,7172451
+Tehran,,Iran,35.6944,51.4215,Asia/Tehran,7153309
+Shenyang,Liaoning,China,41.7922,123.4328,Asia/Shanghai,7050000
+Hyderabad,Telangana,India,17.384,78.4564,Asia/Kolkata,6993262
+Rio de Janeiro,,Brazil,-22.9064,-43.1822,America/Sao_Paulo,6747815
+Suzhou,Jiangsu,China,31.3041,120.5954,Asia/Shanghai,6715559
+Puxi,Shanghai,China,31.2441,121.4659,Asia/Shanghai,6683712
+Ahmedabad,Gujarat,India,23.0258,72.5873,Asia/Kolkata,6357693
+Abidjan,Abidjan Autonomous District,Ivory Coast,5.3544,-4.0017,Africa/Abidjan,6321017
+Pudong,Shanghai,China,31.24,121.5009,Asia/Shanghai,5681512
+Sydney,New South Wales,Australia,-33.8678,151.2073,Australia/Sydney,5638830
+Singapore,,Singapore,1.2897,103.8501,Asia/Singapore,5638700
+Melbourne,Victoria,Australia,-37.814,144.9633,Australia/Melbourne,5435590
+Dar es Salaam,Dar es Salaam Region,Tanzania,-6.8235,39.2695,Africa/Dar_es_Salaam,5383728
+Saint Petersburg,St.-Petersburg,Russia,59.9386,30.3141,Europe/Moscow,5351935
+Alexandria,,Egypt,31.2018,29.9158,Africa/Cairo,5263542
+Harbin,Heilongjiang,China,45.75,126.65,Asia/Shanghai,5242897
+Bangkok,,Thailand,13.754,100.5014,Asia/Bangkok,5104476
+Hefei,Anhui,China,31.8639,117.2808,Asia/Shanghai,5050000
+Dalian,Liaoning,China,38.9122,121.6022,Asia/Shanghai,4913879
+Kano,Kano State,Nigeria,12.0001,8.5167,Africa/Lagos,4910000
+Santiago,Santiago Metropolitan,Chile,-33.4569,-70.6483,America/Santiago,4837295
+Cape Town,Western Cape,South Africa,-33.9258,18.4232,Africa/Johannesburg,4772846
+Peshawar,Khyber Pakhtunkhwa,Pakistan,34.008,71.5785,Asia/Karachi,4758762
+Changchun,Jilin,China,43.88,125.3228,Asia/Shanghai,4714996
+Jeddah,Mecca Region,Saudi Arabia,21.4901,39.1862,Asia/Riyadh,4697000
+Chennai,Tamil Nadu,India,13.0878,80.2785,Asia/Kolkata,4681087
+Kolkata,West Bengal,India,22.5626,88.363,Asia/Kolkata,4631392
+Xiamen,Fujian,China,24.4798,118.0819,Asia/Shanghai,4617251
+Surat,Gujarat,India,21.1959,72.8302,Asia/Kolkata,4591246
+Yangon,,Myanmar,16.8053,96.1561,Asia/Yangon,4477638
+Bao'an,Guangdong,China,22.5521,113.8829,Asia/Shanghai,4476554
+Kabul,,Afghanistan,34.5281,69.1723,Asia/Kabul,4434550
+Nairobi,Nairobi County,Kenya,-1.2833,36.8167,Africa/Nairobi,4397073
+Wuxi,Jiangsu,China,31.5689,120.2886,Asia/Shanghai,4396835
+Giza,,Egypt,30.0094,31.2086,Africa/Cairo,4367343
+Jinan,Shandong,China,36.6683,116.9972,Asia/Shanghai,4335989
+Taiyuan,Shanxi,China,37.8694,112.5603,Asia/Shanghai,4303673
+Zhengzhou,Henan,China,34.7578,113.6486,Asia/Shanghai,4253913
+Bamako,,Mali,12.6091,-7.9752,Africa/Bamako,4227569
+Riyadh,Riyadh Region,Saudi Arabia,24.6877,46.7219,Asia/Riyadh,4205961
+New Taipei City,Taipei,Taiwan,25.062,121.457,Asia/Taipei,4004367
+New Territories,,Hong Kong,22.4244,114.111,Asia/Hong_Kong,3984077
+Shijiazhuang,Hebei,China,38.0414,114.4786,Asia/Shanghai,3938513
+Chattogram,Chittagong,Bangladesh,22.3384,91.8317,Asia/Dhaka,3920222
+Addis Ababa,,Ethiopia,9.025,38.7469,Africa/Addis_Ababa,3860000
+Kunming,Yunnan,China,25.0389,102.7183,Asia/Shanghai,3855346
+Zhongshan,Guangdong,China,22.5231,113.3791,Asia/Shanghai,3841873
+Nanning,Guangxi,China,22.8167,108.3167,Asia/Shanghai,3839800
+Shantou,Guangdong,China,23.3549,116.6788,Asia/Shanghai,3838900
+Los Angeles,California,United States,34.0522,-118.2437,America/Los_Angeles,3820914
+Faisalabad,Punjab,Pakistan,31.4155,73.0897,Asia/Karachi,3800193
+Dubai,,United Arab Emirates,25.0772,55.3093,Asia/Dubai,3790000
+Yokohama,Kanagawa,Japan,35.4333,139.65,Asia/Tokyo,3777491
+Fuzhou,Fujian,China,26.0614,119.3061,Asia/Shanghai,3740000
+Ningbo,Zhejiang,China,29.8782,121.5494,Asia/Shanghai,3731203
+Casablanca,Casablanca-Settat,Morocco,33.5883,-7.6114,Africa/Casablanca,3665954
+Ibadan,Oyo State,Nigeria,7.3776,3.9059,Africa/Lagos,3649000
+Puyang,Zhejiang,China,29.4568,119.8887,Asia/Shanghai,3590000
+Ankara,,Turkey,39.9199,32.8543,Europe/Istanbul,3517182
+Shiyan,Hubei,China,32.6475,110.7781,Asia/Shanghai,3460000
+Berlin,State of Berlin,Germany,52.5244,13.4105,Europe/Berlin,3426354
+Tangshan,Hebei,China,39.6438,118.1832,Asia/Shanghai,3372102
+Rawalpindi,Punjab,Pakistan,33.5973,73.0479,Asia/Karachi,3357612
+Lüliang,Shanxi,China,37.5192,111.1444,Asia/Shanghai,3346500
+Durban,KwaZulu-Natal,South Africa,-29.8579,31.0292,Africa/Johannesburg,3338026
+Changzhou,Jiangsu,China,31.7736,119.954,Asia/Shanghai,3290918
+Busan,,South Korea,35.1017,129.03,Asia/Seoul,3285147
+Madrid,,Spain,40.4165,-3.7026,Europe/Madrid,3255944
+Pyongyang,,North Korea,39.0339,125.7543,Asia/Pyongyang,3222000
+Zibo,Shandong,China,36.7906,118.0633,Asia/Shanghai,3129228
+Pune,Maharashtra,India,18.5196,73.8554,Asia/Kolkata,3124458
+Bursa,Bursa Province,Turkey,40.1956,29.0601,Europe/Istanbul,3101833
+Changsha,Hunan,China,28.1987,112.9709,Asia/Shanghai,3093980
+Quezon City,National Capital Region,Philippines,14.6488,121.0509,Asia/Manila,3084270
+Jaipur,Rajasthan,India,26.9196,75.7878,Asia/Kolkata,3046163
+Guiyang,Guizhou,China,26.5833,106.7167,Asia/Shanghai,3037159
+Ürümqi,Xinjiang,China,43.801,87.6005,Asia/Urumqi,3029372
+Surabaya,East Java,Indonesia,-7.2492,112.7508,Asia/Jakarta,3018022
+Incheon,,South Korea,37.4565,126.7052,Asia/Seoul,3015482
+Caracas,Distrito Federal,Venezuela,10.488,-66.8792,America/Caracas,3000000
+Lanzhou,Gansu,China,36.057,103.8399,Asia/Shanghai,3000000
+Kyiv,Kyiv City,Ukraine,50.4547,30.5238,Europe/Kyiv,2952301
+İzmir,İzmir Province,Turkey,38.4127,27.1384,Europe/Istanbul,2938292
+Huizhou,Guangdong,China,23.1115,114.4152,Asia/Shanghai,2900113
+Buenos Aires,Buenos Aires F.D.,Argentina,-34.6131,-58.3772,America/Argentina/Buenos_Aires,2891082
+Haikou,Hainan,China,20.0342,110.3465,Asia/Shanghai,2873358
+Taichung,Taiwan,Taiwan,24.1469,120.6839,Asia/Taipei,2850285
+Kanpur,Uttar Pradesh,India,26.4652,80.3498,Asia/Kolkata,2823249
+Toronto,Ontario,Canada,43.7064,-79.3986,America/Toronto,2794356
+Quito,Pichincha,Ecuador,-0.2298,-78.525,America/Guayaquil,2781641
+Brisbane,Queensland,Australia,-27.4679,153.0281,Australia/Brisbane,2780063
+Luanda,,Angola,-8.8368,13.2343,Africa/Luanda,2776168
+Osaka,,Japan,34.6938,135.5011,Asia/Tokyo,2753862
+Linyi,Shandong,China,35.0631,118.3428,Asia/Shanghai,2743843
+Baoding,Hebei,China,38.8729,115.4625,Asia/Shanghai,2739887
+Kaohsiung,Takao,Taiwan,22.6163,120.3133,Asia/Taipei,2737660
+Brooklyn,New York,United States,40.6501,-73.9496,America/New_York,2736074
+Guayaquil,Guayas,Ecuador,-2.1962,-79.8862,America/Guayaquil,2723665
+Belo Horizonte,Minas Gerais,Brazil,-19.9208,-43.9378,America/Sao_Paulo,2721564
+Minhang,Shanghai,China,31.1088,121.3747,Asia/Shanghai,2716600
+Bazhong,Sichuan,China,31.8694,106.7443,Asia/Shanghai,2712894
+Salvador,Bahia,Brazil,-12.9756,-38.491,America/Bahia,2711840
+Abuja,FCT,Nigeria,9.0579,7.4951,Africa/Lagos,2690000
+Gazipur,Dhaka Division,Bangladesh,23.9984,90.4223,Asia/Dhaka,2674697
+Chicago,Illinois,United States,41.85,-87.65,America/Chicago,2664452
+Wenzhou,Zhejiang,China,27.9994,120.6668,Asia/Shanghai,2650000
+Bekasi,West Java,Indonesia,-6.2349,106.9896,Asia/Jakarta,2648272
+Dakar,,Senegal,14.6937,-17.4441,Africa/Dakar,2646503
+Haiphong,Hai Phong,Vietnam,20.8648,106.6834,Asia/Bangkok,2625200
+Yunfu,Guangdong,China,22.9279,112.0381,Asia/Shanghai,2612800
+Navi Mumbai,Maharashtra,India,19.0368,73.0158,Asia/Kolkata,2600000
+Mogadishu,Banaadir,Somalia,2.0371,45.3438,Africa/Mogadishu,2587183
+Kumasi,Ashanti,Ghana,6.6885,-1.6244,Africa/Accra,2544530
+Bandung,West Java,Indonesia,-6.9222,107.6069,Asia/Jakarta,2528163
+Gujranwala,Punjab,Pakistan,32.1557,74.187,Asia/Karachi,2511118
+Huai'an,Jiangsu,China,33.5886,119.0192,Asia/Shanghai,2494013
+Medan,North Sumatra,Indonesia,3.5833,98.6667,Asia/Jakarta,2486283
+Lucknow,Uttar Pradesh,India,26.8393,80.9231,Asia/Kolkata,2472011
+Ouagadougou,Centre,Burkina Faso,12.3657,-1.5339,Africa/Ouagadougou,2415266
+Nagpur,Maharashtra,India,21.1463,79.0849,Asia/Kolkata,2405665
+Fortaleza,Ceará,Brazil,-3.7172,-38.5431,America/Fortaleza,2400000
+Cali,Valle del Cauca Department,Colombia,3.4305,-76.5199,America/Bogota,2392877
+Perth,Western Australia,Australia,-31.9522,115.8614,Australia/Perth,2384371
+Daegu,,South Korea,35.8703,128.5911,Asia/Seoul,2365523
+Algiers,,Algeria,36.7323,3.0875,Africa/Algiers,2364230
+Nanchang,Jiangxi,China,28.684,115.8531,Asia/Shanghai,2357839
+Baku,Baki,Azerbaijan,40.3777,49.892,Asia/Baku,2351300
+Hohhot,Inner Mongolia,China,40.8106,111.6522,Asia/Shanghai,2350000
+Nagoya,Aichi,Japan,35.1815,136.9064,Asia/Tokyo,2332176
+Rome,Lazio,Italy,41.8919,12.5113,Europe/Rome,2318895
+Queens,New York,United States,40.6815,-73.8365,America/New_York,2316841
+Houston,Texas,United States,29.7633,-95.3633,America/Chicago,2314157
+Mashhad,Razavi Khorasan,Iran,36.2981,59.6057,Asia/Tehran,2307177
+Shaoxing,Zhejiang,China,30.0024,120.5786,Asia/Shanghai,2300000
+Nantong,Jiangsu,China,32.0303,120.8747,Asia/Shanghai,2273326
+Baoshan,Shanghai,China,31.4084,121.4896,Asia/Shanghai,2265900
+Kowloon,,Hong Kong,22.3167,114.1833,Asia/Hong_Kong,2232339
+Yantai,Shandong,China,37.4765,121.4408,Asia/Shanghai,2227733
+Gaziantep,,Turkey,37.0594,37.3825,Europe/Istanbul,2222415
+Lubumbashi,Haut-Katanga,Democratic Republic of the Congo,-11.6609,27.4794,Africa/Lubumbashi,2221925
+Manaus,Amazonas,Brazil,-3.1019,-60.025,America/Manaus,2219580
+Lusaka,Lusaka Province,Zambia,-15.4067,28.2871,Africa/Lusaka,2212301
+Brasília,Federal District,Brazil,-15.7797,-47.9297,America/Sao_Paulo,2207718
+Zhuhai,Guangdong,China,22.2769,113.5678,Asia/Shanghai,2207090
+Santo Domingo,Nacional,Dominican Republic,18.4719,-69.8923,America/Santo_Domingo,2201941
+Lomé,Maritime,Togo,6.1287,1.2215,Africa/Lome,2188376
+Multan,Punjab,Pakistan,30.1968,71.4782,Asia/Karachi,2169915
+Havana,,Cuba,23.133,-82.383,America/Havana,2163824
+Depok,West Java,Indonesia,-6.4,106.8186,Asia/Jakarta,2163635
+Baotou,Inner Mongolia,China,40.6516,109.8439,Asia/Shanghai,2150000
+Paris,Île-de-France,France,48.8534,2.3488,Europe/Paris,2138551
+Coimbatore,Tamil Nadu,India,11.0055,76.9661,Asia/Kolkata,2136916
+Qingyang,Gansu,China,35.7098,107.6445,Asia/Shanghai,2125400
+Port Harcourt,Rivers State,Nigeria,4.7774,7.0134,Africa/Lagos,2120000
+Pretoria,Gauteng,South Africa,-25.7449,28.1878,Africa/Johannesburg,2112693
+Córdoba,Cordoba,Argentina,-31.4065,-64.1885,America/Argentina/Cordoba,2106734
+Mbuji-Mayi,East Kasai,Democratic Republic of the Congo,-6.136,23.5898,Africa/Lubumbashi,2101332
+Aleppo,,Syria,36.2012,37.1612,Asia/Damascus,2098210
+Kunshan,Jiangsu,China,31.3776,120.9543,Asia/Shanghai,2092496
+Al Mawşil al Jadīdah,Nineveh,Iraq,36.3327,43.1056,Asia/Baghdad,2065597
+Weifang,Shandong,China,36.71,119.1019,Asia/Shanghai,2044028
+Zunyi,Guizhou,China,27.6867,106.9072,Asia/Shanghai,2037775
+Al Başrah al Qadīmah,Basra,Iraq,30.5032,47.8151,Asia/Baghdad,2015483
+La Paz,La Paz Department,Bolivia,-16.5,-68.15,America/La_Paz,2004652
+Lianyungang,Jiangsu,China,34.5984,119.2156,Asia/Shanghai,2001009
+Medellín,Antioquia,Colombia,6.245,-75.5715,America/Bogota,1999979
+Indore,Madhya Pradesh,India,22.7179,75.8333,Asia/Kolkata,1994397
+Brazzaville,,Republic of the Congo,-4.2661,15.2832,Africa/Brazzaville,1982000
+Tashkent,,Uzbekistan,41.2647,69.2163,Asia/Tashkent,1978028
+Ganzhou,Jiangxi,China,25.8466,114.9326,Asia/Shanghai,1977253
+Almaty,,Kazakhstan,43.2525,76.9115,Asia/Almaty,1977011
+Khartoum,,Sudan,15.5518,32.5324,Africa/Khartoum,1974647
+Hamburg,,Germany,53.5507,9.993,Europe/Berlin,1973896
+Sapporo,Hokkaido,Japan,43.0667,141.35,Asia/Tokyo,1973832
+Songjiang,Shanghai,China,31.0344,121.2233,Asia/Shanghai,1973500
+Accra,Greater Accra,Ghana,5.556,-0.1969,Africa/Accra,1963264
+Curitiba,Paraná,Brazil,-25.4278,-49.2731,America/Sao_Paulo,1948626
+Ordos,Inner Mongolia,China,39.6086,109.7816,Asia/Shanghai,1940653
+Sanaa,Amanat Alasimah,Yemen,15.3545,44.2065,Asia/Aden,1937451
+Conakry,,Guinea,9.538,-13.6773,Africa/Conakry,1928389
+Tangerang,Banten,Indonesia,-6.1781,106.63,Asia/Jakarta,1927815
+Tijuana,Baja California,Mexico,32.5027,-117.0037,America/Tijuana,1922523
+Hyderabad,Sindh,Pakistan,25.3969,68.3772,Asia/Karachi,1921275
+Beirut,,Lebanon,33.8933,35.5016,Asia/Beirut,1916100
+Jieyang,Guangdong,China,23.5418,116.3658,Asia/Shanghai,1899394
+Jilin,,China,43.8465,126.5608,Asia/Shanghai,1895865
+Jiading,Shanghai,China,31.3858,121.2446,Asia/Shanghai,1886100
+Bucharest,,Romania,44.4323,26.1063,Europe/Bucharest,1877155
+Camayenne,Conakry,Guinea,9.535,-13.6878,Africa/Conakry,1871242
+Kakamega,Kakamega County,Kenya,0.2842,34.7523,Africa/Nairobi,1867579
+Shangqiu,Henan,China,34.4143,115.6561,Asia/Shanghai,1859723
+Nanchong,Sichuan,China,30.7951,106.0847,Asia/Shanghai,1858875
+Tainan,Taiwan,Taiwan,22.9908,120.2133,Asia/Taipei,1856642
+Datong,Shanxi,China,40.0936,113.2914,Asia/Shanghai,1850000
+Kaduna,Kaduna State,Nigeria,10.5264,7.4388,Africa/Lagos,1850000
+Omdurman,Khartoum,Sudan,15.6445,32.4777,Africa/Khartoum,1849659
+Davao,Davao Region,Philippines,7.0731,125.6128,Asia/Manila,1848947
+Thāne,Maharashtra,India,19.197,72.9635,Asia/Kolkata,1841488
+Iztapalapa,Mexico City,Mexico,19.3553,-99.0622,America/Mexico_City,1835486
+Diyarbakır,Diyarbakır Province,Turkey,37.9136,40.2172,Europe/Istanbul,1833684
+Santa Cruz de la Sierra,Santa Cruz Department,Bolivia,-17.7863,-63.1812,America/La_Paz,1831434
+Vadodara,Gujarat,India,22.2994,73.2081,Asia/Kolkata,1822221
+Adana,,Turkey,36.9862,35.3253,Europe/Istanbul,1816750
+Nanyang,Henan,China,33.0052,112.5466,Asia/Shanghai,1811812
+Abu Dhabi,,United Arab Emirates,24.4512,54.397,Asia/Dubai,1807000
+Palembang,South Sumatra,Indonesia,-2.9167,104.7458,Asia/Jakarta,1801367
+Sharjah,,United Arab Emirates,25.3342,55.4122,Asia/Dubai,1800000
+Bhopal,Madhya Pradesh,India,23.2547,77.4029,Asia/Kolkata,1798218
+Jiangmen,Guangdong,China,22.5833,113.0833,Asia/Shanghai,1795459
+Benin City,Edo State,Nigeria,6.3381,5.6258,Africa/Lagos,1782000
+Jiangyin,Jiangsu,China,31.911,120.263,Asia/Shanghai,1779515
+Fuyang,Anhui,China,32.9,115.8167,Asia/Shanghai,1768947
+Montréal,Quebec,Canada,45.5088,-73.5878,America/Toronto,1762949
+Bayan Nur,Inner Mongolia,China,40.7414,107.386,Asia/Shanghai,1760000
+Maracaibo,Zulia,Venezuela,10.6423,-71.6109,America/Caracas,1752602
+Chaozhou,Guangdong,China,23.654,116.6226,Asia/Shanghai,1750945
+Minsk,Minsk City,Belarus,53.9002,27.5665,Europe/Minsk,1742124
+Budapest,,Hungary,47.4984,19.0404,Europe/Budapest,1741041
+Qingyuan,Guangdong,China,23.7,113.0333,Asia/Shanghai,1738424
+Tai’an,Shandong,China,36.1853,117.12,Asia/Shanghai,1735425
+Rasapūdipalem,Andhra Pradesh,India,17.7331,83.3162,Asia/Kolkata,1728128
+Pimpri-Chinchwad,Maharashtra,India,18.6187,73.8037,Asia/Kolkata,1727692
+Caloocan,National Capital Region,Philippines,14.6495,120.9679,Asia/Manila,1712945
+Warsaw,Mazovia,Poland,52.2298,21.0118,Europe/Warsaw,1702139
+Soweto,Gauteng,South Africa,-26.2678,27.8585,Africa/Johannesburg,1695047
+Semarang,Central Java,Indonesia,-6.9931,110.4208,Asia/Jakarta,1694740
+Puebla,,Mexico,19.0478,-98.2072,America/Mexico_City,1692181
+Vienna,State of Vienna,Austria,48.2085,16.3721,Europe/Vienna,1691468
+Barcelona,Catalonia,Spain,41.3888,2.159,Europe/Madrid,1686208
+Patna,Bihar,India,25.5941,85.1356,Asia/Kolkata,1684297
+Mosul,Nineveh,Iraq,36.335,43.1189,Asia/Baghdad,1683000
+Kallakurichi,Tamil Nadu,India,11.7338,78.9592,Asia/Kolkata,1682687
+Kampala,Central Region,Uganda,0.3163,32.5822,Africa/Kampala,1680600
+Xining,Qinghai,China,36.6255,101.7574,Asia/Shanghai,1677177
+Changshu,Jiangsu,China,31.6461,120.7422,Asia/Shanghai,1677050
+Huainan,Anhui,China,32.6264,116.9969,Asia/Shanghai,1666826
+Rabat,Rabat-Salé-Kénitra,Morocco,34.0132,-6.8326,Africa/Casablanca,1655753
+Recife,Pernambuco,Brazil,-8.0539,-34.8811,America/Recife,1653461
+Phoenix,Arizona,United States,33.4484,-112.074,America/Phoenix,1650070
+Suzhou,Anhui,China,33.6361,116.9789,Asia/Shanghai,1647642
+Ecatepec de Morelos,México,Mexico,19.6049,-99.0606,America/Mexico_City,1645352
+Lu’an,Anhui,China,31.7356,116.5169,Asia/Shanghai,1644344
+Valencia,Carabobo,Venezuela,10.1615,-68.0004,America/Caracas,1619470
+Ludhiana,Punjab,India,30.912,75.8538,Asia/Kolkata,1618879
+Yancheng,Jiangsu,China,33.3575,120.1573,Asia/Shanghai,1615717
+Novosibirsk,Novosibirsk Oblast,Russia,55.0226,82.9317,Asia/Novosibirsk,1612833
+Erbil,,Iraq,36.1912,44.0094,Asia/Baghdad,1612700
+Fukuoka,,Japan,33.6,130.4167,Asia/Tokyo,1612392
+Taizhou,Jiangsu,China,32.4907,119.9081,Asia/Shanghai,1607108
+Daqing,Heilongjiang,China,46.5833,125.0,Asia/Shanghai,1604027
+Manila,National Capital Region,Philippines,14.6042,120.9822,Asia/Manila,1600000
+Wuhu,Anhui,China,31.3526,118.4295,Asia/Shanghai,1598165
+Santiago de Querétaro,Querétaro,Mexico,20.5881,-100.3881,America/Mexico_City,1594212
+Dazhou,Sichuan,China,31.2106,107.4631,Asia/Shanghai,1589435
+Yangzhou,Jiangsu,China,32.3972,119.4358,Asia/Shanghai,1584237
+León de los Aldama,Guanajuato,Mexico,21.1218,-101.6825,America/Mexico_City,1579803
+Makkah,Mecca Region,Saudi Arabia,21.4266,39.8256,Asia/Riyadh,1578722
+Philadelphia,Pennsylvania,United States,39.9524,-75.1636,America/New_York,1573916
+Phnom Penh,,Cambodia,11.5625,104.916,Asia/Phnom_Penh,1573544
+Guilin,Guangxi,China,25.2802,110.2964,Asia/Shanghai,1572300
+Damascus,Damascus Governorate,Syria,33.5102,36.2913,Asia/Damascus,1569394
+Quetta,Balochistan,Pakistan,30.1841,67.0014,Asia/Karachi,1565546
+Zhaoqing,Guangdong,China,23.0489,112.4609,Asia/Shanghai,1553109
+Onitsha,Anambra,Nigeria,6.1498,6.7857,Africa/Lagos,1553000
+Mianyang,Sichuan,China,31.4678,104.6817,Asia/Shanghai,1550000
+Auckland,,New Zealand,-36.8485,174.7635,Pacific/Auckland,1547200
+Isfahan,,Iran,32.6525,51.6746,Asia/Tehran,1547164
+Wanzhou,Chongqing,China,30.7645,108.3959,Asia/Shanghai,1545900
+Astana,,Kazakhstan,51.1801,71.446,Asia/Almaty,1544142
+Harare,,Zimbabwe,-17.8277,31.0534,Africa/Harare,1542813
+Monrovia,Montserrado County,Liberia,6.3005,-10.7969,Africa/Monrovia,1542549
+Putian,Fujian,China,25.4394,119.0103,Asia/Shanghai,1539389
+Kawasaki,Kanagawa,Japan,35.5206,139.7172,Asia/Tokyo,1538262
+Goiânia,Goiás,Brazil,-16.6786,-49.2539,America/Sao_Paulo,1536097
+San Antonio,Texas,United States,29.4241,-98.4936,America/Chicago,1526656
+Kobe,Hyōgo,Japan,34.6913,135.183,Asia/Tokyo,1525152
+Stockholm,,Sweden,59.3294,18.0687,Europe/Stockholm,1515017
+Ciudad Juárez,Chihuahua,Mexico,31.7202,-106.4608,America/Ciudad_Juarez,1512450
+Cần Thơ,Can Tho City,Vietnam,10.0371,105.7883,Asia/Ho_Chi_Minh,1507187
+Munich,Bavaria,Germany,48.1374,11.5755,Europe/Berlin,1505005
+Khulna,Khulna Division,Bangladesh,22.8098,89.5644,Asia/Dhaka,1500689
+Belém,Pará,Brazil,-1.4558,-48.5044,America/Belem,1499641
+Yekaterinburg,Sverdlovsk Oblast,Russia,56.8573,60.6153,Asia/Yekaterinburg,1495066
+Porto Alegre,Rio Grande do Sul,Brazil,-30.0328,-51.2302,America/Sao_Paulo,1488252
+Yinchuan,Ningxia,China,38.4681,106.2731,Asia/Shanghai,1487579
+Manhattan,New York,United States,40.7834,-73.9663,America/New_York,1487536
+Nashik,Maharashtra,India,19.9973,73.791,Asia/Kolkata,1486053
+Taizhou,Zhejiang,China,28.6627,121.4331,Asia/Shanghai,1485502
+Asunción,Asuncion,Paraguay,-25.2865,-57.647,America/Asuncion,1482200
+Yiwu,Zhejiang,China,29.3151,120.0768,Asia/Shanghai,1481384
+Zapopan,Jalisco,Mexico,20.7211,-103.3874,America/Mexico_City,1476491
+Makassar,South Sulawesi,Indonesia,-5.1486,119.4319,Asia/Makassar,1474393
+Adelaide,South Australia,Australia,-34.9287,138.5986,Australia/Adelaide,1469163
+Quanzhou,Fujian,China,24.9139,118.5858,Asia/Shanghai,1469157
+Madurai,Tamil Nadu,India,9.919,78.1195,Asia/Kolkata,1465625
+Jinhua,Zhejiang,China,29.1068,119.6442,Asia/Shanghai,1463990
+Kyoto,,Japan,35.0211,135.7538,Asia/Tokyo,1463723
+Cixi,Zhejiang,China,30.1764,121.2457,Asia/Shanghai,1457510
+Changde,Hunan,China,29.0321,111.6984,Asia/Shanghai,1457419
+Kuala Lumpur,,Malaysia,3.1412,101.6865,Asia/Kuala_Lumpur,1453975
+Kayseri,,Turkey,38.7322,35.4853,Europe/Istanbul,1452458
+Kaifeng,Henan,China,34.7986,114.3074,Asia/Shanghai,1451741
+Anshan,Liaoning,China,41.1236,122.99,Asia/Shanghai,1450000
+Karaj,Alborz Province,Iran,35.8327,50.9915,Asia/Tehran,1448075
+Kathmandu,Bagmati Province,Nepal,27.7017,85.3206,Asia/Kathmandu,1442271
+Daejeon,,South Korea,36.3491,127.3849,Asia/Seoul,1441203
+Baoji,Shaanxi,China,34.3678,107.237,Asia/Shanghai,1437802
+Suqian,Jiangsu,China,33.9492,118.2958,Asia/Shanghai,1437685
+Liuzhou,Guangxi,China,24.324,109.407,Asia/Shanghai,1436599
+Tirunelveli,Tamil Nadu,India,8.7274,77.6838,Asia/Kolkata,1435844
+Konya,,Turkey,37.8713,32.4846,Europe/Istanbul,1433861
+Zhangjiagang,Jiangsu,China,31.865,120.5389,Asia/Shanghai,1432044
+Agra,Uttar Pradesh,India,27.1833,78.0167,Asia/Kolkata,1430055
+South Tangerang,Banten,Indonesia,-6.2886,106.7179,Asia/Jakarta,1429529
+Tabriz,East Azerbaijan,Iran,38.08,46.2919,Asia/Tehran,1424641
+Kharkiv,,Ukraine,49.9818,36.2548,Europe/Kyiv,1421125
+Jinjiang,Fujian,China,24.8198,118.5742,Asia/Shanghai,1416151
+Faridabad,Haryana,India,28.4112,77.3132,Asia/Kolkata,1414050
+Bozhou,Anhui,China,33.8772,115.7703,Asia/Shanghai,1409436
+Qujing,Yunnan,China,25.4833,103.7833,Asia/Shanghai,1408500
+San Diego,California,United States,32.7157,-117.1647,America/Los_Angeles,1404452
+Guadalajara,Jalisco,Mexico,20.6774,-103.3475,America/Mexico_City,1385629
+The Bronx,New York,United States,40.8499,-73.8664,America/New_York,1385108
+N'Djamena,N’Djaména,Chad,12.1067,15.0444,Africa/Ndjamena,1359526
+Antananarivo,Analamanga,Madagascar,-18.9137,47.5361,Indian/Antananarivo,1349501
+Douala,Littoral,Cameroon,4.0483,9.7043,Africa/Douala,1338082
+Dallas,Texas,United States,32.7831,-96.8067,America/Chicago,1326087
+Niamey,,Niger,13.5137,2.1098,Africa/Niamey,1323691
+Calgary,Alberta,Canada,51.0501,-114.0853,America/Edmonton,1306784
+Tripoli,,Libya,32.8874,13.1873,Africa/Tripoli,1302947
+Amman,,Jordan,31.9552,35.945,Asia/Amman,1275857
+Belgrade,Central Serbia,Serbia,44.804,20.4651,Europe/Belgrade,1273651
+Montevideo,Montevideo Department,Uruguay,-34.9033,-56.1882,America/Montevideo,1270737
+Maputo,Maputo City,Mozambique,-25.9655,32.5832,Africa/Maputo,1254837
+Port-au-Prince,Ouest,Haiti,18.5435,-72.3388,America/Port-au-Prince,1234742
+Mérida,Yucatán,Mexico,20.967,-89.6232,America/Merida,1201000
+Gustavo Adolfo Madero,Mexico City,Mexico,19.4939,-99.1107,America/Mexico_City,1185772
+Nouakchott,,Mauritania,18.0858,-15.9785,Africa/Nouakchott,1184530
+Prague,,Czechia,50.088,14.4208,Europe/Prague,1165581
+Copenhagen,Capital Region,Denmark,55.6759,12.5655,Europe/Copenhagen,1153615
+Sofia,Sofia-Capital,Bulgaria,42.6975,23.3241,Europe/Sofia,1152556
+Yerevan,,Armenia,40.1776,44.5126,Asia/Yerevan,1144700
+Monterrey,Nuevo León,Mexico,25.6843,-100.3172,America/Monterrey,1135512
+Kigali,,Rwanda,-1.95,30.0588,Africa/Kigali,1132686
+Lilongwe,Central Region,Malawi,-13.9669,33.7873,Africa/Blantyre,1115815
+Oslo,,Norway,59.9127,10.7461,Europe/Oslo,1082575
+Ciudad Nezahualcoyotl,México,Mexico,19.4006,-99.0148,America/Mexico_City,1077208
+Tbilisi,,Georgia,41.6914,44.8341,Asia/Tbilisi,1049498
+Mexicali,Baja California,Mexico,32.6278,-115.4545,America/Tijuana,1032686
+Ashgabat,,Turkmenistan,37.95,58.3833,Asia/Ashgabat,1030063
+Dublin,Leinster,Ireland,53.3331,-6.2489,Europe/Dublin,1024027
+Brussels,Brussels Capital,Belgium,50.8505,4.3488,Europe/Brussels,1019022
+Ottawa,Ontario,Canada,45.4112,-75.6981,America/Toronto,1017449
+Edmonton,Alberta,Canada,53.5501,-113.4687,America/Edmonton,1010899
+Jacksonville,Florida,United States,30.3322,-81.6556,America/New_York,1009833
+Fort Worth,Texas,United States,32.7254,-97.3208,America/Chicago,1008106
+San Jose,California,United States,37.3394,-121.895,America/Los_Angeles,997368
+Guatemala City,Guatemala,Guatemala,14.6407,-90.5133,America/Guatemala,994938
+Austin,Texas,United States,30.2672,-97.7431,America/Chicago,974447
+Managua,Managua Department,Nicaragua,12.1328,-86.2504,America/Managua,973087
+Jerusalem,,Israel,31.769,35.2163,Asia/Jerusalem,971800
+Kingston,,Jamaica,17.997,-76.7936,America/Jamaica,937700
+Chihuahua,,Mexico,28.6353,-106.0889,America/Chihuahua,925762
+Columbus,Ohio,United States,39.9612,-82.9988,America/New_York,913175
+Charlotte,North Carolina,United States,35.2271,-80.8431,America/New_York,911311
+Bishkek,,Kyrgyzstan,42.87,74.59,Asia/Bishkek,900000
+Cancún,Quintana Roo,Mexico,21.1743,-86.8466,America/Cancun,888797
+Indianapolis,Indiana,United States,39.7684,-86.158,America/Indiana/Indianapolis,887642
+Rotterdam,South Holland,The Netherlands,51.9225,4.4792,Europe/Amsterdam,868135
+Tegucigalpa,Francisco Morazán Department,Honduras,14.0818,-87.2068,America/Tegucigalpa,850848
+Libreville,Estuaire,Gabon,0.3924,9.4536,Africa/Libreville,846090
+Ulan Bator,Ulaanbaatar,Mongolia,47.9077,106.8832,Asia/Ulaanbaatar,844818
+Vientiane,Vientiane Prefecture,Laos,17.9667,102.6,Asia/Vientiane,840940
+Naucalpan de Juárez,México,Mexico,19.4785,-99.2396,America/Mexico_City,834434
+San Francisco,California,United States,37.7749,-122.4194,America/Los_Angeles,827526
+Bangui,,Central African Republic,4.3612,18.555,Africa/Bangui,812407
+Hermosillo,Sonora,Mexico,29.0887,-110.9668,America/Hermosillo,812229
+Culiacán,Sinaloa,Mexico,24.8021,-107.3942,America/Mazatlan,808416
+Freetown,Western Area,Sierra Leone,8.4871,-13.2356,Africa/Freetown,802639
+Muscat,,Oman,23.5841,58.4078,Asia/Muscat,797000
+Seattle,Washington,United States,47.6062,-122.3321,America/Los_Angeles,780995
+Bujumbura,Bujumbura Mairie,Burundi,-3.3819,29.3614,Africa/Bujumbura,769317
+Winnipeg,Manitoba,Canada,49.8844,-97.147,America/Winnipeg,749607
+Morelia,Michoacán,Mexico,19.7008,-101.1844,America/Mexico_City,743275
+Riga,,Latvia,56.946,24.1059,Europe/Riga,742572
+Torreón,Coahuila,Mexico,25.5439,-103.419,America/Monterrey,735340
+Denver,Colorado,United States,39.7392,-104.9847,America/Denver,729019
+Álvaro Obregón,Mexico City,Mexico,19.3587,-99.2033,America/Mexico_City,726664
+San Luis Potosí,,Mexico,22.1523,-100.9714,America/Monterrey,722772
+Aguascalientes,,Mexico,21.8826,-102.2843,America/Mexico_City,722250
+Mississauga,Ontario,Canada,43.5789,-79.6583,America/Toronto,717961
+Saltillo,Coahuila,Mexico,25.426,-100.9796,America/Monterrey,709671
+Sarajevo,Federation of B&H,Bosnia and Herzegovina,43.8486,18.3564,Europe/Sarajevo,696731
+Tunis,Tunis Governorate,Tunisia,36.819,10.1658,Africa/Tunis,693210
+Washington,District of Columbia,United States,38.8951,-77.0364,America/New_York,689545
+Nashville,Tennessee,United States,36.1659,-86.7844,America/Chicago,689447
+Oklahoma City,Oklahoma,United States,35.4676,-97.5164,America/Chicago,681054
+Dushanbe,,Tajikistan,38.5358,68.779,Asia/Dushanbe,679400
+Cotonou,Littoral,Benin,6.3654,2.4183,Africa/Porto-Novo,679012
+El Paso,Texas,United States,31.7587,-106.4869,America/Denver,678815
+Guadalupe,Nuevo León,Mexico,25.6766,-100.2591,America/Monterrey,673616
+Athens,Attica,Greece,37.9838,23.7278,Europe/Athens,664046
+Zagreb,,Croatia,45.8144,15.978,Europe/Zagreb,663592
+Vancouver,British Columbia,Canada,49.2497,-123.1193,America/Vancouver,662248
+Helsinki,Uusimaa,Finland,60.1695,24.9354,Europe/Helsinki,658864
+Acapulco de Juárez,Guerrero,Mexico,16.8494,-99.9089,America/Mexico_City,658609
+Brampton,Ontario,Canada,43.6834,-79.7663,America/Toronto,656480
+Boston,Massachusetts,United States,42.3584,-71.0598,America/New_York,653833
+Tlalnepantla,México,Mexico,19.5401,-99.1954,America/Mexico_City,653410
+Portland,Oregon,United States,45.5234,-122.6762,America/Los_Angeles,652503
+Tlaquepaque,Jalisco,Mexico,20.6412,-103.2934,America/Mexico_City,650123
+Macau,,Macao,22.2006,113.5461,Asia/Macau,649335
+Colombo,Western Province,Sri Lanka,6.9355,79.8487,Asia/Colombo,648034
+Detroit,Michigan,United States,42.3314,-83.0457,America/Detroit,645705
+Las Vegas,Nevada,United States,36.175,-115.1372,America/Los_Angeles,641903
+New South Memphis,Tennessee,United States,35.0868,-90.0568,America/Chicago,641608
+Al Aḩmadī,,Kuwait,29.0769,48.0839,Asia/Kuwait,637411
+Chisinau,Chișinău Municipality,Moldova,47.009,28.8594,Europe/Chisinau,635994
+Memphis,Tennessee,United States,35.1495,-90.049,America/Chicago,633104
+Djibouti,,Djibouti,11.589,43.145,Africa/Djibouti,626512
+Louisville,Kentucky,United States,38.2542,-85.7594,America/Kentucky/Louisville,624444
+Coyoacán,Mexico City,Mexico,19.3467,-99.1617,America/Mexico_City,614447
+Tuxtla,Chiapas,Mexico,16.7536,-93.1158,America/Merida,604147
+Reynosa,Tamaulipas,Mexico,26.08,-98.2846,America/Matamoros,589466
+Baltimore,Maryland,United States,39.2904,-76.6122,America/New_York,585708
+Tlalpan,Mexico City,Mexico,19.2951,-99.1621,America/Mexico_City,574577
+South Boston,Massachusetts,United States,42.3334,-71.0495,America/New_York,571281
+Hamilton,Ontario,Canada,43.2501,-79.8496,America/Toronto,569353
+Surrey,British Columbia,Canada,49.1063,-122.8251,America/Vancouver,568322
+Albuquerque,New Mexico,United States,35.0845,-106.6511,America/Denver,564559
+Asmara,Maekel,Eritrea,15.3381,38.9318,Africa/Asmara,563930
+Milwaukee,Wisconsin,United States,43.0389,-87.9065,America/Chicago,563531
+Cuautitlán Izcalli,México,Mexico,19.6439,-99.216,America/Mexico_City,555163
+Pristina,,Kosovo,42.6727,21.1669,Europe/Belgrade,550000
+Tucson,Arizona,United States,32.2217,-110.9265,America/Phoenix,542629
+Vilnius,,Lithuania,54.6892,25.2798,Europe/Vilnius,542366
+Fresno,California,United States,36.7477,-119.7724,America/Los_Angeles,542107
+Québec,Quebec,Canada,46.8123,-71.2145,America/Toronto,531902
+Cuauhtémoc,Mexico City,Mexico,19.4451,-99.1461,America/Mexico_City,531831
+San Salvador,San Salvador Department,El Salvador,13.6893,-89.1872,America/El_Salvador,525990
+Sacramento,California,United States,38.5816,-121.4944,America/Los_Angeles,524943
+Victoria de Durango,Durango,Mexico,24.0203,-104.6576,America/Monterrey,518709
+Lisbon,,Portugal,38.7251,-9.1498,Europe/Lisbon,517802
+Atlanta,Georgia,United States,33.749,-84.388,America/New_York,510823
+Heroica Matamoros,Tamaulipas,Mexico,25.8797,-97.5042,America/Matamoros,510739
+Toluca,México,Mexico,19.2879,-99.6532,America/Mexico_City,489333
+Ciudad López Mateos,México,Mexico,19.5579,-99.2567,America/Mexico_City,489160
+Miami,Florida,United States,25.7743,-80.1937,America/New_York,487014
+Omaha,Nebraska,United States,41.2563,-95.9404,America/Chicago,486051
+Raleigh,North Carolina,United States,35.7721,-78.6386,America/New_York,482295
+Kansas City,Missouri,United States,39.0997,-94.5786,America/Chicago,475378
+Skopje,Grad Skopje,North Macedonia,41.9965,21.4314,Europe/Skopje,474889
+Long Beach,California,United States,33.767,-118.1892,America/Los_Angeles,474140
+Mesa,Arizona,United States,33.4223,-111.8226,America/Phoenix,471825
+Halifax,Nova Scotia,Canada,44.6427,-63.5769,America/Halifax,471559
+Staten Island,New York,United States,40.5623,-74.1399,America/New_York,468730
+Ciudad Apodaca,Nuevo León,Mexico,25.7814,-100.1891,America/Monterrey,467157
+Colorado Springs,Colorado,United States,38.8339,-104.8214,America/Denver,456568
+Ciudad General Escobedo,Nuevo León,Mexico,25.7966,-100.3177,America/Monterrey,454967
+Virginia Beach,Virginia,United States,36.8529,-75.978,America/New_York,454808
+Juba,Central Equatoria,South Sudan,4.8517,31.5825,Africa/Juba,450000
+Ensenada,Baja California,Mexico,31.8715,-116.6007,America/Tijuana,443807
+Xochimilco,Mexico City,Mexico,19.2547,-99.1036,America/Mexico_City,442178
+Bissau,,Guinea-Bissau,11.8636,-15.5977,Africa/Bissau,439704
+Laval,Quebec,Canada,45.5699,-73.692,America/Toronto,438366
+Venustiano Carranza,Mexico City,Mexico,19.4436,-99.105,America/Mexico_City,430978
+Veracruz,,Mexico,19.1809,-96.1429,America/Mexico_City,428323
+East Jerusalem,West Bank,Palestinian Territory,31.7834,35.2339,Asia/Hebron,428304
+Xalapa de Enríquez,Veracruz,Mexico,19.5312,-96.9159,America/Mexico_City,424755
+Bratislava,Bratislava Region,Slovakia,48.1482,17.1067,Europe/Bratislava,423737
+London,Ontario,Canada,42.9834,-81.233,America/Toronto,422324
+Oakland,California,United States,37.8044,-122.2708,America/Los_Angeles,419267
+Tirana,,Albania,41.3274,19.8187,Europe/Tirane,418495
+San Juan,,Puerto Rico,18.4663,-66.1057,America/Puerto_Rico,418140
+Nuevo Laredo,Tamaulipas,Mexico,27.4763,-99.5164,America/Matamoros,416055
+Zürich,Zurich,Switzerland,47.3667,8.55,Europe/Zurich,415367
+Azcapotzalco,Mexico City,Mexico,19.487,-99.1859,America/Mexico_City,414711
+Tampa,Florida,United States,27.9475,-82.4584,America/New_York,414547
+Tulsa,Oklahoma,United States,36.154,-95.9928,America/Chicago,413066
+San Nicolás de los Garza,Nuevo León,Mexico,25.7417,-100.3022,America/Monterrey,412199
+Minneapolis,Minnesota,United States,44.98,-93.2638,America/Chicago,410939
+Panama City,Panamá,Panama,8.9936,-79.5197,America/Panama,408168
+Wichita,Kansas,United States,37.6922,-97.3375,America/Chicago,396119
+Tallinn,Harjumaa,Estonia,59.437,24.7535,Europe/Tallinn,394024
+Arlington,Texas,United States,32.7357,-97.1081,America/Chicago,388125
+Windhoek,Khomas Region,Namibia,-22.5594,17.0832,Africa/Windhoek,386219
+Bakersfield,California,United States,35.3733,-119.0187,America/Los_Angeles,373640
+Cleveland,Ohio,United States,41.4995,-81.6954,America/New_York,365379
+Etobicoke,Ontario,Canada,43.6442,-79.5699,America/Toronto,365000
+New Orleans,Louisiana,United States,29.9547,-90.0751,America/Chicago,362701
+Maseru,Maseru District,Lesotho,-29.3167,27.4833,Africa/Maseru,359753
+Aurora,Colorado,United States,39.7294,-104.8319,America/Denver,359407
+Honolulu,Hawaii,United States,21.3069,-157.8583,Pacific/Honolulu,350964
+Anaheim,California,United States,33.8353,-117.9145,America/Los_Angeles,350742
+Doha,Baladiyat ad Dawhah,Qatar,25.2855,51.531,Asia/Qatar,344939
+Serekunda,Banjul,Gambia,13.4383,-16.6781,Africa/Banjul,340000
+West Raleigh,North Carolina,United States,35.7868,-78.6639,America/New_York,338759
+Markham,Ontario,Canada,43.8668,-79.2663,America/Toronto,338503
+San José,,Costa Rica,9.9339,-84.0849,America/Costa_Rica,335007
+Orlando,Florida,United States,28.5383,-81.3792,America/New_York,334854
+Vaughan,Ontario,Canada,43.8361,-79.4983,America/Toronto,323103
+Lexington,Kentucky,United States,37.9887,-84.4777,America/New_York,320347
+Riverside,California,United States,33.9534,-117.3962,America/Los_Angeles,317261
+Corpus Christi,Texas,United States,27.8006,-97.3964,America/Chicago,316239
+Lexington-Fayette,Kentucky,United States,38.0498,-84.4586,America/New_York,314488
+Cincinnati,Ohio,United States,39.1271,-84.5144,America/New_York,311097
+Santa Ana,California,United States,33.7456,-117.8678,America/Los_Angeles,310227
+Stockton,California,United States,37.9577,-121.2908,America/Los_Angeles,305658
+Pittsburgh,Pennsylvania,United States,40.4406,-79.9959,America/New_York,304391
+Saint Paul,Minnesota,United States,44.9444,-93.0933,America/Chicago,303176
+Gatineau,Quebec,Canada,45.4772,-75.7016,America/Toronto,300045
+Lincoln,Nebraska,United States,40.8,-96.667,America/Chicago,294757
+Victoria,British Columbia,Canada,48.4359,-123.3516,America/Vancouver,289625
+Anchorage,Alaska,United States,61.2181,-149.9003,America/Anchorage,289600
+Meads,Kentucky,United States,38.4126,-82.7091,America/New_York,288649
+Henderson,Nevada,United States,36.0397,-114.9819,America/Los_Angeles,285667
+Greensboro,North Carolina,United States,36.0726,-79.792,America/New_York,285342
+Port Moresby,National Capital,Papua New Guinea,-9.4772,147.1509,Pacific/Port_Moresby,283733
+Plano,Texas,United States,33.0198,-96.6989,America/Chicago,283558
+Newark,New Jersey,United States,40.7357,-74.1724,America/New_York,281944
+Madison,Wisconsin,United States,43.0731,-89.4012,America/Chicago,280305
+St. Louis,Missouri,United States,38.6273,-90.1979,America/Chicago,279695
+Ljubljana,,Slovenia,46.0511,14.5051,Europe/Ljubljana,272220
+Saskatoon,Saskatchewan,Canada,52.1324,-106.6689,America/Regina,266141
+Chula Vista,California,United States,32.6401,-117.0842,America/Los_Angeles,265757
+Toledo,Ohio,United States,41.6639,-83.5552,America/New_York,265638
+Jersey City,New Jersey,United States,40.7282,-74.0776,America/New_York,264290
+Reno,Nevada,United States,39.5296,-119.8138,America/Los_Angeles,264165
+Chandler,Arizona,United States,33.3062,-111.8413,America/Phoenix,260828
+Fort Wayne,Indiana,United States,41.1306,-85.1289,America/Indiana/Indianapolis,260326
+Buffalo,New York,United States,42.8865,-78.8784,America/New_York,258071
+Durham,North Carolina,United States,35.994,-78.8986,America/New_York,257636
+St. Petersburg,Florida,United States,27.7709,-82.6793,America/New_York,257083
+Irvine,California,United States,33.6695,-117.8231,America/Los_Angeles,256927
+Kitchener,Ontario,Canada,43.4254,-80.5112,America/Toronto,256885
+Laredo,Texas,United States,27.5064,-99.5075,America/Chicago,256153
+Burnaby,British Columbia,Canada,49.2664,-122.9526,America/Vancouver,249125
+Lubbock,Texas,United States,33.5779,-101.8552,America/Chicago,249042
+Gilbert,Arizona,United States,33.3528,-111.789,America/Phoenix,247542
+Gaborone,,Botswana,-24.6545,25.9086,Africa/Gaborone,246325
+Tri-Cities,Washington,United States,46.2454,-119.1962,America/Los_Angeles,244036
+Winston-Salem,North Carolina,United States,36.0999,-80.2442,America/New_York,241218
+Glendale,Arizona,United States,33.5386,-112.186,America/Phoenix,240126
+Norfolk,Virginia,United States,36.8468,-76.2852,America/New_York,238005
+Hialeah,Florida,United States,25.8576,-80.2781,America/New_York,237069
+Garland,Texas,United States,32.9126,-96.6389,America/Chicago,236897
+Podgorica,,Montenegro,42.4412,19.2631,Europe/Podgorica,236852
+Scottsdale,Arizona,United States,33.5092,-111.899,America/Phoenix,236839
+Irving,Texas,United States,32.814,-96.9489,America/Chicago,236607
+Boise,Idaho,United States,43.6135,-116.2035,America/Boise,235684
+Chesapeake,Virginia,United States,36.819,-76.2749,America/New_York,235429
+Georgetown,Demerara-Mahaica,Guyana,6.8045,-58.1553,America/Guyana,235017
+North Las Vegas,Nevada,United States,36.1989,-115.1175,America/Los_Angeles,234807
+Fremont,California,United States,37.5483,-121.9886,America/Los_Angeles,232206
+Windsor,Ontario,Canada,42.3001,-83.0165,America/Toronto,229660
+Spokane,Washington,United States,47.6597,-117.4291,America/Los_Angeles,229447
+Longueuil,Quebec,Canada,45.5152,-73.4682,America/Toronto,229330
+Nassau,New Providence,Bahamas,25.0582,-77.3431,America/Nassau,227940
+Baton Rouge,Louisiana,United States,30.4433,-91.1875,America/Chicago,227470
+Upper West Side,New York,United States,40.7871,-73.9754,America/New_York,226989
+Richmond,Virginia,United States,37.5538,-77.4603,America/New_York,226610
+Regina,Saskatchewan,Canada,50.4501,-104.6178,America/Regina,226404
+Paramaribo,Paramaribo District,Suriname,5.8664,-55.1668,America/Paramaribo,223757
+Paradise,Nevada,United States,36.0972,-115.1467,America/Los_Angeles,223167
+Tacoma,Washington,United States,47.2529,-122.4443,America/Los_Angeles,222906
+Jamaica,New York,United States,40.6915,-73.8057,America/New_York,216866
+San Bernardino,California,United States,34.1083,-117.2898,America/Los_Angeles,216108
+Salt Lake City,Utah,United States,40.7608,-111.8911,America/Denver,215548
+Huntsville,Alabama,United States,34.7304,-86.5859,America/Chicago,215006
+Des Moines,Iowa,United States,41.6005,-93.6091,America/Chicago,214133
+Oakville,Ontario,Canada,43.4501,-79.6829,America/Toronto,213759
+Fontana,California,United States,34.0922,-117.4351,America/Los_Angeles,212704
+Modesto,California,United States,37.6391,-120.9969,America/Los_Angeles,211266
+Richmond,British Columbia,Canada,49.17,-123.1368,America/Vancouver,209937
+Rochester,New York,United States,43.1548,-77.6156,America/New_York,209802
+Maryvale,Arizona,United States,33.502,-112.1776,America/Phoenix,208189
+Arlington,Virginia,United States,38.881,-77.1043,America/New_York,207627
+Oxnard,California,United States,34.1975,-119.177,America/Los_Angeles,207254
+Columbus,Georgia,United States,32.461,-84.9877,America/New_York,206922
+Worcester,Massachusetts,United States,42.2626,-71.8023,America/New_York,206518
+Moreno Valley,California,United States,33.9375,-117.2306,America/Los_Angeles,204198
+Little Rock,Arkansas,United States,34.7465,-92.2896,America/Chicago,202591
+Richmond Hill,Ontario,Canada,43.8711,-79.4373,America/Toronto,202022
+Fayetteville,North Carolina,United States,35.0527,-78.8784,America/New_York,201963
+Huntington Beach,California,United States,33.6603,-117.9992,America/Los_Angeles,201899
+Tallahassee,Florida,United States,30.4383,-84.2807,America/New_York,201731
+Yonkers,New York,United States,40.9304,-73.8979,America/New_York,201116
+Glendale,California,United States,34.1425,-118.2551,America/Los_Angeles,201020
+Cypress,Texas,United States,29.9691,-95.6972,America/Chicago,200839
+Aurora,Illinois,United States,41.7606,-88.3201,America/Chicago,200661
+Nicosia,,Cyprus,35.1728,33.354,Asia/Nicosia,200452
+Amarillo,Texas,United States,35.222,-101.8313,America/Chicago,198645
+Akron,Ohio,United States,41.0814,-81.519,America/New_York,197542
+Vancouver,Washington,United States,45.6387,-122.6615,America/Los_Angeles,196442
+Birmingham,Alabama,United States,33.5207,-86.8025,America/Chicago,196357
+Laayoune,,Western Sahara,27.1418,-13.188,Africa/El_Aaiun,196331
+Montgomery,Alabama,United States,32.3668,-86.3,America/Chicago,195287
+Grand Rapids,Michigan,United States,42.9634,-85.6681,America/Detroit,195097
+Peoria,Arizona,United States,33.5806,-112.2374,America/Phoenix,190985
+Providence,Rhode Island,United States,41.824,-71.4128,America/New_York,190934
+Knoxville,Tennessee,United States,35.9606,-83.9207,America/New_York,190740
+Sunrise Manor,Nevada,United States,36.2111,-115.0731,America/Los_Angeles,189372
+Grand Prairie,Texas,United States,32.746,-96.9978,America/Chicago,187809
+Shreveport,Louisiana,United States,32.5251,-93.7502,America/Chicago,187593
+Burlington,Ontario,Canada,43.3862,-79.8371,America/Toronto,186948
+Brownsville,Texas,United States,25.9017,-97.4975,America/Chicago,186738
+Overland Park,Kansas,United States,38.9822,-94.6708,America/Chicago,186515
+Newport News,Virginia,United States,36.9804,-76.4297,America/New_York,186247
+Mobile,Alabama,United States,30.6944,-88.043,America/Chicago,183289
+Fort Lauderdale,Florida,United States,26.1223,-80.1434,America/New_York,183146
+Santa Clarita,California,United States,34.3917,-118.5426,America/Los_Angeles,182371
+Chattanooga,Tennessee,United States,35.0456,-85.3097,America/New_York,181099
+Nepean,Ontario,Canada,45.3362,-75.7225,America/Toronto,180000
+East Flatbush,New York,United States,40.6537,-73.9304,America/New_York,178464
+Spring Valley,Nevada,United States,36.108,-115.245,America/Los_Angeles,178395
+Santa Rosa,California,United States,38.4405,-122.7144,America/Los_Angeles,178127
+Eugene,Oregon,United States,44.0521,-123.0867,America/Los_Angeles,176654
+Al Muharraq,Muharraq,Bahrain,26.2572,50.6119,Asia/Bahrain,176583
+Tempe,Arizona,United States,33.4148,-111.9093,America/Phoenix,175826
+Oceanside,California,United States,33.1959,-117.3795,America/Los_Angeles,175691
+Salem,Oregon,United States,44.9429,-123.0351,America/Los_Angeles,175535
+Garden Grove,California,United States,33.7739,-117.9415,America/Los_Angeles,175393
+Oshawa,Ontario,Canada,43.9001,-78.8496,America/Toronto,175383
+Rancho Cucamonga,California,United States,34.1064,-117.5931,America/Los_Angeles,175236
+Cape Coral,Florida,United States,26.5629,-81.9495,America/New_York,175229
+East New York,New York,United States,40.6668,-73.8824,America/New_York,173198
+Bata,Litoral,Equatorial Guinea,1.8639,9.7658,Africa/Malabo,173046
+Sioux Falls,South Dakota,United States,43.5437,-96.728,America/Chicago,171544
+Ontario,California,United States,34.0633,-117.6509,America/Los_Angeles,171214
+Fort Collins,Colorado,United States,40.5853,-105.0844,America/Denver,170924
+Springfield,Missouri,United States,37.2153,-93.2982,America/Chicago,170188
+Hollywood,California,United States,34.0983,-118.3267,America/Los_Angeles,167664
+Elk Grove,California,United States,38.4088,-121.3716,America/Los_Angeles,166913
+Clarksville,Tennessee,United States,36.5298,-87.3594,America/Chicago,166722
+Pembroke Pines,Florida,United States,26.0032,-80.2239,America/New_York,166611
+Greater Sudbury,Ontario,Canada,46.49,-80.99,America/Toronto,166004
+Deer Valley,Arizona,United States,33.6839,-112.1349,America/Phoenix,165656
+Murfreesboro,Tennessee,United States,35.8456,-86.3903,America/Chicago,165430
+Port Saint Lucie,Florida,United States,27.2939,-80.3503,America/New_York,164603
+Corona,California,United States,33.8753,-117.5664,America/Los_Angeles,164226
+McKinney,Texas,United States,33.1976,-96.6153,America/Chicago,162898
+Lancaster,California,United States,34.698,-118.1367,America/Los_Angeles,161103
+Cary,North Carolina,United States,35.7915,-78.7811,America/New_York,159769
+Alexandria,Virginia,United States,38.8048,-77.0469,America/New_York,159467
+Newton,British Columbia,Canada,49.1333,-122.85,America/Vancouver,159390
+Tempe Junction,Arizona,United States,33.4142,-111.9435,America/Phoenix,158368
+Palmdale,California,United States,34.5794,-118.1165,America/Los_Angeles,158351
+Hayward,California,United States,37.6688,-122.0808,America/Los_Angeles,158289
+Salinas,California,United States,36.6777,-121.6555,America/Los_Angeles,157380
+Sunnyvale,California,United States,37.3688,-122.0363,America/Los_Angeles,155805
+Port Louis,,Mauritius,-20.1619,57.4989,Indian/Mauritius,155226
+Saint-Denis,Reunion,Reunion,-20.8823,55.4504,Indian/Reunion,154765
+Frisco,Texas,United States,33.1507,-96.8236,America/Chicago,154407
+Springfield,Massachusetts,United States,42.1015,-72.5898,America/New_York,154341
+East Chattanooga,Tennessee,United States,35.0654,-85.2491,America/New_York,154024
+Pasadena,Texas,United States,29.6911,-95.2091,America/Chicago,153784
+Jackson,Mississippi,United States,32.2988,-90.1848,America/Chicago,153701
+Pomona,California,United States,34.0553,-117.7523,America/Los_Angeles,153266
+Kansas City,Kansas,United States,39.1142,-94.6275,America/Chicago,152933
+Washington Heights,New York,United States,40.8501,-73.9354,America/New_York,152613
+Lakewood,Colorado,United States,39.7047,-105.0814,America/Denver,152597
+Escondido,California,United States,33.1192,-117.0864,America/Los_Angeles,151038
+Astoria,New York,United States,40.7721,-73.9301,America/New_York,150165
+Gloucester,Ontario,Canada,45.35,-75.6333,America/Toronto,150012
+Dili,Dili Municipality,Timor Leste,-8.5586,125.5736,Asia/Dili,150000
+Hollywood,Florida,United States,26.0112,-80.1495,America/New_York,149728
+Borough Park,New York,United States,40.634,-73.9968,America/New_York,149248
+Saguenay,Quebec,Canada,48.4168,-71.0657,America/Toronto,148886
+Coquitlam,British Columbia,Canada,49.2846,-122.7822,America/Vancouver,148625
+Valencia,California,United States,34.4436,-118.6095,America/Los_Angeles,148456
+Rockford,Illinois,United States,42.2711,-89.094,America/Chicago,148278
+East Hampton,Virginia,United States,37.0374,-76.3316,America/New_York,147993
+Joliet,Illinois,United States,41.5252,-88.0834,America/Chicago,147861
+Barrie,Ontario,Canada,44.4001,-79.6663,America/Toronto,147829
+Savannah,Georgia,United States,32.0835,-81.0998,America/New_York,147780
+Paterson,New Jersey,United States,40.9168,-74.1718,America/New_York,147754
+Bridgeport,Connecticut,United States,41.1792,-73.1894,America/New_York,147629
+Naperville,Illinois,United States,41.7859,-88.1473,America/Chicago,147100
+Rosemont–La Petite-Patrie,Quebec,Canada,45.5366,-73.6069,America/Toronto,146501
+Gainesville,Florida,United States,29.6516,-82.3248,America/New_York,145214
+Villeray–Saint-Michel–Parc-Extension,Quebec,Canada,45.5587,-73.6054,America/Toronto,144814
+Mesquite,Texas,United States,32.7668,-96.5992,America/Chicago,144788
+Kelowna,British Columbia,Canada,49.8831,-119.4857,America/Vancouver,144576
+Trois-Rivières,Quebec,Canada,46.3451,-72.5477,America/Toronto,144472
+Syracuse,New York,United States,43.0481,-76.1474,America/New_York,144142
+Guelph,Ontario,Canada,43.5459,-80.256,America/Toronto,143740
+Torrance,California,United States,33.8359,-118.3406,America/Los_Angeles,143592
+Lévis,Quebec,Canada,46.8033,-71.1779,America/Toronto,143414
+Surprise,Arizona,United States,33.6306,-112.3332,America/Phoenix,143148
+Mercier–Hochelaga-Maisonneuve,Quebec,Canada,45.5719,-73.5463,America/Toronto,142753
+Metairie Terrace,Louisiana,United States,29.9785,-90.164,America/Chicago,142489
+Columbia,South Carolina,United States,34.0007,-81.0348,America/New_York,142416
+Pasadena,California,United States,34.1478,-118.1445,America/Los_Angeles,142250
+Abbotsford,British Columbia,Canada,49.058,-122.2526,America/Vancouver,141397
+Orange,California,United States,33.7878,-117.8531,America/Los_Angeles,140992
+Fullerton,California,United States,33.8703,-117.9253,America/Los_Angeles,140847
+Killeen,Texas,United States,31.1171,-97.7278,America/Chicago,140806
+McAllen,Texas,United States,26.2034,-98.23,America/Chicago,140269
+Bellevue,Washington,United States,47.6104,-122.2007,America/Los_Angeles,139820
+Whitby,Ontario,Canada,43.8834,-78.9329,America/Toronto,138501
+Metairie,Louisiana,United States,29.9841,-90.1529,America/Chicago,138481
+Praia,,Cabo Verde,14.9315,-23.5125,Atlantic/Cape_Verde,137868
+Hampton,Virginia,United States,37.0299,-76.3452,America/New_York,137148
+Miramar,Florida,United States,25.9873,-80.2323,America/New_York,137132
+St. Catharines,Ontario,Canada,43.1713,-79.2427,America/Toronto,136803
+Van Nuys,California,United States,34.1867,-118.449,America/Los_Angeles,136443
+West Valley City,Utah,United States,40.6916,-112.0011,America/Denver,136208
+Dayton,Ohio,United States,39.7589,-84.1916,America/New_York,135512
+Ahuntsic-Cartierville,Quebec,Canada,45.5667,-73.6667,America/Toronto,135336
+Le Vieux-Longueuil,Quebec,Canada,45.5372,-73.5077,America/Toronto,135218
+Olathe,Kansas,United States,38.8814,-94.8191,America/Chicago,134305
+Warren,Michigan,United States,42.4904,-83.013,America/Detroit,134056
+Thornton,Colorado,United States,39.868,-104.9719,America/Denver,133451
+Carrollton,Texas,United States,32.9537,-96.8903,America/Chicago,133168
+Milton,Ontario,Canada,43.5168,-79.8829,America/Toronto,132979
+Charleston,South Carolina,United States,32.7763,-79.9327,America/New_York,132609
+Langley,British Columbia,Canada,49.1011,-122.6588,America/Vancouver,132603
+Midland,Texas,United States,31.9974,-102.0779,America/Chicago,132524
+Kingston,Ontario,Canada,44.2298,-76.481,America/Toronto,132485
+Waco,Texas,United States,31.5493,-97.1467,America/Chicago,132356
+Sterling Heights,Michigan,United States,42.5803,-83.0302,America/Detroit,132052
+Denton,Texas,United States,33.2148,-97.1331,America/Chicago,131044
+Cedar Rapids,Iowa,United States,42.0083,-91.6441,America/Chicago,130405
+New Haven,Connecticut,United States,41.3081,-72.9282,America/New_York,130322
+Roseville,California,United States,38.7521,-121.288,America/Los_Angeles,130269
+Visalia,California,United States,36.3302,-119.2921,America/Los_Angeles,130104
+Cambridge,Ontario,Canada,43.3601,-80.3127,America/Toronto,129920
+Coral Springs,Florida,United States,26.2712,-80.2706,America/New_York,129485
+Sherbrooke,Quebec,Canada,45.4001,-71.8991,America/Toronto,129447
+Thousand Oaks,California,United States,34.1706,-118.8376,America/Los_Angeles,129339
+Columbia,Missouri,United States,38.9517,-92.3341,America/Chicago,129330
+Elizabeth,New Jersey,United States,40.664,-74.2107,America/New_York,129007
+Stamford,Connecticut,United States,41.0534,-73.5387,America/New_York,128874
+Concord,California,United States,37.978,-122.0311,America/Los_Angeles,128667
+Norman,Oklahoma,United States,35.2226,-97.4395,America/Chicago,128026
+Alhambra,Arizona,United States,33.4984,-112.1343,America/Phoenix,127764
+Athens,Georgia,United States,33.9609,-83.3779,America/New_York,127315
+Kent,Washington,United States,47.3809,-122.2348,America/Los_Angeles,126952
+Orléans,Ontario,Canada,45.4573,-75.5043,America/Toronto,125937
+Ottawa South,Ontario,Canada,45.3921,-75.6873,America/Toronto,125090
+Willemstad,,Curacao,12.1225,-68.8864,America/Curacao,125000
+Saint-Louis-de-Terrebonne,Quebec,Canada,45.702,-73.7867,America/Toronto,119944
+Ajax,Ontario,Canada,43.8501,-79.0329,America/Toronto,119677
+Reykjavík,Capital Region,Iceland,64.1355,-21.8954,Atlantic/Reykjavik,118918
+Saanich,British Columbia,Canada,48.5496,-123.3693,America/Vancouver,117735
+Thornhill,Ontario,Canada,43.815,-79.4242,America/Toronto,115292
+Rivière-des-Prairies–Pointe-aux-Trembles,Quebec,Canada,45.6406,-73.5846,America/Toronto,113868
+Terrebonne,Quebec,Canada,45.7,-73.6473,America/Toronto,111575
+Sainte-Foy,Quebec,Canada,46.7814,-71.2922,America/Toronto,111300
+Manzini,Manzini Region,Eswatini,-26.4988,31.38,Africa/Mbabane,110537
+St. John's,Newfoundland and Labrador,Canada,47.5649,-52.7093,America/St_Johns,110525
+Thunder Bay,Ontario,Canada,48.382,-89.2502,America/Toronto,108843
+La Cité-Limoilou,Quebec,Canada,46.8289,-71.2264,America/Toronto,108415
+Sydney,Nova Scotia,Canada,46.1351,-60.1831,America/Glace_Bay,105968
+Le Plateau-Mont-Royal,Quebec,Canada,45.5283,-73.5808,America/Toronto,105813
+Waterloo,Ontario,Canada,43.4668,-80.5164,America/Toronto,104986
+Ville-Marie,Quebec,Canada,45.499,-73.5705,America/Toronto,104944
+Brantford,Ontario,Canada,43.1334,-80.2664,America/Toronto,104688
+Kamloops,British Columbia,Canada,50.6665,-120.3192,America/Vancouver,104460
+Male,Kaafu Atoll,Maldives,4.1752,73.5092,Indian/Maldives,103693
+Lethbridge,Alberta,Canada,49.7,-112.8186,America/Edmonton,103197
+Whalley,British Columbia,Canada,49.1792,-122.8667,America/Vancouver,102555
+Delta,British Columbia,Canada,49.0892,-123.0532,America/Vancouver,101668
+Chilliwack,British Columbia,Canada,49.1664,-121.9526,America/Vancouver,101491
+Dartmouth,Nova Scotia,Canada,44.6713,-63.5772,America/Halifax,101343
+Red Deer,Alberta,Canada,52.2668,-113.802,America/Edmonton,100844
+Niagara Falls,Ontario,Canada,43.1001,-79.0663,America/Toronto,99818
+Saint-Laurent,Quebec,Canada,45.5001,-73.6659,America/Toronto,98828
+Thimphu,Thimphu District,Bhutan,27.4661,89.6419,Asia/Thimphu,98676
+Bridgetown,Saint Michael,Barbados,13.1073,-59.6202,America/Barbados,98511
+Saint-Jean-sur-Richelieu,Quebec,Canada,45.3071,-73.2626,America/Toronto,98036
+Chomedey,Quebec,Canada,45.5333,-73.75,America/Toronto,94030
+Nouméa,South Province,New Caledonia,-22.2741,166.4488,Pacific/Noumea,93060
+Nasinu,Central,Fiji,-18.0705,178.5131,Pacific/Fiji,92043
+Pickering,Ontario,Canada,43.9001,-79.1329,America/Toronto,91771
+Newmarket,Ontario,Canada,44.0501,-79.4663,America/Toronto,91034
+Nanaimo,British Columbia,Canada,49.1664,-123.94,America/Vancouver,90504
+Airdrie,Alberta,Canada,51.3001,-114.0353,America/Edmonton,90044
+Kanata,Ontario,Canada,45.3001,-75.9161,America/Toronto,90000
+Fort-de-France,Martinique,Martinique,14.6037,-61.0742,America/Martinique,89995
+La Haute-Saint-Charles,Quebec,Canada,46.8903,-71.3722,America/Toronto,88460
+North Vancouver,British Columbia,Canada,49.3164,-123.0693,America/Vancouver,88168
+Montréal-Nord,Quebec,Canada,45.6016,-73.6306,America/Toronto,86857
+Le Sud-Ouest,Quebec,Canada,45.4719,-73.5899,America/Toronto,86347
+Moncton,New Brunswick,Canada,46.0945,-64.7965,America/Moncton,86106
+Peterborough,Ontario,Canada,44.3001,-78.3162,America/Toronto,85807
+Repentigny,Quebec,Canada,45.7422,-73.4501,America/Toronto,84965
+Charlesbourg,Quebec,Canada,46.899,-71.305,America/Toronto,82870
+Saint-Hubert,Quebec,Canada,45.5001,-73.4158,America/Toronto,82548
+Maple Ridge,British Columbia,Canada,49.2194,-122.6019,America/Vancouver,82256
+Beauport,Quebec,Canada,46.8588,-71.192,America/Toronto,81425
+East Hastings,British Columbia,Canada,49.2717,-123.0619,America/Vancouver,80740
+Saint-Léonard,Quebec,Canada,45.5877,-73.595,America/Toronto,79495
+Willowdale,Ontario,Canada,43.7667,-79.3991,America/Toronto,79440
+Prince George,British Columbia,Canada,53.9166,-122.753,America/Vancouver,78943
+New Westminster,British Columbia,Canada,49.2068,-122.9109,America/Vancouver,78916
+South Surrey,British Columbia,Canada,49.05,-122.7917,America/Vancouver,77170
+Les Rivières,Quebec,Canada,46.8185,-71.272,America/Toronto,77000
+Luxembourg,,Luxembourg,49.6098,6.1327,Europe/Luxembourg,76684
+Caledon,Ontario,Canada,43.8654,-79.9932,America/Toronto,76581
+Stoney Creek,Ontario,Canada,43.2168,-79.7663,America/Toronto,76382
+Moroni,Grande Comore,Comoros,-11.7022,43.2551,Indian/Comoro,74749
+Cloverdale,British Columbia,Canada,49.108,-122.7276,America/Vancouver,73355
+Pierrefonds-Roxboro,Quebec,Canada,45.5019,-73.8417,America/Toronto,73194
+Nutana Sector,Saskatchewan,Canada,52.1,-106.6371,America/Regina,72564
+Sarnia,Ontario,Canada,42.9787,-82.4041,America/Toronto,72125
+Sault Ste. Marie,Ontario,Canada,46.5168,-84.3333,America/Toronto,72051
+Saint John,New Brunswick,Canada,45.2708,-66.0562,America/Moncton,71808
+Sherwood Park,Alberta,Canada,53.5168,-113.3187,America/Edmonton,70618
+Grande Prairie,Alberta,Canada,55.1667,-118.8027,America/Edmonton,70385
+Confederation,Saskatchewan,Canada,52.1391,-106.7036,America/Regina,70192
+Brossard,Quebec,Canada,45.4501,-73.4658,America/Toronto,69575
+Verdun,Quebec,Canada,45.4601,-73.5706,America/Toronto,69229
+Chicoutimi,Quebec,Canada,48.4196,-71.0637,America/Toronto,69004
+Notre-Dame-de-Grâce,Quebec,Canada,45.4768,-73.6143,America/Toronto,68152
+Chaguanas,,Trinidad and Tobago,10.5167,-61.4167,America/Port_of_Spain,67433
+Fort McMurray,Alberta,Canada,56.7268,-111.381,America/Edmonton,66573
+Granby,Quebec,Canada,45.4001,-72.7324,America/Toronto,66222
+Waterfront Communities-The Island,Ontario,Canada,43.6339,-79.3772,America/Toronto,65913
+Fleetwood,British Columbia,Canada,49.1667,-122.8,America/Vancouver,65565
+Fort Garry South,Manitoba,Canada,49.7923,-97.1636,America/Winnipeg,65420
+Belize City,Belize District,Belize,17.4995,-88.1976,America/Belize,65222
+Guildford,British Columbia,Canada,49.1917,-122.8,America/Vancouver,64985
+Bandar Seri Begawan,Brunei-Muara District,Brunei,4.8903,114.9401,Asia/Brunei,64409
+Hull,Quebec,Canada,45.4276,-75.7106,America/Toronto,63702
+Medicine Hat,Alberta,Canada,50.0393,-110.6766,America/Edmonton,63138
+Fredericton,New Brunswick,Canada,45.9454,-66.6656,America/Moncton,63116
+Halton Hills,Ontario,Canada,43.6403,-79.9315,America/Toronto,62951
+Brighouse-City Centre,British Columbia,Canada,49.1667,-123.1333,America/Vancouver,62855
+Downtown Vancouver,British Columbia,Canada,49.2828,-123.1193,America/Vancouver,62030
+Cayenne,Guyane,French Guiana,4.9381,-52.3346,America/Cayenne,61550
+Norfolk County,Ontario,Canada,42.8334,-80.383,America/Toronto,60847
+North Delta,British Columbia,Canada,49.1667,-122.9167,America/Vancouver,60769
+Drummondville,Quebec,Canada,45.8834,-72.4824,America/Toronto,59489
+Pierrefonds,Quebec,Canada,45.4599,-73.8928,America/Toronto,59093
+Port Coquitlam,British Columbia,Canada,49.2664,-122.7693,America/Vancouver,58000
+St. Albert,Alberta,Canada,53.6334,-113.6353,America/Edmonton,57719
+Aylmer,Quebec,Canada,45.4002,-75.8064,America/Toronto,56542
+Saint-Michel,Quebec,Canada,45.5676,-73.6217,America/Toronto,56420
+Honiara,,Solomon Islands,-9.4333,159.95,Pacific/Guadalcanal,56298
+Aurora,Ontario,Canada,44.0001,-79.4663,America/Toronto,55445
+Saint-Jérôme,Quebec,Canada,45.7804,-74.0036,America/Toronto,54948
+Jonquière,Quebec,Canada,48.4165,-71.2488,America/Toronto,54842
+Mamoudzou,,Mayotte,-12.7823,45.2288,Indian/Mayotte,54831
+Les Abymes,Guadeloupe,Guadeloupe,16.273,-61.5051,America/Guadeloupe,53514
+Woburn,Ontario,Canada,43.7666,-79.2277,America/Toronto,53485
+São Tomé,São Tomé Island,Sao Tome and Principe,0.3376,6.7299,Africa/Sao_Tome,53300
+Metrotown,British Columbia,Canada,49.225,-123.0,America/Vancouver,52355
+Welland,Ontario,Canada,42.9834,-79.2496,America/Toronto,52293
+University Heights,Saskatchewan,Canada,52.1443,-106.5787,America/Regina,51957
+Lower Sackville,Nova Scotia,Canada,44.776,-63.6786,America/Halifax,51749
+Saint John’s,Saint John Parish,Antigua and Barbuda,17.121,-61.8433,America/Antigua,51737
+Renfrew-Collingwood,British Columbia,Canada,49.245,-123.0376,America/Vancouver,51530
+Lakewood,Saskatchewan,Canada,52.1085,-106.5903,America/Regina,51237
+Belleville,Ontario,Canada,44.1668,-77.3828,America/Toronto,50716
+Saint Croix,Saint Croix Island,U.S. Virgin Islands,17.7275,-64.747,America/St_Thomas,50601
+Willowdale East,Ontario,Canada,43.7706,-79.4015,America/Toronto,50434
+North Bay,Ontario,Canada,46.3168,-79.4663,America/Toronto,50396
+Saint-Hyacinthe,Quebec,Canada,45.6308,-72.957,America/Toronto,50326
+Whitchurch-Stouffville,Ontario,Canada,44.0001,-79.3163,America/Toronto,49864
+Kensington-Cedar Cottage,British Columbia,Canada,49.25,-123.0667,America/Vancouver,49235
+Dollard-Des Ormeaux,Quebec,Canada,45.4945,-73.8242,America/Toronto,48930
+Brandon,Manitoba,Canada,49.8469,-99.9531,America/Winnipeg,48859
+Cornwall,Ontario,Canada,45.0181,-74.7281,America/Toronto,48821
+Saipan,,Northern Mariana Islands,15.2123,145.7545,Pacific/Saipan,48220
+West End,British Columbia,Canada,49.2833,-123.1333,America/Vancouver,47200
+Langford,British Columbia,Canada,48.4496,-123.5026,America/Vancouver,46584
+Rouge,Ontario,Canada,43.8041,-79.1657,America/Toronto,46496
+Blainville,Quebec,Canada,45.6668,-73.8825,America/Toronto,46493
+Victoria-Downtown,British Columbia,Canada,48.4277,-123.361,America/Vancouver,46309
+West Vancouver,British Columbia,Canada,49.3286,-123.1602,America/Vancouver,45487
+Dededo Village,Dededo,Guam,13.5178,144.8391,Pacific/Guam,44943
+Georgetown,Ontario,Canada,43.6501,-79.9163,America/Toronto,44058
+L'Amoreaux,Ontario,Canada,43.7957,-79.3141,America/Toronto,43993
+Islington-City Centre West,Ontario,Canada,43.6335,-79.5433,America/Toronto,43965
+Malvern,Ontario,Canada,43.8094,-79.2234,America/Toronto,43794
+Quinte West,Ontario,Canada,44.1834,-77.5662,America/Toronto,43577
+Chatham,Ontario,Canada,42.4122,-82.1849,America/Toronto,43550
+Innisfil,Ontario,Canada,44.3001,-79.6496,America/Toronto,43326
+Kitsilano,British Columbia,Canada,49.2667,-123.1667,America/Vancouver,43045
+Salaberry-de-Valleyfield,Quebec,Canada,45.2501,-74.1325,America/Toronto,42787
+Châteauguay,Quebec,Canada,45.3834,-73.7492,America/Toronto,42786
+Rimouski,Quebec,Canada,48.4488,-68.524,America/Toronto,42240
+Saint-Eustache,Quebec,Canada,45.565,-73.9055,America/Toronto,42062
+Timmins,Ontario,Canada,48.4669,-81.3331,America/Toronto,41788
+Sorel-Tracy,Quebec,Canada,46.0418,-73.1136,America/Toronto,41629
+Mission,British Columbia,Canada,49.133,-122.3026,America/Vancouver,41519
+Centre City,Alberta,Canada,51.0451,-114.0743,America/Edmonton,41000
+Strawberry Hill,British Columbia,Canada,49.1333,-122.8833,America/Vancouver,41000
+Val-des-Arbres,Quebec,Canada,45.5984,-73.6754,America/Toronto,40974
+Stittsville,Ontario,Canada,45.2501,-75.9161,America/Toronto,40889
+Ancaster,Ontario,Canada,43.2181,-79.9872,America/Toronto,40557
+Apia,Tuamasaga,Samoa,-13.8333,-171.7667,Pacific/Apia,40407
+Woodstock,Ontario,Canada,43.1334,-80.7497,America/Toronto,40404
+Tarawa,Gilbert Islands,Kiribati,1.3278,172.977,Pacific/Tarawa,40311
+Vernon,British Columbia,Canada,50.2673,-119.2734,America/Vancouver,40116
+Bowmanville,Ontario,Canada,43.9168,-78.6829,America/Toronto,39371
+Boucherville,Quebec,Canada,45.591,-73.436,America/Toronto,39062
+Spruce Grove,Alberta,Canada,53.5334,-113.9187,America/Edmonton,38985
+St. Thomas,Ontario,Canada,42.7736,-81.1804,America/Toronto,38909
+Charlottetown,Prince Edward Island,Canada,46.2346,-63.1256,America/Halifax,38809
+Okanagan Mission,British Columbia,Canada,49.8167,-119.4833,America/Vancouver,38374
+Shawinigan,Quebec,Canada,46.5667,-72.7491,America/Toronto,38211
+Neufchâtel-Est–Lebourgneuf,Quebec,Canada,46.8544,-71.3419,America/Toronto,37540
+Duvernay,Quebec,Canada,45.5833,-73.6667,America/Toronto,37460
+Laval-des-Rapides,Quebec,Canada,45.5564,-73.7001,America/Toronto,36933
+Stouffville,Ontario,Canada,43.9668,-79.2496,America/Toronto,36753
+Dovercourt-Wallace Emerson-Junction,Ontario,Canada,43.6657,-79.4385,America/Toronto,36625
+Port-Vila,Shefa,Vanuatu,-17.7365,168.3137,Pacific/Efate,35901
+Monaco,Municipality of Monaco,Monaco,43.7372,7.4215,Europe/Monaco,32965
+San Pawl il-Baħar,Saint Paul’s Bay,Malta,35.9506,14.4156,Europe/Malta,32042
+Oranjestad,,Aruba,12.524,-70.027,America/Aruba,29998
+Faaa,Îles du Vent,French Polynesia,-17.5593,-149.6035,Pacific/Tahiti,29851
+George Town,,Cayman Islands,19.2866,-81.3744,America/Cayman,29370
+Saint Helier,St Helier,Jersey,49.188,-2.1049,Europe/Jersey,28000
+Gibraltar,,Gibraltar,36.1447,-5.3526,Europe/Gibraltar,26544
+Douglas,,Isle of Man,54.15,-4.4833,Europe/Isle_of_Man,26218
+Majuro,Majuro Atoll,Marshall Islands,7.0897,171.3803,Pacific/Majuro,25400
+Gros Islet,Gros-Islet,Saint Lucia,14.0667,-60.95,America/St_Lucia,25210
+Kingstown,Saint George Parish,Saint Vincent and the Grenadines,13.1553,-61.2274,America/St_Vincent,24518
+Providenciales,,Turks and Caicos Islands,21.7825,-72.2521,America/Grand_Turk,23769
+Victoria,La Rivière Anglaise,Seychelles,-4.62,55.455,Indian/Mahe,22881
+Nuku‘alofa,Tongatapu,Tonga,-21.1368,-175.2011,Pacific/Tongatapu,22400
+Andorra la Vella,,Andorra,42.5078,1.5211,Europe/Andorra,20430
+Roseau,Saint George Parish,Dominica,15.3017,-61.3881,America/Dominica,16571
+Saint Peter Port,St Peter Port,Guernsey,49.4598,-2.5353,Europe/Guernsey,16488
+Nuuk,Sermersooq,Greenland,64.1835,-51.7216,America/Nuuk,14798
+Avarua,Rarotonga,Cook Islands,-21.2075,-159.7755,Pacific/Rarotonga,13373
+Tórshavn,Streymoy,Faroe Islands,62.0097,-6.7716,Atlantic/Faroe,13200
+Basseterre,Saint George Basseterre,Saint Kitts and Nevis,17.2955,-62.725,America/St_Kitts,12920
+Pago Pago,Eastern District,American Samoa,-14.2781,-170.7025,Pacific/Pago_Pago,11500
+Mariehamn,,Aland Islands,60.0973,19.9348,Europe/Mariehamn,10682
+Kralendijk,Bonaire,"Bonaire, Saint Eustatius and Saba ",12.15,-68.2667,America/Kralendijk,10620
+Road Town,,British Virgin Islands,18.4269,-64.6208,America/Tortola,8449
+Saint George's,Saint George Parish,Grenada,12.0529,-61.7523,America/Grenada,7500
+Palikir,Pohnpei State,Micronesia,6.9248,158.1611,Pacific/Pohnpei,6942
+Funafuti,,Tuvalu,-8.5243,179.1942,Pacific/Funafuti,6320
+Saint-Pierre,,Saint Pierre and Miquelon,46.7791,-56.1773,America/Miquelon,6200
+Gustavia,,Saint Barthelemy,17.8962,-62.8498,America/St_Barthelemy,5988
+Marigot,,Saint Martin,18.0682,-63.083,America/Marigot,5700
+Vaduz,,Liechtenstein,47.1415,9.5215,Europe/Vaduz,5197
+San Marino,,San Marino,43.9367,12.4464,Europe/San_Marino,4500
+Longyearbyen,Svalbard,Svalbard and Jan Mayen,78.2233,15.6469,Arctic/Longyearbyen,2368
+Stanley,,Falkland Islands,-51.6938,-57.857,Atlantic/Stanley,2213
+The Valley,,Anguilla,18.217,-63.0578,America/Anguilla,2035
+Philipsburg,,Sint Maarten,18.026,-63.0458,America/Lower_Princes,1400
+Mata-Utu,Uvea,Wallis and Futuna,-13.2816,-176.1745,Pacific/Wallis,1200
+Yaren,Yaren District,Nauru,-0.5508,166.9252,Pacific/Nauru,1100
+Brades,Saint Peter,Montserrat,16.7918,-62.2106,America/Montserrat,1000
+Hamilton,Hamilton city,Bermuda,32.2949,-64.783,Atlantic/Bermuda,902
+Kingston,,Norfolk Island,-29.0546,167.9663,Pacific/Norfolk,880
+Vatican City,,Vatican,41.9027,12.4541,Europe/Vatican,829
+Jamestown,Saint Helena,Saint Helena,-15.9249,-5.7182,Atlantic/St_Helena,637
+Alofi,,Niue,-19.0529,-169.9196,Pacific/Niue,624
+Flying Fish Cove,,Christmas Island,-10.4217,105.6791,Indian/Christmas,500
+West Island,,Cocos Islands,-12.1568,96.8225,Indian/Cocos,120
+Adamstown,,Pitcairn,-25.066,-130.1015,Pacific/Pitcairn,46
+Port-aux-Français,Kerguelen,French Southern Territories,-49.3492,70.2194,Indian/Kerguelen,45
+Grytviken,,South Georgia and the South Sandwich Islands,-54.2811,-36.5092,Atlantic/South_Georgia,2

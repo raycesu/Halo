@@ -16,6 +16,45 @@ The current goal is to establish the application's Clean Architecture
 foundation, create its major views and ViewModels, add in-memory data access
 objects, and begin implementing tested use cases.
 
+## Location resolution
+
+Every data source Halo talks to is addressed by latitude and longitude: Open-Meteo, the USNO
+ephemeris service, and the coordinate conversion behind the star map. A place name is what the
+user has, so `LocationDataAccessInterface` bridges the two.
+
+`CsvLocationDataAccessObject` resolves names against a bundled extract of the GeoNames
+`cities15000` dataset, trimmed to 1,000 places and to the columns Halo needs: name, region,
+country, coordinates, IANA time zone and population. A local dataset rather than a geocoding
+service, because unlike weather and ephemerides this data does not change, the lookup cannot fail
+on a dropped connection, and it is fast enough to run on every keystroke.
+
+The 1,000 are chosen in order:
+
+1. the largest cities of North America — 200 Canadian, 250 American, 50 Mexican — weighted
+   towards Canada because that is where the application's users are
+2. the largest city of every remaining country, so nowhere on earth is unreachable
+3. the most populous cities left over, worldwide
+
+Canadian coverage therefore reaches down to towns of about 37,000 (Guelph, Barrie, Kingston),
+American to about 127,000, while all 243 countries remain represented.
+
+Matching is ranked in tiers — exact name, then prefix, then substring — and within a tier by
+population, so "York" surfaces York before New York and "Springfield" leads with the largest one.
+Names are folded to strip case and accents, so "sao paulo" finds São Paulo.
+
+`CityAutocompleteField` shows the matches as the user types. It hands back an `ObserverLocation`
+only when a suggestion is actually chosen, and clears it again if the text is edited afterwards,
+so a half-typed name can never be silently resolved to somewhere else.
+
+The resolved `ObserverLocation` is what travels into the use cases, carrying the time zone with
+it. That is what lets the weather request name its zone explicitly rather than having Open-Meteo
+infer one from the coordinates.
+
+### Coverage
+
+Places outside the bundled 1,000 are not resolvable. The remedy is another implementation of
+`LocationDataAccessInterface` backed by a geocoding service; nothing above the DAO would change.
+
 ## Viewing quality rating (Check Conditions)
 
 Halo rates how suitable forecast weather is for stargazing. The Check
@@ -124,6 +163,7 @@ The overall 0–100 score is bucketed into a label for display:
 
 ### Where this lives in the code
 
+- `entity.ObserverLocation` — the resolved place: name, coordinates, time zone
 - `entity.weather.WeatherCondition` — holds the four weather factors
 - `entity.weather.ViewingQualityRating` — pure scoring/rubric (unit-testable, no network)
 - `use_case.check_conditions.CheckConditionsInteractor` — fetch → score → present one moment

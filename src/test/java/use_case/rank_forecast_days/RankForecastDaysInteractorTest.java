@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
+import entity.ObserverLocation;
 import entity.weather.WeatherCondition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ class RankForecastDaysInteractorTest {
     private static final ZoneId ZONE = ZoneId.of("America/Toronto");
     private static final double LATITUDE = 43.6532;
     private static final double LONGITUDE = -79.3832;
+    private static final ObserverLocation LOCATION =
+            new ObserverLocation("Toronto", LATITUDE, LONGITUDE, ZoneId.of("America/Toronto"));
 
     private static final LocalDate TODAY = LocalDate.of(2026, 7, 30);
     private static final LocalDate YESTERDAY = TODAY.minusDays(1);
@@ -48,7 +51,7 @@ class RankForecastDaysInteractorTest {
     @Test
     void presentsAnErrorWhenNoDatesAreSelected() {
         interactor().rankForecastDays(
-                new RankForecastDaysInputData(LATITUDE, LONGITUDE, List.of()));
+                new RankForecastDaysInputData(LOCATION, List.of()));
 
         assertFalse(weatherDataAccess.wasCalled);
         assertFalse(outputBoundary.successCalled);
@@ -59,7 +62,7 @@ class RankForecastDaysInteractorTest {
     @Test
     void rejectsASelectionContainingAPastDateWithoutCallingTheDataAccessObject() {
         interactor().rankForecastDays(new RankForecastDaysInputData(
-                LATITUDE, LONGITUDE, List.of(TOMORROW, YESTERDAY)));
+                LOCATION, List.of(TOMORROW, YESTERDAY)));
 
         assertFalse(weatherDataAccess.wasCalled);
         assertFalse(outputBoundary.successCalled);
@@ -76,7 +79,7 @@ class RankForecastDaysInteractorTest {
                 List.of(new WeatherCondition(0.0, 20_000.0, 0.0, 0));
 
         interactor().rankForecastDays(
-                new RankForecastDaysInputData(LATITUDE, LONGITUDE, List.of(TODAY)));
+                new RankForecastDaysInputData(LOCATION, List.of(TODAY)));
 
         assertTrue(weatherDataAccess.wasCalled);
         assertTrue(outputBoundary.successCalled);
@@ -87,7 +90,7 @@ class RankForecastDaysInteractorTest {
         weatherDataAccess.failureMessage = "Could not reach the weather service.";
 
         interactor().rankForecastDays(
-                new RankForecastDaysInputData(LATITUDE, LONGITUDE, List.of(TOMORROW)));
+                new RankForecastDaysInputData(LOCATION, List.of(TOMORROW)));
 
         assertFalse(outputBoundary.successCalled);
         assertTrue(outputBoundary.errorCalled);
@@ -107,7 +110,7 @@ class RankForecastDaysInteractorTest {
                 List.of(tiedCondition, bestCondition, tiedCondition);
 
         interactor().rankForecastDays(
-                new RankForecastDaysInputData(LATITUDE, LONGITUDE, selectedDates));
+                new RankForecastDaysInputData(LOCATION, selectedDates));
 
         assertTrue(outputBoundary.successCalled);
         final List<RankedDayResult> rankedDays = outputBoundary.outputData.getRankedDays();
@@ -136,7 +139,7 @@ class RankForecastDaysInteractorTest {
                 List.of(new WeatherCondition(0.0, 20_000.0, 0.0, 0));
 
         interactor().rankForecastDays(
-                new RankForecastDaysInputData(LATITUDE, LONGITUDE, List.of(TODAY)));
+                new RankForecastDaysInputData(LOCATION, List.of(TODAY)));
 
         assertEquals(LATITUDE, weatherDataAccess.requestedLatitude, 1e-9);
         assertEquals(LONGITUDE, weatherDataAccess.requestedLongitude, 1e-9);
@@ -158,7 +161,7 @@ class RankForecastDaysInteractorTest {
 
         @Override
         public WeatherCondition getWeatherCondition(
-                final double latitude, final double longitude, final LocalDateTime dateTime)
+                final ObserverLocation location, final LocalDateTime dateTime)
                 throws WeatherUnavailableException {
             throw new UnsupportedOperationException(
                     "RankForecastDaysInteractor should only call getWeatherConditions.");
@@ -166,11 +169,11 @@ class RankForecastDaysInteractorTest {
 
         @Override
         public List<WeatherCondition> getWeatherConditions(
-                final double latitude, final double longitude, final List<LocalDateTime> dateTimes)
+                final ObserverLocation location, final List<LocalDateTime> dateTimes)
                 throws WeatherUnavailableException {
             wasCalled = true;
-            requestedLatitude = latitude;
-            requestedLongitude = longitude;
+            requestedLatitude = location.getLatitude();
+            requestedLongitude = location.getLongitude();
             requestedDateTimes = dateTimes;
 
             if (failureMessage != null) {

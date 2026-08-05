@@ -39,6 +39,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.JOptionPane;
 
+import entity.ObserverLocation;
 import entity.Star;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
@@ -616,6 +617,13 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleCheckConditions() {
+        final ObserverLocation location = viewModel.getObserverLocation();
+        if (location == null) {
+            checkConditionsViewModel.setErrorMessage(
+                    "Set an observation location before checking conditions.");
+            return;
+        }
+
         final LocalDateTime observationDateTime;
         try {
             observationDateTime = LocalDateTime.of(
@@ -630,10 +638,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         checkConditionsButton.setEnabled(false);
         new Thread(() -> {
             try {
-                checkConditionsController.checkConditions(
-                        viewModel.getLatitude(),
-                        viewModel.getLongitude(),
-                        observationDateTime);
+                checkConditionsController.checkConditions(location, observationDateTime);
             }
             finally {
                 SwingUtilities.invokeLater(() -> checkConditionsButton.setEnabled(true));
@@ -642,6 +647,11 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleRankForecastDays() {
+        final ObserverLocation location = viewModel.getObserverLocation();
+        if (location == null) {
+            rankForecastErrorLabel.setText("Set an observation location first.");
+            return;
+        }
         if (selectedForecastDates.isEmpty()) {
             rankForecastErrorLabel.setText("Select at least one date to rank.");
             return;
@@ -652,10 +662,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         rankForecastButton.setEnabled(false);
         new Thread(() -> {
             try {
-                rankForecastDaysController.rankForecastDays(
-                        viewModel.getLatitude(),
-                        viewModel.getLongitude(),
-                        datesToRank);
+                rankForecastDaysController.rankForecastDays(location, datesToRank);
             }
             finally {
                 SwingUtilities.invokeLater(() -> rankForecastButton.setEnabled(true));
