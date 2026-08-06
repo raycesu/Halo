@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import entity.ObserverLocation;
-import use_case.location.LocationDataAccessInterface;
+import use_case.lookup_location.LocationDataAccessInterface;
 
 /**
  * Resolves place names against a bundled extract of the GeoNames {@code cities15000} dataset,

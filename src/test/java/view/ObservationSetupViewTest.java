@@ -15,13 +15,17 @@ import javax.swing.SwingUtilities;
 import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.lookup_location.LookupLocationController;
+import interface_adapter.lookup_location.LookupLocationPresenter;
+import interface_adapter.lookup_location.LookupLocationViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.SkyViewModel;
 import interface_adapter.view_sky.ViewSkyController;
 import interface_adapter.view_sky.ViewSkyPresenter;
 import org.junit.jupiter.api.Test;
-import use_case.location.LocationDataAccessInterface;
+import use_case.lookup_location.LocationDataAccessInterface;
+import use_case.lookup_location.LookupLocationInteractor;
 import use_case.view_sky.ViewSkyInputBoundary;
 import use_case.view_sky.ViewSkyInputData;
 import use_case.view_sky.ViewSkyOutputBoundary;
@@ -142,12 +146,21 @@ class ObservationSetupViewTest {
         final AtomicReference<ObservationSetupView> viewReference =
                 new AtomicReference<>();
 
+        final LookupLocationViewModel lookupLocationViewModel =
+                new LookupLocationViewModel();
+        final LookupLocationController lookupLocationController =
+                new LookupLocationController(
+                        new LookupLocationInteractor(
+                                new StubLocationDataAccess(),
+                                new LookupLocationPresenter(lookupLocationViewModel)));
+
         SwingUtilities.invokeAndWait(() -> viewReference.set(
                 new ObservationSetupView(
                         setupViewModel,
                         controller,
                         viewManagerModel,
-                        new StubLocationDataAccess())));
+                        lookupLocationController,
+                        lookupLocationViewModel)));
 
         return new TestContext(
                 viewReference.get(),

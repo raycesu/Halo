@@ -1,0 +1,153 @@
+---
+title: Rank Forecast Days use case
+---
+classDiagram
+direction LR
+
+%% ---------- View ----------
+class SkyView {
+  -RankForecastDaysController rankForecastDaysController
+  -RankForecastDaysViewModel rankForecastDaysViewModel
+  +actionPerformed(ActionEvent)
+}
+
+%% ---------- Interface Adapters ----------
+class RankForecastDaysController {
+  -RankForecastDaysInputBoundary inputBoundary
+  +rankForecastDays(ObserverLocation, List~LocalDate~)
+}
+
+class RankForecastDaysPresenter {
+  -RankForecastDaysViewModel viewModel
+  +presentRankedDays(RankForecastDaysOutputData)
+  +presentError(String)
+  -capitalize(ViewingQualityRating) String
+  -colorFor(ViewingQualityRating) String
+}
+
+class RankForecastDaysViewModel {
+  -List~RankedDayDisplayItem~ rankedDays
+  -String errorMessage
+  +setRankedDays(List~RankedDayDisplayItem~)
+  +reset()
+  +addPropertyChangeListener(PropertyChangeListener)
+}
+
+class RankedDayDisplayItem {
+  -int rank
+  -String dateText
+  -String ratingText
+  -String ratingColor
+  -String overallScoreText
+}
+
+%% ---------- Use Case layer ----------
+class RankForecastDaysInputBoundary {
+  <<interface>>
+  +rankForecastDays(RankForecastDaysInputData)
+}
+
+class RankForecastDaysOutputBoundary {
+  <<interface>>
+  +presentRankedDays(RankForecastDaysOutputData)
+  +presentError(String)
+}
+
+class RankForecastDaysInteractor {
+  -WeatherDataAccessInterface weatherDataAccess
+  -RankForecastDaysOutputBoundary outputBoundary
+  -Clock clock
+  -int OBSERVATION_HOUR$
+  +rankForecastDays(RankForecastDaysInputData)
+}
+
+class ScoredDay {
+  <<inner class>>
+  -LocalDate date
+  -WeatherCondition condition
+  -double overallScore
+  -ViewingQualityRating rating
+}
+
+class RankForecastDaysInputData {
+  -ObserverLocation location
+  -List~LocalDate~ selectedDates
+}
+
+class RankForecastDaysOutputData {
+  -List~RankedDayResult~ rankedDays
+}
+
+class RankedDayResult {
+  -LocalDate date
+  -WeatherCondition condition
+  -double overallScore
+  -ViewingQualityRating rating
+  -int rank
+}
+
+class WeatherDataAccessInterface {
+  <<interface>>
+  +getWeatherCondition(ObserverLocation, LocalDateTime) WeatherCondition
+  +getWeatherConditions(ObserverLocation, List~LocalDateTime~) List~WeatherCondition~
+}
+
+class WeatherUnavailableException {
+  <<exception>>
+}
+
+%% ---------- Data Access ----------
+class OpenMeteoWeatherDataAccessObject
+
+%% ---------- Entities ----------
+class WeatherCondition {
+  -double cloudCoverPercent
+  -double visibilityMeters
+  -double precipitationProbabilityPercent
+  -int weatherCode
+}
+
+class ViewingQualityRating {
+  <<enumeration>>
+  POOR
+  FAIR
+  GOOD
+  EXCELLENT
+  +calculateOverallScore(WeatherCondition) double$
+  +fromScore(double) ViewingQualityRating$
+}
+
+class ObserverLocation {
+  -String displayName
+  -double latitude
+  -double longitude
+  -ZoneId zoneId
+}
+
+%% ---------- Relationships ----------
+SkyView --> RankForecastDaysController : calls
+SkyView ..> RankForecastDaysViewModel : listens
+
+RankForecastDaysController --> RankForecastDaysInputBoundary
+RankForecastDaysController ..> RankForecastDaysInputData : creates
+
+RankForecastDaysInteractor ..|> RankForecastDaysInputBoundary
+RankForecastDaysInteractor --> WeatherDataAccessInterface
+RankForecastDaysInteractor --> RankForecastDaysOutputBoundary
+RankForecastDaysInteractor ..> RankForecastDaysOutputData : creates
+RankForecastDaysInteractor ..> ViewingQualityRating : scores with
+RankForecastDaysInteractor *-- ScoredDay : nested
+WeatherDataAccessInterface ..> WeatherUnavailableException : throws
+
+RankForecastDaysPresenter ..|> RankForecastDaysOutputBoundary
+RankForecastDaysPresenter --> RankForecastDaysViewModel
+RankForecastDaysPresenter ..> RankedDayDisplayItem : creates
+
+OpenMeteoWeatherDataAccessObject ..|> WeatherDataAccessInterface
+
+RankForecastDaysViewModel *-- RankedDayDisplayItem : nested
+RankForecastDaysInputData o-- ObserverLocation
+RankForecastDaysOutputData o-- RankedDayResult
+RankedDayResult o-- WeatherCondition
+RankedDayResult --> ViewingQualityRating
+ScoredDay o-- WeatherCondition

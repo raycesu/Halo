@@ -1,4 +1,4 @@
-package use_case.location;
+package use_case.lookup_location;
 
 import java.util.List;
 

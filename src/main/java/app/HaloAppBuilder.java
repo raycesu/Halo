@@ -18,6 +18,9 @@ import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.custom_constellation.ConstellationController;
 import interface_adapter.custom_constellation.ConstellationPresenter;
 import interface_adapter.custom_constellation.ConstellationViewModel;
+import interface_adapter.lookup_location.LookupLocationController;
+import interface_adapter.lookup_location.LookupLocationPresenter;
+import interface_adapter.lookup_location.LookupLocationViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysPresenter;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
@@ -35,14 +38,17 @@ import use_case.custom_constellation.ConstellationOutputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInteractor;
 import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
-import use_case.sky.CelestialBodyDataAccessInterface;
+import use_case.view_sky.CelestialBodyDataAccessInterface;
 import use_case.weather.WeatherDataAccessInterface;
 import view.LoadingView;
 import view.ObservationSetupView;
 import view.SkyView;
 import view.ViewManager;
 import javax.swing.JFrame;
-import use_case.location.LocationDataAccessInterface;
+import use_case.lookup_location.LocationDataAccessInterface;
+import use_case.lookup_location.LookupLocationInputBoundary;
+import use_case.lookup_location.LookupLocationInteractor;
+import use_case.lookup_location.LookupLocationOutputBoundary;
 import use_case.view_sky.HorizontalCoordinateCalculator;
 import use_case.view_sky.StarCatalogDataAccessInterface;
 import use_case.view_sky.ViewSkyInputBoundary;
@@ -133,13 +139,22 @@ public class HaloAppBuilder {
                 new ConstellationInteractor(constellationDataAccess, constellationPresenter);
         final ConstellationController constellationController =
                 new ConstellationController(constellationInteractor);
+        final LookupLocationViewModel lookupLocationViewModel = new LookupLocationViewModel();
+        final LookupLocationOutputBoundary lookupLocationPresenter =
+                new LookupLocationPresenter(lookupLocationViewModel);
+        final LookupLocationInputBoundary lookupLocationInteractor =
+                new LookupLocationInteractor(locationDataAccess, lookupLocationPresenter);
+        final LookupLocationController lookupLocationController =
+                new LookupLocationController(lookupLocationInteractor);
+
         final ViewManager viewManager = new ViewManager(viewManagerModel);
         final ObservationSetupView observationSetupView =
                 new ObservationSetupView(
                         observationSetupViewModel,
                         viewSkyController,
                         viewManagerModel,
-                        locationDataAccess);
+                        lookupLocationController,
+                        lookupLocationViewModel);
         final LoadingView loadingView = new LoadingView();
         final SkyView skyView =
                 new SkyView(
