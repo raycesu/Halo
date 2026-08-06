@@ -7,6 +7,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
@@ -22,7 +24,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import entity.ObserverLocation;
-import use_case.location.LocationDataAccessInterface;
+import interface_adapter.lookup_location.LookupLocationController;
+import interface_adapter.lookup_location.LookupLocationViewModel;
 
 /**
  * A place-name field that suggests matching cities as the user types and hands back the one they
@@ -34,10 +37,10 @@ import use_case.location.LocationDataAccessInterface;
  * silently resolves to somewhere else, which is the failure this component exists to prevent.
  *
  * <p>Suggestions are looked up on the event dispatch thread. That is safe here only because the
- * lookup is a scan of an in-memory list; a {@link LocationDataAccessInterface} backed by a web
- * service would need this moved onto a worker thread.
+ * lookup is a scan of an in-memory list; a data access implementation backed by a web service
+ * would need this moved onto a worker thread.
  */
-public class CityAutocompleteField extends JPanel {
+public class CityAutocompleteField extends JPanel implements PropertyChangeListener {
 
     /** Enough suggestions to disambiguate the common cases without covering the form. */
     private static final int maxSuggestions = 8;
@@ -50,7 +53,8 @@ public class CityAutocompleteField extends JPanel {
      */
     private static final int maxPopupWidth = 380;
 
-    private final LocationDataAccessInterface locationDataAccess;
+    private final LookupLocationController lookupLocationController;
+    private final LookupLocationViewModel lookupLocationViewModel;
     private final JTextField textField = new JTextField();
     private final DefaultListModel<ObserverLocation> suggestionModel = new DefaultListModel<>();
     private final JList<ObserverLocation> suggestionList = new JList<>(suggestionModel);
@@ -62,8 +66,11 @@ public class CityAutocompleteField extends JPanel {
     /** Suppresses the document listener while the field's text is being set in code. */
     private boolean updatingText;
 
-    public CityAutocompleteField(final LocationDataAccessInterface locationDataAccess) {
-        this.locationDataAccess = locationDataAccess;
+    public CityAutocompleteField(
+            final LookupLocationController lookupLocationController,
+            final LookupLocationViewModel lookupLocationViewModel) {
+        this.lookupLocationController = lookupLocationController;
+        this.lookupLocationViewModel = lookupLocationViewModel;
 
         setLayout(new BorderLayout());
         setOpaque(false);
@@ -84,6 +91,8 @@ public class CityAutocompleteField extends JPanel {
         textField.getDocument().addDocumentListener(new SuggestionRefresher());
         textField.addKeyListener(new NavigationKeyListener());
         suggestionList.addMouseListener(new SuggestionClickListener());
+
+        lookupLocationViewModel.addPropertyChangeListener(this);
     }
 
     /**
@@ -117,14 +126,23 @@ public class CityAutocompleteField extends JPanel {
         textField.setEnabled(enabled);
     }
 
+    @Override
+    public void propertyChange(final PropertyChangeEvent event) {
+        if (LookupLocationViewModel.SUGGESTIONS_PROPERTY.equals(event.getPropertyName())) {
+            applySuggestions(lookupLocationViewModel.getSuggestions());
+        }
+    }
+
     private void refreshSuggestions() {
         final String query = textField.getText();
 
         // Any edit invalidates an earlier choice: the text no longer necessarily names it.
         selectedLocation = null;
 
-        final List<ObserverLocation> matches =
-                locationDataAccess.findByName(query, maxSuggestions);
+        lookupLocationController.lookupLocation(query, maxSuggestions);
+    }
+
+    private void applySuggestions(final List<ObserverLocation> matches) {
         suggestionModel.clear();
         for (final ObserverLocation match : matches) {
             suggestionModel.addElement(match);

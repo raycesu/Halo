@@ -1,4 +1,4 @@
-package use_case.sky;
+package use_case.view_sky;
 
 import java.time.Instant;
 import java.util.List;
