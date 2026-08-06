@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import entity.ObserverLocation;
-import use_case.location.LocationDataAccessInterface;
+import use_case.lookup_location.LocationDataAccessInterface;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

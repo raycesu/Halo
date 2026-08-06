@@ -1,0 +1,181 @@
+---
+title: View Sky use case
+---
+classDiagram
+direction LR
+
+%% ---------- View ----------
+class ObservationSetupView {
+  -ViewSkyController viewSkyController
+  -ObservationSetupViewModel viewModel
+  +propertyChange(PropertyChangeEvent)
+}
+
+%% ---------- Interface Adapters ----------
+class ViewSkyController {
+  -ViewSkyInputBoundary inputBoundary
+  -ViewSkyOutputBoundary outputBoundary
+  +viewSky(ObserverLocation, String date, String time)
+}
+
+class ViewSkyPresenter {
+  -SkyViewModel skyViewModel
+  -ObservationSetupViewModel observationSetupViewModel
+  -CheckConditionsViewModel checkConditionsViewModel
+  -RankForecastDaysViewModel rankForecastDaysViewModel
+  +prepareSuccessView(ViewSkyOutputData)
+  +prepareFailView(String)
+  +prepareWarning(String)
+}
+
+class SkyViewModel {
+  -String displayedLocation
+  -String displayedDate
+  -String displayedTime
+  -double latitude
+  -double longitude
+  -ObserverLocation observerLocation
+  -List~Star~ stars
+  -Star selectedObject
+  -String warningMessage
+  -String errorMessage
+  +setStars(List~Star~)
+  +addPropertyChangeListener(PropertyChangeListener)
+}
+
+class ObservationSetupViewModel {
+  -ObserverLocation selectedLocation
+  -String date
+  -String time
+  -String errorMessage
+  +setErrorMessage(String)
+}
+
+%% ---------- Use Case layer ----------
+class ViewSkyInputBoundary {
+  <<interface>>
+  +execute(ViewSkyInputData)
+}
+
+class ViewSkyOutputBoundary {
+  <<interface>>
+  +prepareSuccessView(ViewSkyOutputData)
+  +prepareFailView(String)
+  +prepareWarning(String)
+}
+
+class ViewSkyInteractor {
+  -StarCatalogDataAccessInterface starCatalogDataAccess
+  -CelestialBodyDataAccessInterface celestialBodyDataAccess
+  -HorizontalCoordinateCalculator coordinateCalculator
+  -ViewSkyOutputBoundary outputBoundary
+  +execute(ViewSkyInputData)
+  -positionCatalogueStars(List~Star~, ObserverLocation, ZonedDateTime) List~Star~
+  -fetchMovingBodies(ObserverLocation, Instant, List~Star~) List~Star~
+  -visibleBrightestFirst(List~Star~) List~Star~
+}
+
+class ViewSkyInputData {
+  -String locationName
+  -double latitude
+  -double longitude
+  -ZoneId zoneId
+  -LocalDateTime observationDateTime
+}
+
+class ViewSkyOutputData {
+  -String location
+  -String date
+  -String time
+  -double latitude
+  -double longitude
+  -ObserverLocation observerLocation
+  -List~Star~ stars
+}
+
+class StarCatalogDataAccessInterface {
+  <<interface>>
+  +findAll() List~Star~
+}
+
+class CelestialBodyDataAccessInterface {
+  <<interface>>
+  +getCelestialBodies(ObserverLocation, Instant) List~Star~
+}
+
+class HorizontalCoordinateCalculator {
+  <<interface>>
+  +updateHorizontalPositions(List~Star~, ObserverLocation, ZonedDateTime)
+}
+
+class CelestialDataUnavailableException {
+  <<exception>>
+}
+
+%% ---------- Data Access ----------
+class CsvStarCatalogDataAccessObject
+class InMemoryStarCatalogDataAccessObject
+class UsnoCelestialBodyDataAccessObject
+class AltAzCalculator
+
+%% ---------- Entities ----------
+class Star {
+  -String catalogueId
+  -String displayName
+  -double rightAscension
+  -double declination
+  -double apparentMagnitude
+  -CelestialBodyType type
+  -double altitude
+  -double azimuth
+  +isAboveHorizon() boolean
+  +copyForObservation() Star
+}
+
+class ObserverLocation {
+  -String displayName
+  -double latitude
+  -double longitude
+  -ZoneId zoneId
+}
+
+class CelestialBodyType {
+  <<enumeration>>
+  SUN
+  MOON
+  PLANET
+  STAR
+}
+
+%% ---------- Relationships ----------
+ObservationSetupView --> ViewSkyController : calls
+ObservationSetupView ..> ObservationSetupViewModel : listens
+
+ViewSkyController --> ViewSkyInputBoundary
+ViewSkyController --> ViewSkyOutputBoundary : rejects invalid input
+ViewSkyController ..> ViewSkyInputData : creates
+
+ViewSkyInteractor ..|> ViewSkyInputBoundary
+ViewSkyInteractor --> ViewSkyOutputBoundary
+ViewSkyInteractor --> StarCatalogDataAccessInterface
+ViewSkyInteractor --> CelestialBodyDataAccessInterface
+ViewSkyInteractor --> HorizontalCoordinateCalculator
+ViewSkyInteractor ..> ViewSkyInputData : uses
+ViewSkyInteractor ..> ViewSkyOutputData : creates
+ViewSkyInteractor ..> ObserverLocation : creates
+CelestialBodyDataAccessInterface ..> CelestialDataUnavailableException : throws
+
+ViewSkyPresenter ..|> ViewSkyOutputBoundary
+ViewSkyPresenter --> SkyViewModel
+ViewSkyPresenter --> ObservationSetupViewModel
+ViewSkyPresenter ..> ViewSkyOutputData : uses
+
+CsvStarCatalogDataAccessObject ..|> StarCatalogDataAccessInterface
+InMemoryStarCatalogDataAccessObject ..|> StarCatalogDataAccessInterface
+UsnoCelestialBodyDataAccessObject ..|> CelestialBodyDataAccessInterface
+AltAzCalculator ..|> HorizontalCoordinateCalculator
+
+ViewSkyOutputData o-- Star
+ViewSkyOutputData o-- ObserverLocation
+SkyViewModel o-- Star
+Star --> CelestialBodyType

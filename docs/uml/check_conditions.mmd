@@ -1,0 +1,133 @@
+---
+title: Check Conditions use case
+---
+classDiagram
+direction LR
+
+%% ---------- View ----------
+class SkyView {
+  -CheckConditionsController checkConditionsController
+  -CheckConditionsViewModel checkConditionsViewModel
+  +actionPerformed(ActionEvent)
+}
+
+%% ---------- Interface Adapters ----------
+class CheckConditionsController {
+  -CheckConditionsInputBoundary inputBoundary
+  +checkConditions(ObserverLocation, LocalDateTime)
+}
+
+class CheckConditionsPresenter {
+  -CheckConditionsViewModel viewModel
+  +presentConditions(CheckConditionsOutputData)
+  +presentError(String)
+  -capitalize(ViewingQualityRating) String
+  -colorFor(ViewingQualityRating) String
+}
+
+class CheckConditionsViewModel {
+  -String cloudCoverText
+  -String visibilityText
+  -String precipitationText
+  -String weatherCodeText
+  -String overallScoreText
+  -String ratingText
+  -String ratingColor
+  -String errorMessage
+  +reset()
+  +addPropertyChangeListener(PropertyChangeListener)
+}
+
+%% ---------- Use Case layer ----------
+class CheckConditionsInputBoundary {
+  <<interface>>
+  +checkConditions(CheckConditionsInputData)
+}
+
+class CheckConditionsOutputBoundary {
+  <<interface>>
+  +presentConditions(CheckConditionsOutputData)
+  +presentError(String)
+}
+
+class CheckConditionsInteractor {
+  -WeatherDataAccessInterface weatherDataAccess
+  -CheckConditionsOutputBoundary outputBoundary
+  -Clock clock
+  +checkConditions(CheckConditionsInputData)
+}
+
+class CheckConditionsInputData {
+  -ObserverLocation location
+  -LocalDateTime observationDateTime
+}
+
+class CheckConditionsOutputData {
+  -double cloudCoverPercent
+  -double visibilityMeters
+  -double precipitationProbabilityPercent
+  -int weatherCode
+  -double overallScore
+  -ViewingQualityRating rating
+}
+
+class WeatherDataAccessInterface {
+  <<interface>>
+  +getWeatherCondition(ObserverLocation, LocalDateTime) WeatherCondition
+  +getWeatherConditions(ObserverLocation, List~LocalDateTime~) List~WeatherCondition~
+}
+
+class WeatherUnavailableException {
+  <<exception>>
+}
+
+%% ---------- Data Access ----------
+class OpenMeteoWeatherDataAccessObject
+
+%% ---------- Entities ----------
+class WeatherCondition {
+  -double cloudCoverPercent
+  -double visibilityMeters
+  -double precipitationProbabilityPercent
+  -int weatherCode
+}
+
+class ViewingQualityRating {
+  <<enumeration>>
+  POOR
+  FAIR
+  GOOD
+  EXCELLENT
+  +calculateOverallScore(WeatherCondition) double$
+  +fromScore(double) ViewingQualityRating$
+}
+
+class ObserverLocation {
+  -String displayName
+  -double latitude
+  -double longitude
+  -ZoneId zoneId
+}
+
+%% ---------- Relationships ----------
+SkyView --> CheckConditionsController : calls
+SkyView ..> CheckConditionsViewModel : listens
+
+CheckConditionsController --> CheckConditionsInputBoundary
+CheckConditionsController ..> CheckConditionsInputData : creates
+
+CheckConditionsInteractor ..|> CheckConditionsInputBoundary
+CheckConditionsInteractor --> WeatherDataAccessInterface
+CheckConditionsInteractor --> CheckConditionsOutputBoundary
+CheckConditionsInteractor ..> CheckConditionsOutputData : creates
+CheckConditionsInteractor ..> ViewingQualityRating : scores with
+WeatherDataAccessInterface ..> WeatherUnavailableException : throws
+
+CheckConditionsPresenter ..|> CheckConditionsOutputBoundary
+CheckConditionsPresenter --> CheckConditionsViewModel
+
+OpenMeteoWeatherDataAccessObject ..|> WeatherDataAccessInterface
+
+CheckConditionsInputData o-- ObserverLocation
+CheckConditionsOutputData --> ViewingQualityRating
+ViewingQualityRating ..> WeatherCondition : reads

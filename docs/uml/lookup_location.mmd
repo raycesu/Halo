@@ -1,0 +1,98 @@
+---
+title: Lookup Location use case
+---
+classDiagram
+direction LR
+
+%% ---------- View ----------
+class CityAutocompleteField {
+  -LookupLocationController lookupLocationController
+  -LookupLocationViewModel viewModel
+  -requestSuggestions(String query)
+}
+
+%% ---------- Interface Adapters ----------
+class LookupLocationController {
+  -LookupLocationInputBoundary inputBoundary
+  +lookupLocation(String query, int limit)
+}
+
+class LookupLocationPresenter {
+  -LookupLocationViewModel viewModel
+  +present(LookupLocationOutputData)
+}
+
+class LookupLocationViewModel {
+  +String SUGGESTIONS_PROPERTY$
+  -List~ObserverLocation~ suggestions
+  +getSuggestions() List~ObserverLocation~
+  +setSuggestions(List~ObserverLocation~)
+  +addPropertyChangeListener(PropertyChangeListener)
+}
+
+%% ---------- Use Case layer ----------
+class LookupLocationInputBoundary {
+  <<interface>>
+  +execute(LookupLocationInputData)
+}
+
+class LookupLocationOutputBoundary {
+  <<interface>>
+  +present(LookupLocationOutputData)
+}
+
+class LookupLocationInteractor {
+  -LocationDataAccessInterface locationDataAccess
+  -LookupLocationOutputBoundary outputBoundary
+  +execute(LookupLocationInputData)
+}
+
+class LookupLocationInputData {
+  -String query
+  -int limit
+  +getQuery() String
+  +getLimit() int
+}
+
+class LookupLocationOutputData {
+  -List~ObserverLocation~ results
+  +getResults() List~ObserverLocation~
+}
+
+class LocationDataAccessInterface {
+  <<interface>>
+  +findByName(String query, int limit) List~ObserverLocation~
+}
+
+%% ---------- Data Access ----------
+class CsvLocationDataAccessObject {
+  +findByName(String, int) List~ObserverLocation~
+}
+
+%% ---------- Entity ----------
+class ObserverLocation {
+  -String displayName
+  -double latitude
+  -double longitude
+  -ZoneId zoneId
+}
+
+%% ---------- Relationships ----------
+CityAutocompleteField --> LookupLocationController : calls
+CityAutocompleteField ..> LookupLocationViewModel : listens
+
+LookupLocationController --> LookupLocationInputBoundary
+LookupLocationController ..> LookupLocationInputData : creates
+
+LookupLocationInteractor ..|> LookupLocationInputBoundary
+LookupLocationInteractor --> LocationDataAccessInterface
+LookupLocationInteractor --> LookupLocationOutputBoundary
+LookupLocationInteractor ..> LookupLocationOutputData : creates
+
+LookupLocationPresenter ..|> LookupLocationOutputBoundary
+LookupLocationPresenter --> LookupLocationViewModel
+
+CsvLocationDataAccessObject ..|> LocationDataAccessInterface
+
+LookupLocationOutputData o-- ObserverLocation
+LookupLocationViewModel o-- ObserverLocation

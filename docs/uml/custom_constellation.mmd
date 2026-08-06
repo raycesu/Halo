@@ -1,0 +1,128 @@
+---
+title: Custom Constellation use case
+---
+classDiagram
+direction LR
+
+%% ---------- View ----------
+class SkyView {
+  -ConstellationController constellationController
+  -ConstellationViewModel constellationViewModel
+  -List~Star~ constellationSelection
+  +configureCustomConstellations(ConstellationController, ConstellationViewModel)
+}
+
+%% ---------- Interface Adapters ----------
+class ConstellationController {
+  -ConstellationInputBoundary inputBoundary
+  +createConstellation(String name, List~Star~ selectedStars)
+}
+
+class ConstellationPresenter {
+  -ConstellationViewModel viewModel
+  +prepareSuccessView(ConstellationOutputData)
+  +prepareFailureView(String)
+}
+
+class ConstellationViewModel {
+  -List~CustomConstellation~ constellations
+  -String errorMessage
+  -String successMessage
+  +addConstellation(CustomConstellation)
+  +setErrorMessage(String)
+  +setSuccessMessage(String)
+  +addPropertyChangeListener(PropertyChangeListener)
+}
+
+%% ---------- Use Case layer ----------
+class ConstellationInputBoundary {
+  <<interface>>
+  +execute(ConstellationInputData)
+}
+
+class ConstellationOutputBoundary {
+  <<interface>>
+  +prepareSuccessView(ConstellationOutputData)
+  +prepareFailureView(String)
+}
+
+class ConstellationInteractor {
+  -ConstellationDataAccessInterface dataAccess
+  -ConstellationOutputBoundary outputBoundary
+  +execute(ConstellationInputData)
+  -containsDuplicateStars(List~Star~) boolean
+  -createLines(List~Star~) List~ConstellationLine~
+}
+
+class ConstellationInputData {
+  -String name
+  -List~Star~ selectedStars
+}
+
+class ConstellationOutputData {
+  -CustomConstellation constellation
+  +getConstellation() CustomConstellation
+}
+
+class ConstellationDataAccessInterface {
+  <<interface>>
+  +existsByName(String) boolean
+  +save(CustomConstellation)
+  +findAll() List~CustomConstellation~
+}
+
+%% ---------- Data Access ----------
+class InMemoryConstellationDataAccessObject
+
+%% ---------- Entities ----------
+class Constellation {
+  -String name
+  -List~ConstellationLine~ lines
+  +getName() String
+  +getLines() List~ConstellationLine~
+}
+
+class CustomConstellation
+
+class ConstellationLine {
+  -Star startStar
+  -Star endStar
+  +getStartStar() Star
+  +getEndStar() Star
+}
+
+class Star {
+  -String catalogueId
+  -String displayName
+  -double rightAscension
+  -double declination
+  -double apparentMagnitude
+  -double altitude
+  -double azimuth
+}
+
+%% ---------- Relationships ----------
+SkyView --> ConstellationController : calls
+SkyView ..> ConstellationViewModel : listens
+
+ConstellationController --> ConstellationInputBoundary
+ConstellationController ..> ConstellationInputData : creates
+
+ConstellationInteractor ..|> ConstellationInputBoundary
+ConstellationInteractor --> ConstellationDataAccessInterface
+ConstellationInteractor --> ConstellationOutputBoundary
+ConstellationInteractor ..> ConstellationOutputData : creates
+ConstellationInteractor ..> CustomConstellation : creates
+ConstellationInteractor ..> ConstellationLine : creates
+
+ConstellationPresenter ..|> ConstellationOutputBoundary
+ConstellationPresenter --> ConstellationViewModel
+
+InMemoryConstellationDataAccessObject ..|> ConstellationDataAccessInterface
+
+CustomConstellation --|> Constellation
+Constellation o-- ConstellationLine
+ConstellationLine o-- Star
+ConstellationInputData o-- Star
+ConstellationOutputData o-- CustomConstellation
+ConstellationViewModel o-- CustomConstellation

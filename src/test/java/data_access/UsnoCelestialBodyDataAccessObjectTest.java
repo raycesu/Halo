@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import entity.CelestialBodyType;
 import entity.Star;
-import use_case.sky.CelestialDataUnavailableException;
+import use_case.view_sky.CelestialDataUnavailableException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

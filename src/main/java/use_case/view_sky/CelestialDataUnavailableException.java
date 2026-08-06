@@ -1,4 +1,4 @@
-package use_case.sky;
+package use_case.view_sky;
 
 /**
  * Thrown by {@link CelestialBodyDataAccessInterface} implementations when position data cannot

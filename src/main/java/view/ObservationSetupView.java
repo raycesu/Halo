@@ -24,9 +24,10 @@ import javax.swing.SwingWorker;
 
 import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.lookup_location.LookupLocationController;
+import interface_adapter.lookup_location.LookupLocationViewModel;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.ViewSkyController;
-import use_case.location.LocationDataAccessInterface;
 
 public class ObservationSetupView extends JPanel
         implements ActionListener, PropertyChangeListener {
@@ -45,12 +46,13 @@ public class ObservationSetupView extends JPanel
             final ObservationSetupViewModel viewModel,
             final ViewSkyController viewSkyController,
             final ViewManagerModel viewManagerModel,
-            final LocationDataAccessInterface locationDataAccess) {
+            final LookupLocationController lookupLocationController,
+            final LookupLocationViewModel lookupLocationViewModel) {
         this.viewModel = viewModel;
         this.viewSkyController = viewSkyController;
         this.viewManagerModel = viewManagerModel;
 
-        locationField = new CityAutocompleteField(locationDataAccess);
+        locationField = new CityAutocompleteField(lookupLocationController, lookupLocationViewModel);
         locationField.setName("locationField");
         locationField.getTextField().setName("locationTextField");
         locationField.setSelectedLocation(viewModel.getSelectedLocation());
