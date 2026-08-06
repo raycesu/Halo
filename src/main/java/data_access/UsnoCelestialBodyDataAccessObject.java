@@ -21,8 +21,8 @@ import org.json.JSONObject;
 import entity.CelestialBodyType;
 import entity.ObserverLocation;
 import entity.Star;
-import use_case.sky.CelestialBodyDataAccessInterface;
-import use_case.sky.CelestialDataUnavailableException;
+import use_case.view_sky.CelestialBodyDataAccessInterface;
+import use_case.view_sky.CelestialDataUnavailableException;
 
 /**
  * Fetches celestial positions from the US Naval Observatory Astronomical Applications API.

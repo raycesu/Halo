@@ -15,8 +15,8 @@ import entity.ObserverLocation;
 import entity.Star;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import use_case.sky.CelestialBodyDataAccessInterface;
-import use_case.sky.CelestialDataUnavailableException;
+import use_case.view_sky.CelestialBodyDataAccessInterface;
+import use_case.view_sky.CelestialDataUnavailableException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

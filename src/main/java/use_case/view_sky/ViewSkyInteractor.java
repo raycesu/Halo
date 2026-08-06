@@ -11,8 +11,6 @@ import java.util.Set;
 
 import entity.ObserverLocation;
 import entity.Star;
-import use_case.sky.CelestialBodyDataAccessInterface;
-import use_case.sky.CelestialDataUnavailableException;
 
 /**
  * Builds the sky as seen from one place at one moment.
