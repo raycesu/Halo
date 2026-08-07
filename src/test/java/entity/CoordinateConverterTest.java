@@ -154,8 +154,16 @@ class CoordinateConverterTest {
 
     @Test
     void leavesCatalogueFieldsUntouched() {
-        final Star star = new Star("HIP 91262", "Vega", 18.61561111, 38.784, 0.03,
-                "Lyra", "A0V", "Bright northern star");
+        final Star star = new Star.Builder()
+                .catalogueId("HIP 91262")
+                .displayName("Vega")
+                .rightAscension(18.61561111)
+                .declination(38.784)
+                .apparentMagnitude(0.03)
+                .constellationRegion("Lyra")
+                .spectralType("A0V")
+                .description("Bright northern star")
+                .build();
 
         CoordinateConverter.applyHorizontalPosition(star, TORONTO, SAMPLE_INSTANT);
 
@@ -194,6 +202,11 @@ class CoordinateConverterTest {
     /** Right ascension is supplied in degrees here and converted, since the sidereal-time
      * helpers work in degrees while {@link Star} carries hours. */
     private Star starAt(final double rightAscensionDegrees, final double declination) {
-        return new Star("", "test", rightAscensionDegrees / 15.0, declination, 1.0, "", "", "");
+        return new Star.Builder()
+                .displayName("test")
+                .rightAscension(rightAscensionDegrees / 15.0)
+                .declination(declination)
+                .apparentMagnitude(1.0)
+                .build();
     }
 }

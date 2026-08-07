@@ -31,6 +31,11 @@ public class SkyViewModel {
         return displayedLocation;
     }
 
+    /**
+     * Sets the displayed location text and notifies listeners.
+     *
+     * @param displayedLocation the location text to display
+     */
     public void setDisplayedLocation(final String displayedLocation) {
         final String oldLocation = this.displayedLocation;
         this.displayedLocation = displayedLocation;
@@ -41,6 +46,11 @@ public class SkyViewModel {
         return displayedDate;
     }
 
+    /**
+     * Sets the displayed date text and notifies listeners.
+     *
+     * @param displayedDate the date text to display
+     */
     public void setDisplayedDate(final String displayedDate) {
         final String oldDate = this.displayedDate;
         this.displayedDate = displayedDate;
@@ -51,6 +61,11 @@ public class SkyViewModel {
         return displayedTime;
     }
 
+    /**
+     * Sets the displayed time text and notifies listeners.
+     *
+     * @param displayedTime the time text to display
+     */
     public void setDisplayedTime(final String displayedTime) {
         final String oldTime = this.displayedTime;
         this.displayedTime = displayedTime;
@@ -61,6 +76,11 @@ public class SkyViewModel {
         return latitude;
     }
 
+    /**
+     * Sets the observer's latitude and notifies listeners.
+     *
+     * @param latitude the latitude in decimal degrees
+     */
     public void setLatitude(final double latitude) {
         final double oldLatitude = this.latitude;
         this.latitude = latitude;
@@ -71,6 +91,11 @@ public class SkyViewModel {
         return longitude;
     }
 
+    /**
+     * Sets the observer's longitude and notifies listeners.
+     *
+     * @param longitude the longitude in decimal degrees
+     */
     public void setLongitude(final double longitude) {
         final double oldLongitude = this.longitude;
         this.longitude = longitude;
@@ -81,6 +106,11 @@ public class SkyViewModel {
         return observerLocation;
     }
 
+    /**
+     * Sets the observer's location and notifies listeners.
+     *
+     * @param observerLocation the observer's location
+     */
     public void setObserverLocation(final ObserverLocation observerLocation) {
         final ObserverLocation oldLocation = this.observerLocation;
         this.observerLocation = observerLocation;
@@ -91,6 +121,11 @@ public class SkyViewModel {
         return stars;
     }
 
+    /**
+     * Replaces the displayed star snapshot and notifies listeners.
+     *
+     * @param stars the completed star list for the current observation
+     */
     public void setStars(final List<Star> stars) {
         final List<Star> oldStars = this.stars;
         this.stars = List.copyOf(stars);
@@ -101,12 +136,23 @@ public class SkyViewModel {
         return selectedObject;
     }
 
+    /**
+     * Sets the currently selected object and notifies listeners.
+     *
+     * @param selectedObject the newly selected star, or null when nothing is selected
+     */
     public void setSelectedObject(final Star selectedObject) {
         final Star oldObject = this.selectedObject;
         this.selectedObject = selectedObject;
         support.firePropertyChange("selectedObject", oldObject, selectedObject);
 
-        final String name = selectedObject == null ? "" : selectedObject.getDisplayName();
+        final String name;
+        if (selectedObject == null) {
+            name = "";
+        }
+        else {
+            name = selectedObject.getDisplayName();
+        }
         setSelectedObjectName(name);
     }
 
@@ -114,6 +160,11 @@ public class SkyViewModel {
         return selectedObjectName;
     }
 
+    /**
+     * Sets the display name of the selected object and notifies listeners.
+     *
+     * @param selectedObjectName the display name to show
+     */
     public void setSelectedObjectName(final String selectedObjectName) {
         final String oldObjectName = this.selectedObjectName;
         this.selectedObjectName = selectedObjectName;
@@ -124,6 +175,11 @@ public class SkyViewModel {
         return selectedObjectDetails;
     }
 
+    /**
+     * Sets the presentation text describing the selected object and notifies listeners.
+     *
+     * @param selectedObjectDetails the formatted details text
+     */
     public void setSelectedObjectDetails(final String selectedObjectDetails) {
         final String oldObjectDetails = this.selectedObjectDetails;
         this.selectedObjectDetails = selectedObjectDetails;
@@ -134,6 +190,11 @@ public class SkyViewModel {
         return weatherOrObservabilityText;
     }
 
+    /**
+     * Sets the presentation text describing weather or observability and notifies listeners.
+     *
+     * @param weatherOrObservabilityText the formatted weather/observability text
+     */
     public void setWeatherOrObservabilityText(final String weatherOrObservabilityText) {
         final String oldText = this.weatherOrObservabilityText;
         this.weatherOrObservabilityText = weatherOrObservabilityText;
@@ -144,6 +205,11 @@ public class SkyViewModel {
         return warningMessage;
     }
 
+    /**
+     * Sets the warning message and notifies listeners.
+     *
+     * @param warningMessage the warning text, or an empty string to clear it
+     */
     public void setWarningMessage(final String warningMessage) {
         final String oldWarningMessage = this.warningMessage;
         this.warningMessage = warningMessage;
@@ -154,16 +220,31 @@ public class SkyViewModel {
         return errorMessage;
     }
 
+    /**
+     * Sets the error message and notifies listeners.
+     *
+     * @param errorMessage the error text, or an empty string to clear it
+     */
     public void setErrorMessage(final String errorMessage) {
         final String oldErrorMessage = this.errorMessage;
         this.errorMessage = errorMessage;
         support.firePropertyChange("errorMessage", oldErrorMessage, errorMessage);
     }
 
+    /**
+     * Registers a listener to be notified of property changes.
+     *
+     * @param listener the listener to add
+     */
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Unregisters a previously registered property-change listener.
+     *
+     * @param listener the listener to remove
+     */
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }

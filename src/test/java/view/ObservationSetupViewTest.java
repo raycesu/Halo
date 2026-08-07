@@ -68,7 +68,7 @@ class ObservationSetupViewTest {
     void validSubmissionShowsLoadingPassesInputsAndThenShowsSky() throws Exception {
         final TestContext context = createContext(false);
         final CountDownLatch skyShown =
-                activeViewLatch(context.viewManagerModel, ViewManagerModel.sky_view);
+                activeViewLatch(context.viewManagerModel, ViewManagerModel.SKY_VIEW);
 
         SwingUtilities.invokeAndWait(() -> {
             context.view.getLocationField().setSelectedLocation(ISTANBUL);
@@ -78,7 +78,7 @@ class ObservationSetupViewTest {
         });
 
         assertTrue(context.useCase.started.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
-        assertEquals(ViewManagerModel.loading_view,
+        assertEquals(ViewManagerModel.LOADING_VIEW,
                 context.viewManagerModel.getActiveView());
         assertFalse(button(context.view, "View Sky").isEnabled());
 
@@ -94,7 +94,7 @@ class ObservationSetupViewTest {
         context.useCase.release.countDown();
 
         assertTrue(skyShown.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
-        assertEquals(ViewManagerModel.sky_view,
+        assertEquals(ViewManagerModel.SKY_VIEW,
                 context.viewManagerModel.getActiveView());
         assertEquals("Istanbul", context.setupViewModel.getLocation());
         assertEquals(ISTANBUL, context.setupViewModel.getSelectedLocation());
@@ -106,18 +106,18 @@ class ObservationSetupViewTest {
         final TestContext context = createContext(true);
         final CountDownLatch setupShown =
                 activeViewLatch(context.viewManagerModel,
-                        ViewManagerModel.observation_setup_view);
+                        ViewManagerModel.OBSERVATION_SETUP_VIEW);
 
         SwingUtilities.invokeAndWait(() ->
                 button(context.view, "View Sky").doClick());
 
         assertTrue(context.useCase.started.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
-        assertEquals(ViewManagerModel.loading_view,
+        assertEquals(ViewManagerModel.LOADING_VIEW,
                 context.viewManagerModel.getActiveView());
         context.useCase.release.countDown();
 
         assertTrue(setupShown.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
-        assertEquals(ViewManagerModel.observation_setup_view,
+        assertEquals(ViewManagerModel.OBSERVATION_SETUP_VIEW,
                 context.viewManagerModel.getActiveView());
         assertEquals("The observation could not be loaded.",
                 context.setupViewModel.getErrorMessage());

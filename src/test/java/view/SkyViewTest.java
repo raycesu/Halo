@@ -61,20 +61,21 @@ class SkyViewTest {
         skyViewModel.setObserverLocation(new ObserverLocation(
                 "Istanbul", LATITUDE, LONGITUDE, ZoneId.of("Europe/Istanbul")));
 
-        sirius = new Star(
-                "HIP 32349",
-                "Sirius",
-                6.7525,
-                -16.7161,
-                -1.46,
-                "Canis Major",
-                "A1V",
-                "The brightest star in the night sky.");
+        sirius = new Star.Builder()
+                .catalogueId("HIP 32349")
+                .displayName("Sirius")
+                .rightAscension(6.7525)
+                .declination(-16.7161)
+                .apparentMagnitude(-1.46)
+                .constellationRegion("Canis Major")
+                .spectralType("A1V")
+                .description("The brightest star in the night sky.")
+                .build();
         sirius.updateHorizontalPosition(45.0, 120.0);
         skyViewModel.setStars(List.of(sirius));
 
         viewManagerModel = new ViewManagerModel();
-        viewManagerModel.setActiveView(ViewManagerModel.sky_view);
+        viewManagerModel.setActiveView(ViewManagerModel.SKY_VIEW);
         checkConditions = new CapturingCheckConditions();
         rankForecastDays = new CapturingRankForecastDays();
 
@@ -119,7 +120,7 @@ class SkyViewTest {
                 button(view, "Change Observation").doClick());
 
         assertEquals(
-                ViewManagerModel.observation_setup_view,
+                ViewManagerModel.OBSERVATION_SETUP_VIEW,
                 viewManagerModel.getActiveView());
         assertEquals("Istanbul", skyViewModel.getDisplayedLocation());
         assertEquals("2026-08-12", skyViewModel.getDisplayedDate());

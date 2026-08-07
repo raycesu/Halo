@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Insets;
 import java.awt.Window;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -31,7 +30,13 @@ import javax.swing.WindowConstants;
 final class CalendarDatePickerDialog extends JDialog {
 
     private static final int CALENDAR_COLUMNS = 7;
-    private static final Color SELECTED_BACKGROUND = new Color(66, 133, 244);
+    private static final int DIALOG_BORDER_PADDING = 12;
+    private static final int DIALOG_WIDTH = 340;
+    private static final int DIALOG_HEIGHT = 360;
+    private static final int HEADER_FONT_SIZE = 16;
+    private static final int WEEKDAY_FONT_SIZE = 12;
+    private static final int CONTENT_VERTICAL_GAP = 10;
+    private static final Color SELECTED_BACKGROUND = SwingStyle.rgb(66, 133, 244);
     private static final Color SELECTED_FOREGROUND = Color.WHITE;
     private static final Color UNSELECTED_FOREGROUND = Color.BLACK;
     private static final DayOfWeek[] WEEK_STARTING_MONDAY = {
@@ -41,31 +46,36 @@ final class CalendarDatePickerDialog extends JDialog {
 
     private final Set<LocalDate> selectedDates;
     private final JLabel monthYearLabel = new JLabel("", SwingConstants.CENTER);
-    private final JPanel daysPanel = new JPanel(new java.awt.GridLayout(0, CALENDAR_COLUMNS, 4, 4));
+    private final JPanel daysPanel = new JPanel(SwingStyle.grid(0, CALENDAR_COLUMNS, 4, 4));
     private YearMonth displayedMonth;
 
     CalendarDatePickerDialog(final Window owner, final Set<LocalDate> initiallySelectedDates) {
         super(owner, "Select Dates to Rank", ModalityType.APPLICATION_MODAL);
         this.selectedDates = new TreeSet<>(initiallySelectedDates);
-        this.displayedMonth = this.selectedDates.isEmpty()
-                ? YearMonth.now()
-                : YearMonth.from(this.selectedDates.iterator().next());
+        if (this.selectedDates.isEmpty()) {
+            this.displayedMonth = YearMonth.now();
+        }
+        else {
+            this.displayedMonth = YearMonth.from(this.selectedDates.iterator().next());
+        }
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout(0, 10));
-        getRootPane().setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        setLayout(SwingStyle.border(0, CONTENT_VERTICAL_GAP));
+        getRootPane().setBorder(BorderFactory.createEmptyBorder(
+                DIALOG_BORDER_PADDING, DIALOG_BORDER_PADDING,
+                DIALOG_BORDER_PADDING, DIALOG_BORDER_PADDING));
         add(createHeaderPanel(), BorderLayout.NORTH);
         add(daysPanel, BorderLayout.CENTER);
         add(createFooterPanel(), BorderLayout.SOUTH);
 
         renderMonth();
-        setSize(340, 360);
+        setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
         setLocationRelativeTo(owner);
         setResizable(false);
     }
 
     private JPanel createHeaderPanel() {
-        final JPanel headerPanel = new JPanel(new BorderLayout());
+        final JPanel headerPanel = new JPanel(SwingStyle.border());
         final JButton previousMonthButton = new JButton("<");
         final JButton nextMonthButton = new JButton(">");
         previousMonthButton.addActionListener(event -> {
@@ -76,7 +86,7 @@ final class CalendarDatePickerDialog extends JDialog {
             displayedMonth = displayedMonth.plusMonths(1);
             renderMonth();
         });
-        monthYearLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        monthYearLabel.setFont(SwingStyle.sansSerifFont(Font.BOLD, HEADER_FONT_SIZE));
         headerPanel.add(previousMonthButton, BorderLayout.WEST);
         headerPanel.add(monthYearLabel, BorderLayout.CENTER);
         headerPanel.add(nextMonthButton, BorderLayout.EAST);
@@ -84,7 +94,7 @@ final class CalendarDatePickerDialog extends JDialog {
     }
 
     private JPanel createFooterPanel() {
-        final JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        final JPanel footerPanel = new JPanel(SwingStyle.flow(FlowLayout.CENTER, 8, 0));
         final JButton clearButton = new JButton("Clear");
         final JButton doneButton = new JButton("Done");
         clearButton.addActionListener(event -> {
@@ -107,7 +117,7 @@ final class CalendarDatePickerDialog extends JDialog {
             final JLabel dayOfWeekLabel = new JLabel(
                     dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
                     SwingConstants.CENTER);
-            dayOfWeekLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+            dayOfWeekLabel.setFont(SwingStyle.sansSerifFont(Font.BOLD, WEEKDAY_FONT_SIZE));
             daysPanel.add(dayOfWeekLabel);
         }
 
@@ -128,7 +138,7 @@ final class CalendarDatePickerDialog extends JDialog {
 
     private JToggleButton createDayButton(final LocalDate date) {
         final JToggleButton dayButton = new JToggleButton(String.valueOf(date.getDayOfMonth()));
-        dayButton.setMargin(new Insets(2, 2, 2, 2));
+        dayButton.setMargin(GridBagStyle.insets(2, 2, 2, 2));
         dayButton.setSelected(selectedDates.contains(date));
         applyDayButtonStyle(dayButton);
 

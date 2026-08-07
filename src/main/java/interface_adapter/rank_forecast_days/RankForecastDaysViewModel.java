@@ -17,6 +17,11 @@ public class RankForecastDaysViewModel {
         return rankedDays;
     }
 
+    /**
+     * Replaces the ranked-day results and notifies listeners.
+     *
+     * @param rankedDays the new ranked-day results, or null to clear them
+     */
     public void setRankedDays(final List<RankedDayDisplayItem> rankedDays) {
         final List<RankedDayDisplayItem> oldValue = this.rankedDays;
         if (rankedDays == null) {
@@ -32,16 +37,31 @@ public class RankForecastDaysViewModel {
         return errorMessage;
     }
 
+    /**
+     * Sets the error message and notifies listeners.
+     *
+     * @param errorMessage the error text, or an empty string to clear it
+     */
     public void setErrorMessage(final String errorMessage) {
         final String oldValue = this.errorMessage;
         this.errorMessage = errorMessage;
         support.firePropertyChange("errorMessage", oldValue, errorMessage);
     }
 
+    /**
+     * Registers a listener to be notified of property changes.
+     *
+     * @param listener the listener to add
+     */
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Unregisters a previously registered property-change listener.
+     *
+     * @param listener the listener to remove
+     */
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
