@@ -30,7 +30,9 @@ public class ViewSkyPresenter implements ViewSkyOutputBoundary {
         skyViewModel.setDisplayedTime(outputData.getTime());
         skyViewModel.setLatitude(outputData.getLatitude());
         skyViewModel.setLongitude(outputData.getLongitude());
-        skyViewModel.setObserverLocation(outputData.getObserverLocation());
+        if (outputData.getObserverLocation() != null) {
+            skyViewModel.setTimeZoneId(outputData.getObserverLocation().getZoneId().getId());
+        }
         skyViewModel.setStars(outputData.getStars());
         skyViewModel.setSelectedObject(null);
         skyViewModel.setSelectedObjectDetails("");

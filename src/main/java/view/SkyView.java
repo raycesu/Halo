@@ -39,7 +39,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.JOptionPane;
 
-import entity.ObserverLocation;
 import entity.Star;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
@@ -617,8 +616,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleCheckConditions() {
-        final ObserverLocation location = viewModel.getObserverLocation();
-        if (location == null) {
+        final String timeZoneId = viewModel.getTimeZoneId();
+        if (timeZoneId == null || timeZoneId.isEmpty()) {
             checkConditionsViewModel.setErrorMessage(
                     "Set an observation location before checking conditions.");
             return;
@@ -636,9 +635,13 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
             return;
         }
         checkConditionsButton.setEnabled(false);
+        final String locationName = viewModel.getDisplayedLocation();
+        final double latitude = viewModel.getLatitude();
+        final double longitude = viewModel.getLongitude();
         new Thread(() -> {
             try {
-                checkConditionsController.checkConditions(location, observationDateTime);
+                checkConditionsController.checkConditions(
+                        locationName, latitude, longitude, timeZoneId, observationDateTime);
             }
             finally {
                 SwingUtilities.invokeLater(() -> checkConditionsButton.setEnabled(true));
@@ -647,8 +650,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleRankForecastDays() {
-        final ObserverLocation location = viewModel.getObserverLocation();
-        if (location == null) {
+        final String timeZoneId = viewModel.getTimeZoneId();
+        if (timeZoneId == null || timeZoneId.isEmpty()) {
             rankForecastErrorLabel.setText("Set an observation location first.");
             return;
         }
@@ -659,10 +662,14 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         final List<LocalDate> datesToRank = new ArrayList<>(selectedForecastDates);
         Collections.sort(datesToRank);
 
+        final String locationName = viewModel.getDisplayedLocation();
+        final double latitude = viewModel.getLatitude();
+        final double longitude = viewModel.getLongitude();
         rankForecastButton.setEnabled(false);
         new Thread(() -> {
             try {
-                rankForecastDaysController.rankForecastDays(location, datesToRank);
+                rankForecastDaysController.rankForecastDays(
+                        locationName, latitude, longitude, timeZoneId, datesToRank);
             }
             finally {
                 SwingUtilities.invokeLater(() -> rankForecastButton.setEnabled(true));

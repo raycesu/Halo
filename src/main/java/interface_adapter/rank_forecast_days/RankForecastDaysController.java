@@ -1,6 +1,7 @@
 package interface_adapter.rank_forecast_days;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import entity.ObserverLocation;
@@ -16,8 +17,13 @@ public class RankForecastDaysController {
     }
 
     public void rankForecastDays(
-            final ObserverLocation location,
+            final String locationName,
+            final double latitude,
+            final double longitude,
+            final String timeZoneId,
             final List<LocalDate> selectedDates) {
+        final ObserverLocation location =
+                new ObserverLocation(locationName, latitude, longitude, ZoneId.of(timeZoneId));
         final RankForecastDaysInputData inputData =
                 new RankForecastDaysInputData(location, selectedDates);
         inputBoundary.rankForecastDays(inputData);

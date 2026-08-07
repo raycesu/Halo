@@ -5,6 +5,7 @@ package interface_adapter.check_conditions;
 // No logic — just translation and delegation.
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import entity.ObserverLocation;
 import use_case.check_conditions.CheckConditionsInputBoundary;
@@ -19,8 +20,13 @@ public class CheckConditionsController {
     }
 
     public void checkConditions(
-            final ObserverLocation location,
+            final String locationName,
+            final double latitude,
+            final double longitude,
+            final String timeZoneId,
             final LocalDateTime observationDateTime) {
+        final ObserverLocation location =
+                new ObserverLocation(locationName, latitude, longitude, ZoneId.of(timeZoneId));
         final CheckConditionsInputData inputData =
                 new CheckConditionsInputData(location, observationDateTime);
         inputBoundary.checkConditions(inputData);
