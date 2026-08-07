@@ -117,7 +117,7 @@ class SkyMapPanelTest {
 
     @Test
     void draggingDoesNotSelectAnObject() {
-        final SkyVisualization.ScreenPosition position = projectedPosition(star);
+        final SkyMapPanel.ScreenPosition position = projectedPosition(star);
 
         drag(position.getX(), position.getY(), position.getX() + 30, position.getY() + 20);
 
@@ -129,7 +129,7 @@ class SkyMapPanelTest {
     void clickingNearAProjectedObjectSelectsItAfterZoomAndPan() {
         wheel(CENTRE + 30, CENTRE, -1);
         drag(100, 100, 125, 115);
-        final SkyVisualization.ScreenPosition position = projectedPosition(star);
+        final SkyMapPanel.ScreenPosition position = projectedPosition(star);
 
         click(position.getX() + 3, position.getY() - 2);
 
@@ -139,7 +139,7 @@ class SkyMapPanelTest {
 
     @Test
     void clickingAwayFromObjectsClearsTheSelection() {
-        final SkyVisualization.ScreenPosition position = projectedPosition(star);
+        final SkyMapPanel.ScreenPosition position = projectedPosition(star);
         click(position.getX(), position.getY());
 
         click(10, 10);
@@ -150,7 +150,7 @@ class SkyMapPanelTest {
 
     @Test
     void selectionIsHighlightedUntilTheDisplayedListIsReplaced() {
-        final SkyVisualization.ScreenPosition position = projectedPosition(star);
+        final SkyMapPanel.ScreenPosition position = projectedPosition(star);
         click(position.getX(), position.getY());
 
         assertSame(star, panel.getSelectedObject());
@@ -180,14 +180,14 @@ class SkyMapPanelTest {
         assertMarkerRendering(CelestialBodyType.PLANET, Color.WHITE, 3);
     }
 
-    private SkyVisualization.ScreenPosition projectedPosition(final Star object) {
+    private SkyMapPanel.ScreenPosition projectedPosition(final Star object) {
         final int centreX =
                 (int) Math.round(CENTRE + panel.getPanOffsetX());
         final int centreY =
                 (int) Math.round(CENTRE + panel.getPanOffsetY());
         final int effectiveRadius =
                 (int) Math.round(BASE_RADIUS * panel.getZoom());
-        return SkyVisualization.project(object, centreX, centreY, effectiveRadius);
+        return SkyMapPanel.project(object, centreX, centreY, effectiveRadius);
     }
 
     private boolean renderContainsSelectionColor() {

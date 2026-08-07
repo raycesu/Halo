@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -10,11 +11,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -57,11 +61,10 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
 
     private final LookupLocationController lookupLocationController;
     private final LookupLocationViewModel lookupLocationViewModel;
-    private final CityAutocompleteWidgets widgets = new CityAutocompleteWidgets();
-    private final JTextField textField = widgets.getTextField();
-    private final DefaultListModel<ObserverLocation> suggestionModel = widgets.getSuggestionModel();
-    private final JList<ObserverLocation> suggestionList = widgets.getSuggestionList();
-    private final JPopupMenu popup = widgets.getPopup();
+    private final JTextField textField = new JTextField();
+    private final DefaultListModel<ObserverLocation> suggestionModel = new DefaultListModel<>();
+    private final JList<ObserverLocation> suggestionList = new JList<>(suggestionModel);
+    private final JPopupMenu popup = new JPopupMenu();
 
     /** The place the user picked, or null if the current text is not a confirmed choice. */
     private ObserverLocation selectedLocation;
@@ -74,6 +77,14 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
             final LookupLocationViewModel lookupLocationViewModel) {
         this.lookupLocationController = lookupLocationController;
         this.lookupLocationViewModel = lookupLocationViewModel;
+
+        suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        suggestionList.setCellRenderer(new LocationCellRenderer());
+        final JScrollPane scrollPane = new JScrollPane(suggestionList);
+        scrollPane.setBorder(null);
+        popup.setFocusable(false);
+        popup.setBorder(null);
+        popup.add(scrollPane);
 
         setLayout(SwingStyle.border());
         setOpaque(false);
@@ -299,6 +310,25 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
                 chooseHighlighted();
                 textField.requestFocusInWindow();
             }
+        }
+    }
+
+    private static final class LocationCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(
+                final JList<?> list,
+                final Object value,
+                final int index,
+                final boolean isSelected,
+                final boolean cellHasFocus) {
+
+            final Component component = super.getListCellRendererComponent(
+                    list, value, index, isSelected, cellHasFocus);
+            if (value instanceof ObserverLocation) {
+                setText(((ObserverLocation) value).getDisplayName());
+            }
+            return component;
         }
     }
 }
