@@ -340,6 +340,27 @@ class ViewSkyInteractorTest {
                 1e-9);
     }
 
+    @Test
+    void handlesAMovingBodyWithNullName() {
+        ephemeris.bodies.add(
+                observedBody(
+                        null,
+                        CelestialBodyType.PLANET,
+                        30.0,
+                        150.0
+                )
+        );
+        execute();
+        assertTrue(presenter.successCalled);
+        assertEquals(1, presenter.outputData.getStars().size());
+        assertNull(
+                presenter.outputData
+                        .getStars()
+                        .get(0)
+                        .getDisplayName()
+        );
+    }
+
     private void execute() {
         interactor().execute(
                 new ViewSkyInputData(
