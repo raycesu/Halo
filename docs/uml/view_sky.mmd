@@ -15,7 +15,7 @@ class ObservationSetupView {
 class ViewSkyController {
   -ViewSkyInputBoundary inputBoundary
   -ViewSkyOutputBoundary outputBoundary
-  +viewSky(ObserverLocation, String date, String time)
+  +viewSky(String locationName, double lat, double lng, String zoneId, String date, String time)
 }
 
 class ViewSkyPresenter {
@@ -26,6 +26,25 @@ class ViewSkyPresenter {
   +prepareSuccessView(ViewSkyOutputData)
   +prepareFailView(String)
   +prepareWarning(String)
+  -toStarDisplayDataList(List~Star~) List~StarDisplayData~
+  -toStarDisplayData(Star) StarDisplayData
+}
+
+class StarDisplayData {
+  -String catalogueId
+  -String displayName
+  -double rightAscension
+  -double declination
+  -double apparentMagnitude
+  -String constellationRegion
+  -String spectralType
+  -String description
+  -String type
+  -double altitude
+  -double azimuth
+  -boolean aboveHorizon
+  +equals(Object) boolean
+  +hashCode() int
 }
 
 class SkyViewModel {
@@ -34,20 +53,26 @@ class SkyViewModel {
   -String displayedTime
   -double latitude
   -double longitude
-  -ObserverLocation observerLocation
-  -List~Star~ stars
-  -Star selectedObject
+  -String zoneId
+  -List~StarDisplayData~ stars
+  -StarDisplayData selectedObject
   -String warningMessage
   -String errorMessage
-  +setStars(List~Star~)
+  +setStars(List~StarDisplayData~)
   +addPropertyChangeListener(PropertyChangeListener)
 }
 
 class ObservationSetupViewModel {
-  -ObserverLocation selectedLocation
+  -String selectedLocationName
+  -double selectedLatitude
+  -double selectedLongitude
+  -String selectedZoneId
   -String date
   -String time
   -String errorMessage
+  +setSelectedLocation(String, double, double, String)
+  +hasSelectedLocation() boolean
+  +clearSelectedLocation()
   +setErrorMessage(String)
 }
 
@@ -169,6 +194,7 @@ ViewSkyPresenter ..|> ViewSkyOutputBoundary
 ViewSkyPresenter --> SkyViewModel
 ViewSkyPresenter --> ObservationSetupViewModel
 ViewSkyPresenter ..> ViewSkyOutputData : uses
+ViewSkyPresenter ..> StarDisplayData : creates
 
 CsvStarCatalogDataAccessObject ..|> StarCatalogDataAccessInterface
 InMemoryStarCatalogDataAccessObject ..|> StarCatalogDataAccessInterface
@@ -177,5 +203,5 @@ AltAzCalculator ..|> HorizontalCoordinateCalculator
 
 ViewSkyOutputData o-- Star
 ViewSkyOutputData o-- ObserverLocation
-SkyViewModel o-- Star
+SkyViewModel o-- StarDisplayData
 Star --> CelestialBodyType

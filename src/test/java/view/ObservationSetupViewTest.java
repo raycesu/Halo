@@ -18,6 +18,7 @@ import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.lookup_location.LookupLocationController;
 import interface_adapter.lookup_location.LookupLocationPresenter;
 import interface_adapter.lookup_location.LookupLocationViewModel;
+import interface_adapter.lookup_location.LookupLocationViewModel.LocationSuggestion;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.SkyViewModel;
@@ -47,6 +48,9 @@ class ObservationSetupViewTest {
     private static final ObserverLocation ISTANBUL = new ObserverLocation(
             "Istanbul", 41.0082, 28.9784, ZoneId.of("Europe/Istanbul"));
 
+    private static final LocationSuggestion ISTANBUL_SUGGESTION = new LocationSuggestion(
+            "Istanbul", 41.0082, 28.9784, "Europe/Istanbul");
+
     /** Stands in for the bundled city dataset; these tests exercise the screen, not the lookup. */
     private static final class StubLocationDataAccess implements LocationDataAccessInterface {
 
@@ -71,7 +75,7 @@ class ObservationSetupViewTest {
                 activeViewLatch(context.viewManagerModel, ViewManagerModel.SKY_VIEW);
 
         SwingUtilities.invokeAndWait(() -> {
-            context.view.getLocationField().setSelectedLocation(ISTANBUL);
+            context.view.getLocationField().setSelectedLocation(ISTANBUL_SUGGESTION);
             textField(context.view, "dateField").setText("2026-08-12");
             textField(context.view, "timeField").setText("22:15");
             button(context.view, "View Sky").doClick();
@@ -97,7 +101,7 @@ class ObservationSetupViewTest {
         assertEquals(ViewManagerModel.SKY_VIEW,
                 context.viewManagerModel.getActiveView());
         assertEquals("Istanbul", context.setupViewModel.getLocation());
-        assertEquals(ISTANBUL, context.setupViewModel.getSelectedLocation());
+        assertEquals("Istanbul", context.setupViewModel.getSelectedLocationName());
         assertEquals("Istanbul", context.skyViewModel.getDisplayedLocation());
     }
 
@@ -130,7 +134,11 @@ class ObservationSetupViewTest {
 
         // The screen opens on an already-resolved place, as the app does, so that a test which
         // only cares about submission does not have to drive the suggestion list first.
-        setupViewModel.setSelectedLocation(ISTANBUL);
+        setupViewModel.setSelectedLocation(
+                ISTANBUL.getDisplayName(),
+                ISTANBUL.getLatitude(),
+                ISTANBUL.getLongitude(),
+                ISTANBUL.getZoneId().getId());
         final SkyViewModel skyViewModel = new SkyViewModel();
         final ViewManagerModel viewManagerModel = new ViewManagerModel();
         final ViewSkyOutputBoundary presenter =

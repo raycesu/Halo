@@ -19,7 +19,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import entity.Star;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
@@ -28,6 +27,7 @@ import interface_adapter.custom_constellation.ConstellationViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.SkyViewModel;
+import interface_adapter.view_sky.StarDisplayData;
 
 public class SkyView extends JPanel implements ActionListener, PropertyChangeListener {
 
@@ -49,7 +49,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     private final ForecastRankingDialogController forecastRankingDialogController =
             new ForecastRankingDialogController(this, SkyRightPanel.BACKGROUND);
     private final List<LocalDate> selectedForecastDates = defaultForecastDates();
-    private final List<Star> constellationSelection = new ArrayList<>();
+    private final List<StarDisplayData> constellationSelection = new ArrayList<>();
     private ConstellationController constellationController;
     private ConstellationViewModel constellationViewModel;
     private boolean creatingConstellation;
@@ -164,7 +164,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         repaint();
     }
 
-    private void handleObjectSelected(final Star selectedObject) {
+    private void handleObjectSelected(final StarDisplayData selectedObject) {
         if (creatingConstellation) {
             if (selectedObject != null && !constellationSelection.contains(selectedObject)) {
                 constellationSelection.add(selectedObject);
@@ -293,8 +293,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
             viewModel.setErrorMessage("Enter an object name to search.");
         }
         else {
-            Star matchingObject = null;
-            for (final Star object : viewModel.getStars()) {
+            StarDisplayData matchingObject = null;
+            for (final StarDisplayData object : viewModel.getStars()) {
                 if (object.getDisplayName() != null
                         && object.getDisplayName().equalsIgnoreCase(requestedName)) {
                     matchingObject = object;
@@ -313,8 +313,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleCheckConditions() {
-        final var location = viewModel.getObserverLocation();
-        if (location == null) {
+        if (viewModel.getZoneId().isEmpty()) {
             checkConditionsViewModel.setErrorMessage(
                     "Set an observation location before checking conditions.");
         }
@@ -329,7 +328,12 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
                 rightSidebar.getCheckConditionsButton().setEnabled(false);
                 new Thread(() -> {
                     try {
-                        checkConditionsController.checkConditions(location, observationDateTime);
+                        checkConditionsController.checkConditions(
+                                viewModel.getDisplayedLocation(),
+                                viewModel.getLatitude(),
+                                viewModel.getLongitude(),
+                                viewModel.getZoneId(),
+                                observationDateTime);
                     }
                     finally {
                         SwingUtilities.invokeLater(
@@ -341,8 +345,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleRankForecastDays() {
-        final var location = viewModel.getObserverLocation();
-        if (location == null) {
+        if (viewModel.getZoneId().isEmpty()) {
             forecastRankingDialogController.setErrorText("Set an observation location first.");
         }
         else if (selectedForecastDates.isEmpty()) {
@@ -355,7 +358,12 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
             forecastRankingDialogController.getRankForecastButton().setEnabled(false);
             new Thread(() -> {
                 try {
-                    rankForecastDaysController.rankForecastDays(location, datesToRank);
+                    rankForecastDaysController.rankForecastDays(
+                            viewModel.getDisplayedLocation(),
+                            viewModel.getLatitude(),
+                            viewModel.getLongitude(),
+                            viewModel.getZoneId(),
+                            datesToRank);
                 }
                 finally {
                     SwingUtilities.invokeLater(() -> {
@@ -445,7 +453,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
 
     private static final String DEGREES_FORMAT = "%.2f°";
 
-    private static String formatObjectDetails(final Star object) {
+    private static String formatObjectDetails(final StarDisplayData object) {
         if (object == null) {
             return "";
         }
@@ -461,9 +469,10 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         return details.toString();
     }
 
-    private static void appendIdentityFields(final StringBuilder details, final Star object) {
+    private static void appendIdentityFields(
+            final StringBuilder details, final StarDisplayData object) {
         if (object.getType() != null) {
-            final String typeName = object.getType().name().toLowerCase(Locale.US);
+            final String typeName = object.getType().toLowerCase(Locale.US);
             appendDetail(details, "Type",
                     Character.toUpperCase(typeName.charAt(0)) + typeName.substring(1));
         }
@@ -476,7 +485,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         appendDetail(details, "Spectral type", object.getSpectralType());
     }
 
-    private static void appendCoordinateFields(final StringBuilder details, final Star object) {
+    private static void appendCoordinateFields(
+            final StringBuilder details, final StarDisplayData object) {
         if (Double.isFinite(object.getRightAscension())) {
             appendDetail(details, "Right ascension",
                     String.format(Locale.US, "%.4f hours", object.getRightAscension()));
@@ -495,7 +505,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         }
     }
 
-    private static void appendDescription(final StringBuilder details, final Star object) {
+    private static void appendDescription(
+            final StringBuilder details, final StarDisplayData object) {
         if (object.getDescription() != null && !object.getDescription().isBlank()) {
             if (details.length() > 0) {
                 details.append("\n\n");

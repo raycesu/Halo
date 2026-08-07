@@ -5,15 +5,13 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
-import entity.CustomConstellation;
-
 public class ConstellationViewModel {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List<CustomConstellation> constellations = List.of();
+    private List<ConstellationDisplayData> constellations = List.of();
     private String errorMessage = "";
     private String successMessage = "";
 
-    public List<CustomConstellation> getConstellations() {
+    public List<ConstellationDisplayData> getConstellations() {
         return constellations;
     }
 
@@ -22,9 +20,9 @@ public class ConstellationViewModel {
      *
      * @param constellation the constellation to add
      */
-    public void addConstellation(final CustomConstellation constellation) {
-        final List<CustomConstellation> oldValue = constellations;
-        final List<CustomConstellation> updated = new ArrayList<>(constellations);
+    public void addConstellation(final ConstellationDisplayData constellation) {
+        final List<ConstellationDisplayData> oldValue = constellations;
+        final List<ConstellationDisplayData> updated = new ArrayList<>(constellations);
         updated.add(constellation);
         constellations = List.copyOf(updated);
         support.firePropertyChange("constellations", oldValue, constellations);

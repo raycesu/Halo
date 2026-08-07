@@ -4,9 +4,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 
-import entity.ObserverLocation;
-import entity.Star;
-
 public class SkyViewModel {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -16,11 +13,10 @@ public class SkyViewModel {
     private String displayedTime = "";
     private double latitude = Double.NaN;
     private double longitude = Double.NaN;
+    private String zoneId = "";
 
-    /** The observed place, kept whole so weather requests carry its time zone as well. */
-    private ObserverLocation observerLocation;
-    private List<Star> stars = List.of();
-    private Star selectedObject;
+    private List<StarDisplayData> stars = List.of();
+    private StarDisplayData selectedObject;
     private String selectedObjectName = "";
     private String selectedObjectDetails = "";
     private String weatherOrObservabilityText = "";
@@ -102,22 +98,22 @@ public class SkyViewModel {
         support.firePropertyChange("longitude", oldLongitude, longitude);
     }
 
-    public ObserverLocation getObserverLocation() {
-        return observerLocation;
+    public String getZoneId() {
+        return zoneId;
     }
 
     /**
-     * Sets the observer's location and notifies listeners.
+     * Sets the observer's time zone ID and notifies listeners.
      *
-     * @param observerLocation the observer's location
+     * @param zoneId the IANA time zone ID string
      */
-    public void setObserverLocation(final ObserverLocation observerLocation) {
-        final ObserverLocation oldLocation = this.observerLocation;
-        this.observerLocation = observerLocation;
-        support.firePropertyChange("observerLocation", oldLocation, observerLocation);
+    public void setZoneId(final String zoneId) {
+        final String oldZoneId = this.zoneId;
+        this.zoneId = zoneId;
+        support.firePropertyChange("zoneId", oldZoneId, zoneId);
     }
 
-    public List<Star> getStars() {
+    public List<StarDisplayData> getStars() {
         return stars;
     }
 
@@ -126,13 +122,13 @@ public class SkyViewModel {
      *
      * @param stars the completed star list for the current observation
      */
-    public void setStars(final List<Star> stars) {
-        final List<Star> oldStars = this.stars;
+    public void setStars(final List<StarDisplayData> stars) {
+        final List<StarDisplayData> oldStars = this.stars;
         this.stars = List.copyOf(stars);
         support.firePropertyChange("stars", oldStars, this.stars);
     }
 
-    public Star getSelectedObject() {
+    public StarDisplayData getSelectedObject() {
         return selectedObject;
     }
 
@@ -141,8 +137,8 @@ public class SkyViewModel {
      *
      * @param selectedObject the newly selected star, or null when nothing is selected
      */
-    public void setSelectedObject(final Star selectedObject) {
-        final Star oldObject = this.selectedObject;
+    public void setSelectedObject(final StarDisplayData selectedObject) {
+        final StarDisplayData oldObject = this.selectedObject;
         this.selectedObject = selectedObject;
         support.firePropertyChange("selectedObject", oldObject, selectedObject);
 

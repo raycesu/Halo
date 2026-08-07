@@ -7,14 +7,12 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-import entity.CelestialBodyType;
-import entity.Star;
+import interface_adapter.view_sky.StarDisplayData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SkyMapPanelTest {
@@ -24,8 +22,8 @@ class SkyMapPanelTest {
     private static final int CENTRE = PANEL_SIZE / 2;
 
     private SkyMapPanel panel;
-    private Star star;
-    private Star selectedByListener;
+    private StarDisplayData star;
+    private StarDisplayData selectedByListener;
 
     @BeforeEach
     void setUp() {
@@ -133,8 +131,8 @@ class SkyMapPanelTest {
 
         click(position.getX() + 3, position.getY() - 2);
 
-        assertSame(star, panel.getSelectedObject());
-        assertSame(star, selectedByListener);
+        assertEquals(star, panel.getSelectedObject());
+        assertEquals(star, selectedByListener);
     }
 
     @Test
@@ -153,11 +151,11 @@ class SkyMapPanelTest {
         final SkyMapPanel.ScreenPosition position = projectedPosition(star);
         click(position.getX(), position.getY());
 
-        assertSame(star, panel.getSelectedObject());
+        assertEquals(star, panel.getSelectedObject());
         assertTrue(renderContainsSelectionColor());
 
         wheel(CENTRE, CENTRE, -1);
-        assertSame(star, panel.getSelectedObject());
+        assertEquals(star, panel.getSelectedObject());
 
         final double zoomBeforeReplacement = panel.getZoom();
         final double panXBeforeReplacement = panel.getPanOffsetX();
@@ -173,21 +171,23 @@ class SkyMapPanelTest {
     @Test
     void celestialBodiesUseCompactWhiteMarkersExceptForTheOrangeSun() {
         assertMarkerRendering(
-                CelestialBodyType.SUN,
+                "SUN",
                 new Color(255, 190, 60),
                 5);
-        assertMarkerRendering(CelestialBodyType.MOON, Color.WHITE, 4);
-        assertMarkerRendering(CelestialBodyType.PLANET, Color.WHITE, 3);
+        assertMarkerRendering("MOON", Color.WHITE, 4);
+        assertMarkerRendering("PLANET", Color.WHITE, 3);
     }
 
-    private SkyMapPanel.ScreenPosition projectedPosition(final Star object) {
+    private SkyMapPanel.ScreenPosition projectedPosition(final StarDisplayData object) {
         final int centreX =
                 (int) Math.round(CENTRE + panel.getPanOffsetX());
         final int centreY =
                 (int) Math.round(CENTRE + panel.getPanOffsetY());
         final int effectiveRadius =
                 (int) Math.round(BASE_RADIUS * panel.getZoom());
-        return SkyMapPanel.project(object, centreX, centreY, effectiveRadius);
+        return SkyMapPanel.project(
+                object.getAltitude(), object.getAzimuth(),
+                centreX, centreY, effectiveRadius);
     }
 
     private boolean renderContainsSelectionColor() {
@@ -206,10 +206,10 @@ class SkyMapPanelTest {
     }
 
     private void assertMarkerRendering(
-            final CelestialBodyType type,
+            final String type,
             final Color expectedColor,
             final int markerRadius) {
-        final Star object = createObservedObject(type);
+        final StarDisplayData object = createObservedObject(type);
         panel.setStars(List.of(object));
 
         final BufferedImage image = renderPanel();
@@ -279,37 +279,38 @@ class SkyMapPanelTest {
                 button));
     }
 
-    private Star createObservedStar(
+    private StarDisplayData createObservedStar(
             final String name,
             final double altitude,
             final double azimuth) {
-        final Star observedStar = new Star.Builder()
-                .catalogueId("HIP test")
-                .displayName(name)
-                .rightAscension(12.0)
-                .declination(20.0)
-                .apparentMagnitude(1.0)
-                .constellationRegion("region")
-                .spectralType("spectral")
-                .description("description")
-                .build();
-        observedStar.updateHorizontalPosition(altitude, azimuth);
-        return observedStar;
+        return new StarDisplayData(
+                "HIP test",
+                name,
+                12.0,
+                20.0,
+                1.0,
+                "region",
+                "spectral",
+                "description",
+                "STAR",
+                altitude,
+                azimuth,
+                altitude > 0.0);
     }
 
-    private Star createObservedObject(final CelestialBodyType type) {
-        final Star observedObject = new Star.Builder()
-                .catalogueId(type.name())
-                .displayName(type.name())
-                .rightAscension(12.0)
-                .declination(20.0)
-                .apparentMagnitude(1.0)
-                .constellationRegion("region")
-                .spectralType("spectral")
-                .description("description")
-                .type(type)
-                .build();
-        observedObject.updateHorizontalPosition(90.0, 0.0);
-        return observedObject;
+    private StarDisplayData createObservedObject(final String type) {
+        return new StarDisplayData(
+                type,
+                type,
+                12.0,
+                20.0,
+                1.0,
+                "region",
+                "spectral",
+                "description",
+                type,
+                90.0,
+                0.0,
+                true);
     }
 }

@@ -1,11 +1,8 @@
 package interface_adapter.view_sky;
 
-import java.time.ZoneId;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import entity.ObserverLocation;
 import use_case.view_sky.ViewSkyInputBoundary;
 import use_case.view_sky.ViewSkyInputData;
 import use_case.view_sky.ViewSkyOutputBoundary;
@@ -20,6 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ViewSkyControllerTest {
 
     private static final double COORDINATE_TOLERANCE = 1.0e-9;
+    private static final String TORONTO_NAME = "Toronto, Ontario, Canada";
+    private static final double TORONTO_LAT = 43.6532;
+    private static final double TORONTO_LNG = -79.3832;
+    private static final String TORONTO_ZONE = "America/Toronto";
 
     private FakeInputBoundary inputBoundary;
     private FakeOutputBoundary outputBoundary;
@@ -32,14 +33,10 @@ class ViewSkyControllerTest {
         controller = new ViewSkyController(inputBoundary, outputBoundary);
     }
 
-    private static ObserverLocation toronto() {
-        return new ObserverLocation(
-                "Toronto, Ontario, Canada", 43.6532, -79.3832, ZoneId.of("America/Toronto"));
-    }
-
     @Test
     void passesTheResolvedPlaceAndParsedTimeToTheInteractor() {
-        controller.viewSky(toronto(), "2026-07-24", "18:20");
+        controller.viewSky(TORONTO_NAME, TORONTO_LAT, TORONTO_LNG, TORONTO_ZONE,
+                "2026-07-24", "18:20");
 
         assertNotNull(inputBoundary.inputData);
         assertEquals("Toronto, Ontario, Canada", inputBoundary.inputData.getLocationName());
@@ -53,19 +50,17 @@ class ViewSkyControllerTest {
 
     @Test
     void toleratesSurroundingSpaceInTheDateAndTime() {
-        controller.viewSky(toronto(), "  2026-07-24 ", " 18:20  ");
+        controller.viewSky(TORONTO_NAME, TORONTO_LAT, TORONTO_LNG, TORONTO_ZONE,
+                "  2026-07-24 ", " 18:20  ");
 
         assertNotNull(inputBoundary.inputData);
         assertFalse(outputBoundary.failCalled);
     }
 
-    /**
-     * The reason the field hands back a location rather than a string: with nothing chosen there
-     * are no coordinates to send, and guessing would query somewhere else without saying so.
-     */
     @Test
     void refusesToRunWithoutAResolvedLocation() {
-        controller.viewSky(null, "2026-07-24", "18:20");
+        controller.viewSky(null, TORONTO_LAT, TORONTO_LNG, TORONTO_ZONE,
+                "2026-07-24", "18:20");
 
         assertNull(inputBoundary.inputData);
         assertTrue(outputBoundary.failCalled);
@@ -74,7 +69,8 @@ class ViewSkyControllerTest {
 
     @Test
     void reportsAnUnparseableDateWithoutCallingTheInteractor() {
-        controller.viewSky(toronto(), "24-07-2026", "18:20");
+        controller.viewSky(TORONTO_NAME, TORONTO_LAT, TORONTO_LNG, TORONTO_ZONE,
+                "24-07-2026", "18:20");
 
         assertNull(inputBoundary.inputData);
         assertTrue(outputBoundary.failCalled);
@@ -85,7 +81,8 @@ class ViewSkyControllerTest {
 
     @Test
     void reportsAnUnparseableTimeWithoutCallingTheInteractor() {
-        controller.viewSky(toronto(), "2026-07-24", "6:20pm");
+        controller.viewSky(TORONTO_NAME, TORONTO_LAT, TORONTO_LNG, TORONTO_ZONE,
+                "2026-07-24", "6:20pm");
 
         assertNull(inputBoundary.inputData);
         assertTrue(outputBoundary.failCalled);
@@ -93,7 +90,8 @@ class ViewSkyControllerTest {
 
     @Test
     void reportsMissingDateAndTimeWithoutCallingTheInteractor() {
-        controller.viewSky(toronto(), null, null);
+        controller.viewSky(TORONTO_NAME, TORONTO_LAT, TORONTO_LNG, TORONTO_ZONE,
+                null, null);
 
         assertNull(inputBoundary.inputData);
         assertTrue(outputBoundary.failCalled);

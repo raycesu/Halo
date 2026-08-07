@@ -14,7 +14,7 @@ class SkyView {
 %% ---------- Interface Adapters ----------
 class RankForecastDaysController {
   -RankForecastDaysInputBoundary inputBoundary
-  +rankForecastDays(ObserverLocation, List~LocalDate~)
+  +rankForecastDays(String displayName, double lat, double lng, String zoneId, List~LocalDate~)
 }
 
 class RankForecastDaysPresenter {
@@ -130,6 +130,7 @@ SkyView ..> RankForecastDaysViewModel : listens
 
 RankForecastDaysController --> RankForecastDaysInputBoundary
 RankForecastDaysController ..> RankForecastDaysInputData : creates
+RankForecastDaysController ..> ObserverLocation : reconstructs
 
 RankForecastDaysInteractor ..|> RankForecastDaysInputBoundary
 RankForecastDaysInteractor --> WeatherDataAccessInterface

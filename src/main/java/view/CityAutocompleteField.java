@@ -23,9 +23,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import entity.ObserverLocation;
 import interface_adapter.lookup_location.LookupLocationController;
 import interface_adapter.lookup_location.LookupLocationViewModel;
+import interface_adapter.lookup_location.LookupLocationViewModel.LocationSuggestion;
 
 /**
  * A place-name field that suggests matching cities as the user types and hands back the one they
@@ -62,12 +62,12 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
     private final LookupLocationController lookupLocationController;
     private final LookupLocationViewModel lookupLocationViewModel;
     private final JTextField textField = new JTextField();
-    private final DefaultListModel<ObserverLocation> suggestionModel = new DefaultListModel<>();
-    private final JList<ObserverLocation> suggestionList = new JList<>(suggestionModel);
+    private final DefaultListModel<LocationSuggestion> suggestionModel = new DefaultListModel<>();
+    private final JList<LocationSuggestion> suggestionList = new JList<>(suggestionModel);
     private final JPopupMenu popup = new JPopupMenu();
 
     /** The place the user picked, or null if the current text is not a confirmed choice. */
-    private ObserverLocation selectedLocation;
+    private LocationSuggestion selectedLocation;
 
     /** Suppresses the document listener while the field's text is being set in code. */
     private boolean updatingText;
@@ -102,7 +102,7 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
      *
      * @return the currently selected location, or null
      */
-    public ObserverLocation getSelectedLocation() {
+    public LocationSuggestion getSelectedLocation() {
         return selectedLocation;
     }
 
@@ -112,7 +112,7 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
      *
      * @param location the location to display, or null to clear the field
      */
-    public void setSelectedLocation(final ObserverLocation location) {
+    public void setSelectedLocation(final LocationSuggestion location) {
         selectedLocation = location;
 
         final String displayText;
@@ -156,9 +156,9 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
         lookupLocationController.lookupLocation(query, MAX_SUGGESTIONS);
     }
 
-    private void applySuggestions(final List<ObserverLocation> matches) {
+    private void applySuggestions(final List<LocationSuggestion> matches) {
         suggestionModel.clear();
-        for (final ObserverLocation match : matches) {
+        for (final LocationSuggestion match : matches) {
             suggestionModel.addElement(match);
         }
 
@@ -194,7 +194,7 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
     }
 
     private void chooseHighlighted() {
-        final ObserverLocation choice = suggestionList.getSelectedValue();
+        final LocationSuggestion choice = suggestionList.getSelectedValue();
         if (choice != null) {
             selectedLocation = choice;
             setTextQuietly(choice.getDisplayName());
@@ -325,8 +325,8 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
 
             final Component component = super.getListCellRendererComponent(
                     list, value, index, isSelected, cellHasFocus);
-            if (value instanceof ObserverLocation) {
-                setText(((ObserverLocation) value).getDisplayName());
+            if (value instanceof LocationSuggestion) {
+                setText(((LocationSuggestion) value).getDisplayName());
             }
             return component;
         }
