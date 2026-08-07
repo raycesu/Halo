@@ -18,6 +18,12 @@ public class CheckConditionsController {
         this.inputBoundary = inputBoundary;
     }
 
+    /**
+     * Forwards a check-conditions request to the use case.
+     *
+     * @param location the observer location to check conditions for
+     * @param observationDateTime the local date and time of the observation
+     */
     public void checkConditions(
             final ObserverLocation location,
             final LocalDateTime observationDateTime) {

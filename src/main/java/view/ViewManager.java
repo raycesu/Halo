@@ -20,6 +20,12 @@ public class ViewManager extends JPanel implements PropertyChangeListener {
         viewManagerModel.addPropertyChangeListener(this);
     }
 
+    /**
+     * Registers a full-screen view under the given card name.
+     *
+     * @param viewName the card name to register the view under
+     * @param view the view panel to display for that card
+     */
     public void registerView(final String viewName, final JPanel view) {
         add(view, viewName);
         cardLayout.show(this, viewManagerModel.getActiveView());

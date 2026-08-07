@@ -28,13 +28,22 @@ public class ObservationSetupViewModel {
         return selectedLocation;
     }
 
+    /**
+     * Sets the selected observer location and notifies listeners.
+     *
+     * @param selectedLocation the newly selected location, or null when none is selected
+     */
     public void setSelectedLocation(final ObserverLocation selectedLocation) {
         final ObserverLocation oldLocation = this.selectedLocation;
         this.selectedLocation = selectedLocation;
         support.firePropertyChange("selectedLocation", oldLocation, selectedLocation);
     }
 
-    /** The chosen place's label, or an empty string when nothing has been chosen. */
+    /**
+     * The chosen place's label, or an empty string when nothing has been chosen.
+     *
+     * @return the display name of the selected location, or an empty string
+     */
     public String getLocation() {
         final String location;
         if (selectedLocation == null) {
@@ -50,6 +59,11 @@ public class ObservationSetupViewModel {
         return date;
     }
 
+    /**
+     * Sets the date text and notifies listeners.
+     *
+     * @param date the date text to display
+     */
     public void setDate(final String date) {
         final String oldDate = this.date;
         this.date = date;
@@ -60,6 +74,11 @@ public class ObservationSetupViewModel {
         return time;
     }
 
+    /**
+     * Sets the time text and notifies listeners.
+     *
+     * @param time the time text to display
+     */
     public void setTime(final String time) {
         final String oldTime = this.time;
         this.time = time;
@@ -70,16 +89,31 @@ public class ObservationSetupViewModel {
         return errorMessage;
     }
 
+    /**
+     * Sets the error message and notifies listeners.
+     *
+     * @param errorMessage the error text, or an empty string to clear it
+     */
     public void setErrorMessage(final String errorMessage) {
         final String oldErrorMessage = this.errorMessage;
         this.errorMessage = errorMessage;
         support.firePropertyChange("errorMessage", oldErrorMessage, errorMessage);
     }
 
+    /**
+     * Registers a listener to be notified of property changes.
+     *
+     * @param listener the listener to add
+     */
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Unregisters a previously registered property-change listener.
+     *
+     * @param listener the listener to remove
+     */
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }

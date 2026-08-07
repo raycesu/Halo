@@ -10,9 +10,11 @@ public class ConstellationLine {
         this.startStar = Objects.requireNonNull(startStar);
         this.endStar = Objects.requireNonNull(endStar);
     }
+
     public Star getStartStar() {
         return startStar;
     }
+
     public Star getEndStar() {
         return endStar;
     }

@@ -43,6 +43,12 @@ public class ViewSkyOutputData {
      * Carries the observed place as a whole, so that a caller needing to ask another service
      * about it — the weather, say — gets the time zone along with the coordinates instead of
      * having to guess one from the latitude and longitude.
+     *
+     * @param location the resolved observer location's display name
+     * @param date the observation date as an ISO string
+     * @param time the observation time as an ISO string
+     * @param observerLocation the resolved observer location
+     * @param stars the completed star list for this observation
      */
     public ViewSkyOutputData(
             final String location,
@@ -81,6 +87,8 @@ public class ViewSkyOutputData {
 
     /**
      * The observed place, or null when the result was built from coordinates alone.
+     *
+     * @return the resolved observer location, or null
      */
     public ObserverLocation getObserverLocation() {
         return observerLocation;

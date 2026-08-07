@@ -8,7 +8,6 @@ import java.util.Locale;
 import entity.weather.ViewingQualityRating;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
-
 import use_case.rank_forecast_days.RankForecastDaysOutputData;
 import use_case.rank_forecast_days.RankedDayResult;
 

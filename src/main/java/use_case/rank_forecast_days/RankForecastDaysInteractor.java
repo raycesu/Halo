@@ -14,14 +14,14 @@ import use_case.weather.WeatherUnavailableException;
 
 public class RankForecastDaysInteractor implements RankForecastDaysInputBoundary {
 
-    // Fixed nighttime proxy for ranking: each selected calendar day is evaluated at 23:00
-    // local civil time rather than true astronomical darkness for that location/date.
-    private static final int OBSERVATION_HOUR = 23;
-
     // The Open-Meteo forecast API has no data before today, so a request that includes a past
     // date is rejected here rather than being sent to the DAO.
     static final String PAST_DATE_ERROR_MESSAGE =
             "Forecast ranking is not available for past dates.";
+
+    // Fixed nighttime proxy for ranking: each selected calendar day is evaluated at 23:00
+    // local civil time rather than true astronomical darkness for that location/date.
+    private static final int OBSERVATION_HOUR = 23;
 
     private final WeatherDataAccessInterface weatherDataAccess;
     private final RankForecastDaysOutputBoundary outputBoundary;
@@ -47,16 +47,33 @@ public class RankForecastDaysInteractor implements RankForecastDaysInputBoundary
         final List<LocalDate> selectedDates = inputData.getSelectedDates();
         if (selectedDates.isEmpty()) {
             outputBoundary.presentError("Select at least one day to rank.");
-            return;
         }
+        else {
+            final LocalDate today = LocalDate.now(clock);
+            boolean hasPastDate = false;
+            for (final LocalDate date : selectedDates) {
+                if (date.isBefore(today)) {
+                    hasPastDate = true;
+                }
+            }
 
-        final LocalDate today = LocalDate.now(clock);
-        for (final LocalDate date : selectedDates) {
-            if (date.isBefore(today)) {
+            if (hasPastDate) {
                 outputBoundary.presentError(PAST_DATE_ERROR_MESSAGE);
-                return;
+            }
+            else {
+                rankValidatedDays(inputData, selectedDates);
             }
         }
+    }
+
+    /**
+     * Scores and ranks the given days, all of which are known to be today or later.
+     *
+     * @param inputData the observer location for the ranking request
+     * @param selectedDates the candidate dates to rank, all today or later
+     */
+    private void rankValidatedDays(
+            final RankForecastDaysInputData inputData, final List<LocalDate> selectedDates) {
 
         try {
             final List<LocalDateTime> dateTimes = new ArrayList<>(selectedDates.size());

@@ -1,6 +1,6 @@
 package data_access;
 
-//This class handles the API call for weather at a given location.
+// This class handles the API call for weather at a given location.
 // implements WeatherDataAccessInterface. This is the only file that knows Open-Meteo exists: builds the HTTP request,
 // parses the JSON response, maps it into whatever return type the interface expects
 
@@ -32,6 +32,7 @@ public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterf
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm", Locale.US);
     private static final int HTTP_OK = 200;
     private static final int MINUTES_TO_ROUND_UP = 30;
+    private static final String QUOTE_TERMINATOR = "'.";
 
     private final HttpClient httpClient;
 
@@ -96,6 +97,9 @@ public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterf
      * infers it from the coordinates. Both usually agree, but the hourly timestamps come back in
      * whichever zone the service chose and are then matched against a {@link LocalDateTime} read
      * in the location's zone. Sending the zone the caller actually means removes the guess.
+     *
+     * @param location the observer location to build a forecast request URL for
+     * @return the complete Open-Meteo forecast request URL
      */
     private String buildRequestUrl(final ObserverLocation location) {
         return FORECAST_URL
@@ -162,13 +166,13 @@ public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterf
         final int start = json.indexOf(marker);
         if (start < 0) {
             throw new WeatherUnavailableException(
-                    "Weather service response is missing '" + fieldName + "'.");
+                    "Weather service response is missing '" + fieldName + QUOTE_TERMINATOR);
         }
         final int valuesStart = start + marker.length();
         final int valuesEnd = json.indexOf(']', valuesStart);
         if (valuesEnd < 0) {
             throw new WeatherUnavailableException(
-                    "Weather service response is malformed for '" + fieldName + "'.");
+                    "Weather service response is malformed for '" + fieldName + QUOTE_TERMINATOR);
         }
         final String body = json.substring(valuesStart, valuesEnd).trim();
         final List<String> values = new ArrayList<>();
@@ -191,7 +195,8 @@ public class OpenMeteoWeatherDataAccessObject implements WeatherDataAccessInterf
         }
         catch (NumberFormatException exception) {
             throw new WeatherUnavailableException(
-                    "Weather service returned an invalid value for '" + fieldName + "'.", exception);
+                    "Weather service returned an invalid value for '" + fieldName + QUOTE_TERMINATOR,
+                    exception);
         }
     }
 }

@@ -1,12 +1,6 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,11 +8,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.ExecutionException;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
@@ -32,14 +22,15 @@ import interface_adapter.view_sky.ViewSkyController;
 public class ObservationSetupView extends JPanel
         implements ActionListener, PropertyChangeListener {
 
+    private static final int SETUP_VIEW_WIDTH = 900;
+    private static final int SETUP_VIEW_HEIGHT = 600;
+    private static final int SKY_VIEW_WIDTH = 1350;
+    private static final int SKY_VIEW_HEIGHT = 800;
+
     private final ObservationSetupViewModel viewModel;
     private final ViewSkyController viewSkyController;
     private final ViewManagerModel viewManagerModel;
-    private final CityAutocompleteField locationField;
-    private final JTextField dateField;
-    private final JTextField timeField;
-    private final JButton viewSkyButton = new JButton("View Sky");
-    private final JLabel errorLabel;
+    private final ObservationSetupFormPanel formPanel;
     private SwingWorker<Void, Void> viewSkyWorker;
 
     public ObservationSetupView(
@@ -52,147 +43,55 @@ public class ObservationSetupView extends JPanel
         this.viewSkyController = viewSkyController;
         this.viewManagerModel = viewManagerModel;
 
-        locationField = new CityAutocompleteField(lookupLocationController, lookupLocationViewModel);
-        locationField.setName("locationField");
-        locationField.getTextField().setName("locationTextField");
-        locationField.setSelectedLocation(viewModel.getSelectedLocation());
+        formPanel = new ObservationSetupFormPanel(
+                viewModel, lookupLocationController, lookupLocationViewModel);
 
-        dateField = createField("dateField", viewModel.getDate());
-        timeField = createField("timeField", viewModel.getTime());
-        errorLabel = new JLabel(viewModel.getErrorMessage());
-        viewSkyButton.setName("viewSkyButton");
+        setLayout(SwingStyle.border());
+        add(formPanel, BorderLayout.CENTER);
 
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-
-        final JLabel titleLabel = new JLabel("HALO", SwingConstants.CENTER);
-        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 52));
-        titleLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(35, 20, 15, 20));
-        add(titleLabel, BorderLayout.NORTH);
-
-        final JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
-
-        final GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets = new Insets(6, 8, 6, 8);
-        constraints.anchor = GridBagConstraints.WEST;
-
-        addFieldRow(formPanel, constraints, 0, "Location:", locationField);
-        addFieldRow(formPanel, constraints, 1, "Date (yyyy-MM-dd):", dateField);
-        addFieldRow(formPanel, constraints, 2, "Time (HH:mm):", timeField);
-
-        constraints.gridx = 0;
-        constraints.gridy = 3;
-        constraints.gridwidth = 2;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.CENTER;
-        constraints.weightx = 0.0;
-        formPanel.add(viewSkyButton, constraints);
-
-        errorLabel.setForeground(new Color(180, 30, 30));
-        errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        constraints.gridy = 4;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        formPanel.add(errorLabel, constraints);
-
-        final JPanel formWrapper = new JPanel(new GridBagLayout());
-        formWrapper.setBackground(Color.WHITE);
-        formWrapper.add(formPanel);
-        add(formWrapper, BorderLayout.CENTER);
-
-        viewSkyButton.addActionListener(this);
+        formPanel.getViewSkyButton().addActionListener(this);
         viewModel.addPropertyChangeListener(this);
     }
 
-    /** The location input, exposed so a caller can seed or read the chosen place. */
+    /**
+     * The location input, exposed so a caller can seed or read the chosen place.
+     *
+     * @return the location autocomplete field
+     */
     public CityAutocompleteField getLocationField() {
-        return locationField;
-    }
-
-    private JTextField createField(final String name, final String value) {
-        final JTextField field = new JTextField(value, 20);
-        field.setName(name);
-        return field;
-    }
-
-    private void addFieldRow(
-            final JPanel formPanel,
-            final GridBagConstraints constraints,
-            final int row,
-            final String label,
-            final Component field) {
-        constraints.gridx = 0;
-        constraints.gridy = row;
-        constraints.gridwidth = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.weightx = 0.0;
-        constraints.anchor = GridBagConstraints.WEST;
-        formPanel.add(new JLabel(label), constraints);
-
-        constraints.gridx = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.weightx = 1.0;
-        formPanel.add(field, constraints);
+        return formPanel.getLocationField();
     }
 
     @Override
     public void actionPerformed(final ActionEvent event) {
-        if (event.getSource() != viewSkyButton
-                || (viewSkyWorker != null && !viewSkyWorker.isDone())) {
-            return;
+        final boolean workerBusy = viewSkyWorker != null && !viewSkyWorker.isDone();
+        if (event.getSource() == formPanel.getViewSkyButton() && !workerBusy) {
+            submitObservation();
         }
+    }
 
-        final ObserverLocation location = locationField.getSelectedLocation();
-        final String date = dateField.getText();
-        final String time = timeField.getText();
+    private void submitObservation() {
+        final ObserverLocation location = formPanel.getLocationField().getSelectedLocation();
+        final String date = formPanel.getDateField().getText();
+        final String time = formPanel.getTimeField().getText();
 
         // A location that was never chosen from the list is reported here rather than sent on,
         // since there are no coordinates to send.
         if (location == null) {
             viewModel.setErrorMessage("Choose a location from the suggestions first.");
-            return;
         }
+        else {
+            viewModel.setSelectedLocation(location);
+            viewModel.setDate(date);
+            viewModel.setTime(time);
+            viewModel.setErrorMessage("");
 
-        viewModel.setSelectedLocation(location);
-        viewModel.setDate(date);
-        viewModel.setTime(time);
-        viewModel.setErrorMessage("");
+            formPanel.getViewSkyButton().setEnabled(false);
+            viewManagerModel.setActiveView(ViewManagerModel.LOADING_VIEW);
 
-        viewSkyButton.setEnabled(false);
-        viewManagerModel.setActiveView(ViewManagerModel.loading_view);
-
-        viewSkyWorker = new SwingWorker<>() {
-            @Override
-            protected Void doInBackground() {
-                viewSkyController.viewSky(location, date, time);
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    get();
-                }
-                catch (InterruptedException exception) {
-                    Thread.currentThread().interrupt();
-                    viewModel.setErrorMessage("Sky loading was interrupted.");
-                }
-                catch (ExecutionException exception) {
-                    viewModel.setErrorMessage("Could not load the sky.");
-                }
-
-                viewSkyButton.setEnabled(true);
-                if (viewModel.getErrorMessage().isBlank()) {
-                    viewManagerModel.setActiveView(ViewManagerModel.sky_view);
-                    resizeWindow(1350, 800);
-                }
-                else {
-                    viewManagerModel.setActiveView(ViewManagerModel.observation_setup_view);
-                    resizeWindow(900, 600);
-                }
-            }
-        };
-        viewSkyWorker.execute();
+            viewSkyWorker = new ViewSkyWorker(location, date, time);
+            viewSkyWorker.execute();
+        }
     }
 
     private void resizeWindow(final int width, final int height) {
@@ -205,21 +104,67 @@ public class ObservationSetupView extends JPanel
 
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
-        final Runnable updateFields = () -> {
-            // The location field is left alone: it owns the resolved choice, and rewriting its
-            // text from the view model would discard the coordinates that came with it.
-            dateField.setText(viewModel.getDate());
-            timeField.setText(viewModel.getTime());
-            errorLabel.setText(viewModel.getErrorMessage());
-            revalidate();
-            repaint();
-        };
+        final Runnable updateFields = this::applyViewModelToFields;
 
         if (SwingUtilities.isEventDispatchThread()) {
             updateFields.run();
         }
         else {
             SwingUtilities.invokeLater(updateFields);
+        }
+    }
+
+    private void applyViewModelToFields() {
+        // The location field is left alone: it owns the resolved choice, and rewriting its
+        // text from the view model would discard the coordinates that came with it.
+        formPanel.getDateField().setText(viewModel.getDate());
+        formPanel.getTimeField().setText(viewModel.getTime());
+        formPanel.getErrorLabel().setText(viewModel.getErrorMessage());
+        revalidate();
+        repaint();
+    }
+
+    /** Runs the sky use case off the event dispatch thread, then reports the outcome back on it. */
+    private final class ViewSkyWorker extends SwingWorker<Void, Void> {
+
+        private final ObserverLocation location;
+        private final String date;
+        private final String time;
+
+        ViewSkyWorker(final ObserverLocation location, final String date, final String time) {
+            this.location = location;
+            this.date = date;
+            this.time = time;
+        }
+
+        @Override
+        protected Void doInBackground() {
+            viewSkyController.viewSky(location, date, time);
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            try {
+                get();
+            }
+            catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                viewModel.setErrorMessage("Sky loading was interrupted.");
+            }
+            catch (ExecutionException exception) {
+                viewModel.setErrorMessage("Could not load the sky.");
+            }
+
+            formPanel.getViewSkyButton().setEnabled(true);
+            if (viewModel.getErrorMessage().isBlank()) {
+                viewManagerModel.setActiveView(ViewManagerModel.SKY_VIEW);
+                resizeWindow(SKY_VIEW_WIDTH, SKY_VIEW_HEIGHT);
+            }
+            else {
+                viewManagerModel.setActiveView(ViewManagerModel.OBSERVATION_SETUP_VIEW);
+                resizeWindow(SETUP_VIEW_WIDTH, SETUP_VIEW_HEIGHT);
+            }
         }
     }
 }

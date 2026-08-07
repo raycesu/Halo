@@ -5,6 +5,7 @@ import use_case.custom_constellation.ConstellationOutputData;
 
 public class ConstellationPresenter implements ConstellationOutputBoundary {
     private final ConstellationViewModel viewModel;
+
     public ConstellationPresenter(final ConstellationViewModel viewModel) {
         this.viewModel = viewModel;
     }

@@ -42,28 +42,46 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     @Override
     public void execute(final ViewSkyInputData inputData) {
-        final ObserverLocation location;
-        final ZonedDateTime observationTime;
-        final Instant instant;
-
-        try {
-            location = new ObserverLocation(
-                    inputData.getLocationName(),
-                    inputData.getLatitude(),
-                    inputData.getLongitude(),
-                    inputData.getZoneId());
-
-            observationTime = inputData.getObservationDateTime()
-                    .atZone(inputData.getZoneId());
-
-            instant = observationTime.toInstant();
-        }
-        catch (IllegalArgumentException | NullPointerException exception) {
+        if (inputData == null || inputData.getObservationDateTime() == null) {
             outputBoundary.prepareFailView(
-                    "Could not read the observation details: "
-                            + exception.getMessage());
-            return;
+                    "Could not read the observation details: missing required fields.");
         }
+        else {
+            ObserverLocation location = null;
+            ZonedDateTime observationTime = null;
+
+            try {
+                location = new ObserverLocation(
+                        inputData.getLocationName(),
+                        inputData.getLatitude(),
+                        inputData.getLongitude(),
+                        inputData.getZoneId());
+
+                observationTime = inputData.getObservationDateTime()
+                        .atZone(inputData.getZoneId());
+            }
+            catch (IllegalArgumentException exception) {
+                outputBoundary.prepareFailView(
+                        "Could not read the observation details: "
+                                + exception.getMessage());
+            }
+
+            if (location != null) {
+                completeViewSky(location, observationTime);
+            }
+        }
+    }
+
+    /**
+     * Finishes the sky computation once the location and observation time are known good.
+     *
+     * @param location the resolved observer location
+     * @param observationTime the resolved observation instant, in the observer's zone
+     */
+    private void completeViewSky(
+            final ObserverLocation location, final ZonedDateTime observationTime) {
+
+        final Instant instant = observationTime.toInstant();
 
         final List<Star> observed = new ArrayList<>(
                 positionCatalogueStars(
@@ -99,6 +117,11 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     /**
      * Positions catalogue stars using copies so cached catalogue objects are not mutated.
+     *
+     * @param catalogue the catalogue stars to position
+     * @param location the observer location
+     * @param observationTime the observation instant, in the observer's zone
+     * @return fresh star copies with calculated altitude and azimuth
      */
     private List<Star> positionCatalogueStars(
             final List<Star> catalogue,
@@ -122,6 +145,12 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     /**
      * Fetches moving bodies while dropping any objects already supplied by the catalogue.
+     *
+     * @param location the observer location
+     * @param instant the observation instant
+     * @param alreadyPresent stars already present, whose names should not be duplicated
+     * @return the moving bodies not already present in {@code alreadyPresent}
+     * @throws CelestialDataUnavailableException if the ephemeris service could not be reached
      */
     private List<Star> fetchMovingBodies(
             final ObserverLocation location,
@@ -137,8 +166,8 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
         final List<Star> bodies = new ArrayList<>();
 
-        for (final Star body :
-                celestialBodyDataAccess.getCelestialBodies(location, instant)) {
+        for (final Star body
+                : celestialBodyDataAccess.getCelestialBodies(location, instant)) {
             if (knownNames.add(normaliseName(body.getDisplayName()))) {
                 bodies.add(body);
             }
@@ -149,6 +178,9 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     /**
      * Keeps objects above the horizon and orders them brightest first.
+     *
+     * @param observed all observed stars and bodies, whether above or below the horizon
+     * @return the visible objects, sorted brightest first
      */
     private List<Star> visibleBrightestFirst(
             final List<Star> observed) {

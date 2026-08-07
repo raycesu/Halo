@@ -12,9 +12,11 @@ public class ConstellationInputData {
         this.name = name;
         this.selectedStars = List.copyOf(selectedStars);
     }
+
     public String getName() {
         return name;
     }
+
     public List<Star> getSelectedStars() {
         return selectedStars;
     }

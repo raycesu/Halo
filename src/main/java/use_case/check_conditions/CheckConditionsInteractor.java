@@ -4,7 +4,7 @@ package use_case.check_conditions;
 // Takes CheckConditionsInputData
 // Calls WeatherDataAccessInterface.getWeather(location, datetime) to get data
 // Builds a WeatherCondition from the response
- //Runs it through ViewingQualityRating
+// Runs it through ViewingQualityRating
 // Packages everything into CheckConditionsOutputData
 // Calls outputBoundary.presentConditions(outputData)
 // It depends only on interfaces (WeatherDataAccessInterface,
@@ -49,29 +49,29 @@ public class CheckConditionsInteractor implements CheckConditionsInputBoundary {
         final LocalDate observationDate = inputData.getObservationDateTime().toLocalDate();
         if (observationDate.isBefore(LocalDate.now(clock))) {
             outputBoundary.presentError(PAST_DATE_ERROR_MESSAGE);
-            return;
         }
+        else {
+            try {
+                final WeatherCondition condition = weatherDataAccess.getWeatherCondition(
+                        inputData.getLocation(),
+                        inputData.getObservationDateTime());
 
-        try {
-            final WeatherCondition condition = weatherDataAccess.getWeatherCondition(
-                    inputData.getLocation(),
-                    inputData.getObservationDateTime());
+                final double overallScore = ViewingQualityRating.calculateOverallScore(condition);
+                final ViewingQualityRating rating = ViewingQualityRating.fromScore(overallScore);
 
-            final double overallScore = ViewingQualityRating.calculateOverallScore(condition);
-            final ViewingQualityRating rating = ViewingQualityRating.fromScore(overallScore);
+                final CheckConditionsOutputData outputData = new CheckConditionsOutputData(
+                        condition.getCloudCoverPercent(),
+                        condition.getVisibilityMeters(),
+                        condition.getPrecipitationProbabilityPercent(),
+                        condition.getWeatherCode(),
+                        overallScore,
+                        rating);
 
-            final CheckConditionsOutputData outputData = new CheckConditionsOutputData(
-                    condition.getCloudCoverPercent(),
-                    condition.getVisibilityMeters(),
-                    condition.getPrecipitationProbabilityPercent(),
-                    condition.getWeatherCode(),
-                    overallScore,
-                    rating);
-
-            outputBoundary.presentConditions(outputData);
-        }
-        catch (WeatherUnavailableException exception) {
-            outputBoundary.presentError(exception.getMessage());
+                outputBoundary.presentConditions(outputData);
+            }
+            catch (WeatherUnavailableException exception) {
+                outputBoundary.presentError(exception.getMessage());
+            }
         }
     }
 }

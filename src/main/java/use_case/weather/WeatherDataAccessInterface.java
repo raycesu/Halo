@@ -15,6 +15,11 @@ public interface WeatherDataAccessInterface {
      * date and time is what a user means when they ask about tonight at 11pm. Taking the place as
      * an {@link ObserverLocation} rather than a pair of coordinates is what makes that resolvable:
      * the location carries the zone with it.
+     *
+     * @param location the observer's location
+     * @param dateTime the local date and time to fetch weather for
+     * @return the weather condition at the given place and moment
+     * @throws WeatherUnavailableException if the weather could not be obtained
      */
     WeatherCondition getWeatherCondition(ObserverLocation location, LocalDateTime dateTime)
             throws WeatherUnavailableException;
@@ -22,6 +27,11 @@ public interface WeatherDataAccessInterface {
     /**
      * Fetches weather for multiple datetimes in one underlying request when possible.
      * Returned conditions are ordered to match {@code dateTimes}.
+     *
+     * @param location the observer's location
+     * @param dateTimes the local dates and times to fetch weather for
+     * @return the weather conditions, in the same order as {@code dateTimes}
+     * @throws WeatherUnavailableException if the weather could not be obtained
      */
     List<WeatherCondition> getWeatherConditions(
             ObserverLocation location, List<LocalDateTime> dateTimes)

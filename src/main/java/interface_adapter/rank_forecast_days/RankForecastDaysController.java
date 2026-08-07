@@ -15,6 +15,12 @@ public class RankForecastDaysController {
         this.inputBoundary = inputBoundary;
     }
 
+    /**
+     * Forwards a forecast-ranking request to the use case.
+     *
+     * @param location the observer location to rank forecast days for
+     * @param selectedDates the candidate dates to rank
+     */
     public void rankForecastDays(
             final ObserverLocation location,
             final List<LocalDate> selectedDates) {

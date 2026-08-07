@@ -9,6 +9,7 @@ public class ConstellationOutputData {
     public ConstellationOutputData(final CustomConstellation constellation) {
         this.constellation = constellation;
     }
+
     public CustomConstellation getConstellation() {
         return constellation;
     }

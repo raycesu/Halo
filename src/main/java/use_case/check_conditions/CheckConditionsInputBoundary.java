@@ -6,5 +6,10 @@ package use_case.check_conditions;
 
 public interface CheckConditionsInputBoundary {
 
+    /**
+     * Checks observing conditions for the given location and time.
+     *
+     * @param inputData the observer location and observation time to check
+     */
     void checkConditions(CheckConditionsInputData inputData);
 }

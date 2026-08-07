@@ -119,7 +119,7 @@ class SkyMapPanelTest {
     void draggingDoesNotSelectAnObject() {
         final SkyVisualization.ScreenPosition position = projectedPosition(star);
 
-        drag(position.x, position.y, position.x + 30, position.y + 20);
+        drag(position.getX(), position.getY(), position.getX() + 30, position.getY() + 20);
 
         assertNull(panel.getSelectedObject());
         assertNull(selectedByListener);
@@ -131,7 +131,7 @@ class SkyMapPanelTest {
         drag(100, 100, 125, 115);
         final SkyVisualization.ScreenPosition position = projectedPosition(star);
 
-        click(position.x + 3, position.y - 2);
+        click(position.getX() + 3, position.getY() - 2);
 
         assertSame(star, panel.getSelectedObject());
         assertSame(star, selectedByListener);
@@ -140,7 +140,7 @@ class SkyMapPanelTest {
     @Test
     void clickingAwayFromObjectsClearsTheSelection() {
         final SkyVisualization.ScreenPosition position = projectedPosition(star);
-        click(position.x, position.y);
+        click(position.getX(), position.getY());
 
         click(10, 10);
 
@@ -151,7 +151,7 @@ class SkyMapPanelTest {
     @Test
     void selectionIsHighlightedUntilTheDisplayedListIsReplaced() {
         final SkyVisualization.ScreenPosition position = projectedPosition(star);
-        click(position.x, position.y);
+        click(position.getX(), position.getY());
 
         assertSame(star, panel.getSelectedObject());
         assertTrue(renderContainsSelectionColor());
@@ -283,30 +283,32 @@ class SkyMapPanelTest {
             final String name,
             final double altitude,
             final double azimuth) {
-        final Star observedStar = new Star(
-                "HIP test",
-                name,
-                12.0,
-                20.0,
-                1.0,
-                "region",
-                "spectral",
-                "description");
+        final Star observedStar = new Star.Builder()
+                .catalogueId("HIP test")
+                .displayName(name)
+                .rightAscension(12.0)
+                .declination(20.0)
+                .apparentMagnitude(1.0)
+                .constellationRegion("region")
+                .spectralType("spectral")
+                .description("description")
+                .build();
         observedStar.updateHorizontalPosition(altitude, azimuth);
         return observedStar;
     }
 
     private Star createObservedObject(final CelestialBodyType type) {
-        final Star observedObject = new Star(
-                type.name(),
-                type.name(),
-                12.0,
-                20.0,
-                1.0,
-                "region",
-                "spectral",
-                "description",
-                type);
+        final Star observedObject = new Star.Builder()
+                .catalogueId(type.name())
+                .displayName(type.name())
+                .rightAscension(12.0)
+                .declination(20.0)
+                .apparentMagnitude(1.0)
+                .constellationRegion("region")
+                .spectralType("spectral")
+                .description("description")
+                .type(type)
+                .build();
         observedObject.updateHorizontalPosition(90.0, 0.0);
         return observedObject;
     }

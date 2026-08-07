@@ -374,15 +374,16 @@ class ViewSkyInteractorTest {
             final double declination,
             final double magnitude) {
 
-        return new Star(
-                "HIP test",
-                name,
-                rightAscension,
-                declination,
-                magnitude,
-                "region",
-                "spectral",
-                "description");
+        return new Star.Builder()
+                .catalogueId("HIP test")
+                .displayName(name)
+                .rightAscension(rightAscension)
+                .declination(declination)
+                .apparentMagnitude(magnitude)
+                .constellationRegion("region")
+                .spectralType("spectral")
+                .description("description")
+                .build();
     }
 
     private static Star observedBody(
@@ -391,16 +392,11 @@ class ViewSkyInteractorTest {
             final double altitude,
             final double azimuth) {
 
-        final Star body = new Star(
-                "",
-                name,
-                0.0,
-                0.0,
-                Double.NaN,
-                "",
-                "",
-                "",
-                type);
+        final Star body = new Star.Builder()
+                .displayName(name)
+                .apparentMagnitude(Double.NaN)
+                .type(type)
+                .build();
 
         body.updateHorizontalPosition(altitude, azimuth);
         return body;
