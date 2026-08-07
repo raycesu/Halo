@@ -2,6 +2,15 @@ package astronomy;
 
 public final class SiderealTimeCalculator {
 
+    private static final double HOURS_IN_DAY = 24.0;
+
+    /**
+     * Calculates the local sidereal time for a given Julian Date and longitude.
+     *
+     * @param julianDate the Julian Date of the observation
+     * @param longitudeDegrees the observer's longitude in decimal degrees, east positive
+     * @return the local sidereal time, in decimal hours in [0, 24)
+     */
     public double calculateLocalSiderealTime(
             final double julianDate,
             final double longitudeDegrees) {
@@ -21,9 +30,9 @@ public final class SiderealTimeCalculator {
     }
 
     private double normalizeHours(final double hours) {
-        double normalizedHours = hours % 24.0;
+        double normalizedHours = hours % HOURS_IN_DAY;
         if (normalizedHours < 0.0) {
-            normalizedHours += 24.0;
+            normalizedHours += HOURS_IN_DAY;
         }
         return normalizedHours;
     }

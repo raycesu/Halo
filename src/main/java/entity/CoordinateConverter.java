@@ -99,6 +99,10 @@ public final class CoordinateConverter {
      *
      * <p>This is mean rather than apparent sidereal time; the difference (the equation of the
      * equinoxes) stays under about 0.005 degrees, far below what a sky map can show.
+     *
+     * @param instant the observation instant
+     * @param longitude the observer's longitude in decimal degrees, east positive
+     * @return the local mean sidereal time, in degrees in [0, 360)
      */
     public static double localSiderealTimeDegrees(final Instant instant, final double longitude) {
         return wrapIntoCircle(greenwichMeanSiderealTimeDegrees(instant) + longitude);
@@ -120,6 +124,9 @@ public final class CoordinateConverter {
     /**
      * Converts an instant to a Julian date. Uses the epoch second directly so the sub-second
      * component is preserved, since sidereal time advances about 15 arcseconds per second.
+     *
+     * @param instant the instant to convert
+     * @return the Julian Date corresponding to {@code instant}
      */
     public static double toJulianDate(final Instant instant) {
         final double epochSeconds =
@@ -130,6 +137,9 @@ public final class CoordinateConverter {
     /**
      * Guards against rounding pushing the argument of {@link Math#asin} just outside [-1, 1],
      * which would otherwise produce NaN for an object at the exact zenith.
+     *
+     * @param value the value to clamp
+     * @return {@code value} restricted to [-1, 1]
      */
     private static double clampToUnitRange(final double value) {
         return Math.max(-1.0, Math.min(1.0, value));

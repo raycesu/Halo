@@ -10,14 +10,15 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.util.List;
 
 import javax.swing.JPanel;
 
 import entity.CelestialBodyType;
-import entity.Star;
 import entity.ConstellationLine;
 import entity.CustomConstellation;
+import entity.Star;
 
 public class SkyMapPanel extends JPanel {
 
@@ -30,8 +31,25 @@ public class SkyMapPanel extends JPanel {
     private static final int SUN_MARKER_SIZE = 10;
     private static final int MOON_MARKER_SIZE = 8;
     private static final int PLANET_MARKER_SIZE = 6;
+    private static final int MIN_STAR_SIZE = 3;
+    private static final int MAX_STAR_SIZE = 9;
+    private static final int DEFAULT_STAR_SIZE = 4;
+    private static final double MAGNITUDE_SIZE_OFFSET = 7.0;
+    private static final int SELECTION_HIGHLIGHT_PADDING = 8;
+    private static final int COMPASS_LABEL_FONT_SIZE = 14;
+    private static final int COMPASS_LABEL_VERTICAL_PADDING = 8;
+    private static final int COMPASS_LABEL_HORIZONTAL_PADDING = 10;
+    private static final int HORIZONTAL_MARGIN = 80;
+    private static final int VERTICAL_MARGIN = 60;
+    private static final Color BACKGROUND_COLOR = new Color(7, 7, 9);
     private static final Color SELECTION_COLOR = new Color(255, 210, 40);
     private static final Color SUN_COLOR = new Color(255, 190, 60);
+    private static final Color CONSTELLATION_LINE_COLOR = new Color(80, 180, 255);
+    private static final Font COMPASS_LABEL_FONT =
+            new Font(Font.SANS_SERIF, Font.BOLD, COMPASS_LABEL_FONT_SIZE);
+    private static final BasicStroke HORIZON_STROKE = new BasicStroke(2.0F);
+    private static final BasicStroke SELECTION_STROKE = new BasicStroke(2.0F);
+    private static final BasicStroke CONSTELLATION_STROKE = new BasicStroke(1.5F);
 
     private List<Star> stars = List.of();
     private Star selectedObject;
@@ -51,74 +69,19 @@ public class SkyMapPanel extends JPanel {
     private List<Star> constellationSelection = List.of();
 
     public SkyMapPanel() {
-        setBackground(new Color(7, 7, 9));
+        setBackground(BACKGROUND_COLOR);
 
-        final MouseAdapter mouseHandler = new MouseAdapter() {
-            @Override
-            public void mousePressed(final MouseEvent event) {
-                ensureViewInitialized();
-                mousePressed = true;
-                dragging = false;
-                suppressClick = false;
-                dragStartX = event.getX();
-                dragStartY = event.getY();
-                dragStartPanX = panOffsetX;
-                dragStartPanY = panOffsetY;
-            }
-
-            @Override
-            public void mouseDragged(final MouseEvent event) {
-                if (!mousePressed || !viewInitialized) {
-                    return;
-                }
-
-                final int differenceX = event.getX() - dragStartX;
-                final int differenceY = event.getY() - dragStartY;
-
-                if (!dragging
-                        && Math.hypot(differenceX, differenceY) >= DRAG_THRESHOLD) {
-                    dragging = true;
-                    setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-                }
-
-                if (dragging) {
-                    panOffsetX = dragStartPanX + differenceX;
-                    panOffsetY = dragStartPanY + differenceY;
-                    clampPanOffsets();
-                    repaint();
-                }
-            }
-
-            @Override
-            public void mouseReleased(final MouseEvent event) {
-                if (dragging) {
-                    suppressClick = true;
-                }
-                mousePressed = false;
-                dragging = false;
-                setCursor(Cursor.getDefaultCursor());
-            }
-
-            @Override
-            public void mouseClicked(final MouseEvent event) {
-                if (suppressClick) {
-                    suppressClick = false;
-                } else {
-                    selectObjectAt(event.getX(), event.getY());
-                }
-            }
-
-            @Override
-            public void mouseWheelMoved(final java.awt.event.MouseWheelEvent event) {
-                zoomAt(event.getX(), event.getY(), event.getWheelRotation());
-            }
-        };
-
+        final SkyMapMouseHandler mouseHandler = new SkyMapMouseHandler();
         addMouseListener(mouseHandler);
         addMouseMotionListener(mouseHandler);
         addMouseWheelListener(mouseHandler);
     }
 
+    /**
+     * Replaces the stars currently displayed, clearing any prior selection.
+     *
+     * @param stars the completed, calculated stars for the current observation
+     */
     public void setStars(final List<Star> stars) {
         this.stars = List.copyOf(stars);
         selectedObject = null;
@@ -127,6 +90,8 @@ public class SkyMapPanel extends JPanel {
 
     /**
      * User-created constellations currently displayed on the sky map.
+     *
+     * @param customConstellations the constellations to draw
      */
     public void setCustomConstellations(final List<CustomConstellation> customConstellations) {
         this.customConstellations = List.copyOf(customConstellations);
@@ -135,25 +100,43 @@ public class SkyMapPanel extends JPanel {
 
     /**
      * Stars selected in order, while the user creates a constellation.
+     *
+     * @param constellationSelection the stars selected so far, in selection order
      */
     public void setConstellationSelection(final List<Star> constellationSelection) {
         this.constellationSelection = List.copyOf(constellationSelection);
         repaint();
     }
 
+    /**
+     * Returns the currently selected object.
+     *
+     * @return the currently selected object, or null if nothing is selected
+     */
     public Star getSelectedObject() {
         return selectedObject;
     }
 
+    /**
+     * Highlights the given object as the current selection.
+     *
+     * @param selectedObject the object to highlight as selected, or null to clear the selection
+     */
     public void setSelectedObject(final Star selectedObject) {
         this.selectedObject = selectedObject;
         repaint();
     }
 
+    /**
+     * Registers the listener notified whenever the user clicks a displayed object.
+     *
+     * @param selectionListener notified whenever the user clicks a displayed object
+     */
     public void setSelectionListener(final SelectionListener selectionListener) {
         this.selectionListener = selectionListener;
     }
 
+    /** Resets zoom and pan to the initial, fully-zoomed-out view. */
     public void resetView() {
         panOffsetX = 0.0;
         panOffsetY = 0.0;
@@ -198,26 +181,26 @@ public class SkyMapPanel extends JPanel {
             graphics2D.fillOval(circleX, circleY, diameter, diameter);
 
             graphics2D.setColor(Color.WHITE);
-            graphics2D.setStroke(new BasicStroke(2.0F));
+            graphics2D.setStroke(HORIZON_STROKE);
             graphics2D.drawOval(circleX, circleY, diameter, diameter);
 
-            graphics2D.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+            graphics2D.setFont(COMPASS_LABEL_FONT);
             final FontMetrics metrics = graphics2D.getFontMetrics();
             graphics2D.drawString(
                     "N",
                     centreX - metrics.stringWidth("N") / 2,
-                    circleY - 8);
+                    circleY - COMPASS_LABEL_VERTICAL_PADDING);
             graphics2D.drawString(
                     "E",
-                    circleX + diameter + 10,
+                    circleX + diameter + COMPASS_LABEL_HORIZONTAL_PADDING,
                     centreY + metrics.getAscent() / 2);
             graphics2D.drawString(
                     "S",
                     centreX - metrics.stringWidth("S") / 2,
-                    circleY + diameter + metrics.getAscent() + 8);
+                    circleY + diameter + metrics.getAscent() + COMPASS_LABEL_VERTICAL_PADDING);
             graphics2D.drawString(
                     "W",
-                    circleX - metrics.stringWidth("W") - 10,
+                    circleX - metrics.stringWidth("W") - COMPASS_LABEL_HORIZONTAL_PADDING,
                     centreY + metrics.getAscent() / 2);
 
             drawCustomConstellations(graphics2D, centreX, centreY, radius);
@@ -227,17 +210,24 @@ public class SkyMapPanel extends JPanel {
                         SkyVisualization.project(star, centreX, centreY, radius);
                 drawObject(graphics2D, star, position);
             }
-        } finally {
+        }
+        finally {
             graphics2D.dispose();
         }
     }
 
     /**
      * Draws saved constellation as line segments between visible stars.
+     *
+     * @param graphics2D the graphics context to draw with
+     * @param centreX the x coordinate of the map's centre (the zenith)
+     * @param centreY the y coordinate of the map's centre (the zenith)
+     * @param radius the pixel radius of the horizon circle
      */
-    private void drawCustomConstellations(final Graphics2D graphics2D, final int centreX, final int centreY, final int radius) {
-        graphics2D.setColor(new Color(80, 180, 255));
-        graphics2D.setStroke(new BasicStroke(1.5F));
+    private void drawCustomConstellations(
+            final Graphics2D graphics2D, final int centreX, final int centreY, final int radius) {
+        graphics2D.setColor(CONSTELLATION_LINE_COLOR);
+        graphics2D.setStroke(CONSTELLATION_STROKE);
 
         for (final CustomConstellation constellation : customConstellations) {
             for (final ConstellationLine constellationLine : constellation.getLines()) {
@@ -245,10 +235,12 @@ public class SkyMapPanel extends JPanel {
                 final Star endStar = constellationLine.getEndStar();
                 // Avoid drawing a segment when either endpoint is below the horizon.
                 if (startStar.isAboveHorizon() && endStar.isAboveHorizon()) {
-                    final SkyVisualization.ScreenPosition start = SkyVisualization.project(startStar, centreX, centreY, radius);
-                    final SkyVisualization.ScreenPosition end = SkyVisualization.project(endStar, centreX, centreY, radius);
+                    final SkyVisualization.ScreenPosition start =
+                            SkyVisualization.project(startStar, centreX, centreY, radius);
+                    final SkyVisualization.ScreenPosition end =
+                            SkyVisualization.project(endStar, centreX, centreY, radius);
 
-                    graphics2D.drawLine(start.x, start.y, end.x, end.y);
+                    graphics2D.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
                 }
             }
         }
@@ -262,18 +254,18 @@ public class SkyMapPanel extends JPanel {
 
         graphics2D.setColor(objectColor(star));
         graphics2D.fillOval(
-                position.x - size / 2,
-                position.y - size / 2,
+                position.getX() - size / 2,
+                position.getY() - size / 2,
                 size,
                 size);
 
         if (star == selectedObject || constellationSelection.contains(star)) {
-            final int highlightSize = size + 8;
+            final int highlightSize = size + SELECTION_HIGHLIGHT_PADDING;
             graphics2D.setColor(SELECTION_COLOR);
-            graphics2D.setStroke(new BasicStroke(2.0F));
+            graphics2D.setStroke(SELECTION_STROKE);
             graphics2D.drawOval(
-                    position.x - highlightSize / 2,
-                    position.y - highlightSize / 2,
+                    position.getX() - highlightSize / 2,
+                    position.getY() - highlightSize / 2,
                     highlightSize,
                     highlightSize);
         }
@@ -285,16 +277,22 @@ public class SkyMapPanel extends JPanel {
 
         if (type == CelestialBodyType.SUN) {
             size = SUN_MARKER_SIZE;
-        } else if (type == CelestialBodyType.MOON) {
+        }
+        else if (type == CelestialBodyType.MOON) {
             size = MOON_MARKER_SIZE;
-        } else if (type == CelestialBodyType.PLANET) {
+        }
+        else if (type == CelestialBodyType.PLANET) {
             size = PLANET_MARKER_SIZE;
-        } else if (Double.isFinite(star.getApparentMagnitude())) {
+        }
+        else if (Double.isFinite(star.getApparentMagnitude())) {
             size = Math.max(
-                    3,
-                    Math.min(9, (int) Math.round(7.0 - star.getApparentMagnitude())));
-        } else {
-            size = 4;
+                    MIN_STAR_SIZE,
+                    Math.min(
+                            MAX_STAR_SIZE,
+                            (int) Math.round(MAGNITUDE_SIZE_OFFSET - star.getApparentMagnitude())));
+        }
+        else {
+            size = DEFAULT_STAR_SIZE;
         }
 
         return size;
@@ -306,7 +304,8 @@ public class SkyMapPanel extends JPanel {
 
         if (type == CelestialBodyType.SUN) {
             color = SUN_COLOR;
-        } else {
+        }
+        else {
             color = Color.WHITE;
         }
 
@@ -326,8 +325,8 @@ public class SkyMapPanel extends JPanel {
         for (final Star star : VisibilityFilter.filterVisible(stars)) {
             final SkyVisualization.ScreenPosition position =
                     SkyVisualization.project(star, centreX, centreY, radius);
-            final double differenceX = position.x - mouseX;
-            final double differenceY = position.y - mouseY;
+            final double differenceX = position.getX() - mouseX;
+            final double differenceY = position.getY() - mouseY;
             final double distanceSquared =
                     differenceX * differenceX + differenceY * differenceY;
 
@@ -351,31 +350,27 @@ public class SkyMapPanel extends JPanel {
             final int wheelRotation) {
         ensureViewInitialized();
 
-        if (!viewInitialized || wheelRotation == 0) {
-            return;
+        if (viewInitialized && wheelRotation != 0) {
+            final double oldZoom = zoom;
+            final double requestedZoom =
+                    oldZoom * Math.pow(ZOOM_STEP, -wheelRotation);
+            final double newZoom =
+                    Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, requestedZoom));
+
+            if (newZoom != oldZoom) {
+                final double panelCentreX = getWidth() / 2.0;
+                final double panelCentreY = getHeight() / 2.0;
+                final double scaleChange = newZoom / oldZoom;
+
+                panOffsetX = mouseX - panelCentreX
+                        - scaleChange * (mouseX - panelCentreX - panOffsetX);
+                panOffsetY = mouseY - panelCentreY
+                        - scaleChange * (mouseY - panelCentreY - panOffsetY);
+                zoom = newZoom;
+                clampPanOffsets();
+                repaint();
+            }
         }
-
-        final double oldZoom = zoom;
-        final double requestedZoom =
-                oldZoom * Math.pow(ZOOM_STEP, -wheelRotation);
-        final double newZoom =
-                Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, requestedZoom));
-
-        if (newZoom == oldZoom) {
-            return;
-        }
-
-        final double panelCentreX = getWidth() / 2.0;
-        final double panelCentreY = getHeight() / 2.0;
-        final double scaleChange = newZoom / oldZoom;
-
-        panOffsetX = mouseX - panelCentreX
-                - scaleChange * (mouseX - panelCentreX - panOffsetX);
-        panOffsetY = mouseY - panelCentreY
-                - scaleChange * (mouseY - panelCentreY - panOffsetY);
-        zoom = newZoom;
-        clampPanOffsets();
-        repaint();
     }
 
     private void clampPanOffsets() {
@@ -388,7 +383,8 @@ public class SkyMapPanel extends JPanel {
             if (maximumPanDistance == 0.0) {
                 panOffsetX = 0.0;
                 panOffsetY = 0.0;
-            } else {
+            }
+            else {
                 final double scale = maximumPanDistance / currentPanDistance;
                 panOffsetX *= scale;
                 panOffsetY *= scale;
@@ -433,11 +429,79 @@ public class SkyMapPanel extends JPanel {
     }
 
     private int mapDiameter() {
-        return Math.max(0, Math.min(getWidth() - 80, getHeight() - 60));
+        return Math.max(0, Math.min(getWidth() - HORIZONTAL_MARGIN, getHeight() - VERTICAL_MARGIN));
     }
 
+    /** Notified whenever the user clicks a displayed object on the map. */
     public interface SelectionListener {
 
+        /**
+         * Called when the user clicks a displayed object.
+         *
+         * @param star the clicked object, or null if the click did not land on a displayed object
+         */
         void objectSelected(Star star);
+    }
+
+    /** Handles panning by drag, zooming by wheel, and click selection on the map. */
+    private final class SkyMapMouseHandler extends MouseAdapter {
+
+        @Override
+        public void mousePressed(final MouseEvent event) {
+            ensureViewInitialized();
+            mousePressed = true;
+            dragging = false;
+            suppressClick = false;
+            dragStartX = event.getX();
+            dragStartY = event.getY();
+            dragStartPanX = panOffsetX;
+            dragStartPanY = panOffsetY;
+        }
+
+        @Override
+        public void mouseDragged(final MouseEvent event) {
+            if (mousePressed && viewInitialized) {
+                final int differenceX = event.getX() - dragStartX;
+                final int differenceY = event.getY() - dragStartY;
+
+                if (!dragging
+                        && Math.hypot(differenceX, differenceY) >= DRAG_THRESHOLD) {
+                    dragging = true;
+                    setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                }
+
+                if (dragging) {
+                    panOffsetX = dragStartPanX + differenceX;
+                    panOffsetY = dragStartPanY + differenceY;
+                    clampPanOffsets();
+                    repaint();
+                }
+            }
+        }
+
+        @Override
+        public void mouseReleased(final MouseEvent event) {
+            if (dragging) {
+                suppressClick = true;
+            }
+            mousePressed = false;
+            dragging = false;
+            setCursor(Cursor.getDefaultCursor());
+        }
+
+        @Override
+        public void mouseClicked(final MouseEvent event) {
+            if (suppressClick) {
+                suppressClick = false;
+            }
+            else {
+                selectObjectAt(event.getX(), event.getY());
+            }
+        }
+
+        @Override
+        public void mouseWheelMoved(final MouseWheelEvent event) {
+            zoomAt(event.getX(), event.getY(), event.getWheelRotation());
+        }
     }
 }

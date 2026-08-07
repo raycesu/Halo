@@ -57,15 +57,12 @@ public class AltAzCalculatorTest {
     }
 
     private Star createStar(final String name, final double rightAscension) {
-        return new Star(
-                name,
-                name,
-                rightAscension,
-                0.0,
-                1.0,
-                "",
-                "",
-                "");
+        return new Star.Builder()
+                .catalogueId(name)
+                .displayName(name)
+                .rightAscension(rightAscension)
+                .apparentMagnitude(1.0)
+                .build();
     }
 
     private double normalizeHours(final double hours) {

@@ -40,17 +40,29 @@ public class ViewSkyInputData {
         return locationName;
     }
 
-    /** Alias for {@link #getLocationName()}, matching the name the output data uses. */
+    /**
+     * Alias for {@link #getLocationName()}, matching the name the output data uses.
+     *
+     * @return the location name
+     */
     public String getLocation() {
         return locationName;
     }
 
-    /** The observation date as an ISO string, for passing straight through to the output. */
+    /**
+     * The observation date as an ISO string, for passing straight through to the output.
+     *
+     * @return the observation date, formatted as an ISO-8601 string
+     */
     public String getDate() {
         return observationDateTime.toLocalDate().toString();
     }
 
-    /** The observation time as an ISO string, for passing straight through to the output. */
+    /**
+     * The observation time as an ISO string, for passing straight through to the output.
+     *
+     * @return the observation time, formatted as an ISO-8601 string
+     */
     public String getTime() {
         return observationDateTime.toLocalTime().toString();
     }

@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -11,14 +10,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -43,7 +39,7 @@ import interface_adapter.lookup_location.LookupLocationViewModel;
 public class CityAutocompleteField extends JPanel implements PropertyChangeListener {
 
     /** Enough suggestions to disambiguate the common cases without covering the form. */
-    private static final int maxSuggestions = 8;
+    private static final int MAX_SUGGESTIONS = 8;
 
     /**
      * How wide the popup may grow beyond the field to fit a label.
@@ -51,14 +47,21 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
      * <p>It has to grow: labels read "City, Region, Country" so that eight Springfields can be
      * told apart, and at the width of the field they truncate to the part they all share.
      */
-    private static final int maxPopupWidth = 380;
+    private static final int MAX_POPUP_WIDTH = 380;
+
+    /** Room the popup leaves for the scroll bar the list shows once rows overflow it. */
+    private static final int POPUP_SCROLLBAR_ALLOWANCE = 24;
+
+    /** Room the popup leaves below the last suggestion row. */
+    private static final int POPUP_BOTTOM_PADDING = 4;
 
     private final LookupLocationController lookupLocationController;
     private final LookupLocationViewModel lookupLocationViewModel;
-    private final JTextField textField = new JTextField();
-    private final DefaultListModel<ObserverLocation> suggestionModel = new DefaultListModel<>();
-    private final JList<ObserverLocation> suggestionList = new JList<>(suggestionModel);
-    private final JPopupMenu popup = new JPopupMenu();
+    private final CityAutocompleteWidgets widgets = new CityAutocompleteWidgets();
+    private final JTextField textField = widgets.getTextField();
+    private final DefaultListModel<ObserverLocation> suggestionModel = widgets.getSuggestionModel();
+    private final JList<ObserverLocation> suggestionList = widgets.getSuggestionList();
+    private final JPopupMenu popup = widgets.getPopup();
 
     /** The place the user picked, or null if the current text is not a confirmed choice. */
     private ObserverLocation selectedLocation;
@@ -72,21 +75,9 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
         this.lookupLocationController = lookupLocationController;
         this.lookupLocationViewModel = lookupLocationViewModel;
 
-        setLayout(new BorderLayout());
+        setLayout(SwingStyle.border());
         setOpaque(false);
         add(textField, BorderLayout.CENTER);
-
-        suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        suggestionList.setCellRenderer(new LocationCellRenderer());
-
-        final JScrollPane scrollPane = new JScrollPane(suggestionList);
-        scrollPane.setBorder(null);
-
-        // A focusable popup would pull focus off the field on every keystroke, which stops the
-        // user from typing into it at all.
-        popup.setFocusable(false);
-        popup.setBorder(null);
-        popup.add(scrollPane);
 
         textField.getDocument().addDocumentListener(new SuggestionRefresher());
         textField.addKeyListener(new NavigationKeyListener());
@@ -97,6 +88,8 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
 
     /**
      * The place the user chose, or null if they have not chosen one or have edited the text since.
+     *
+     * @return the currently selected location, or null
      */
     public ObserverLocation getSelectedLocation() {
         return selectedLocation;
@@ -105,10 +98,20 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
     /**
      * Sets the field to an already-resolved place, as when restoring a previous session, without
      * treating it as fresh typing.
+     *
+     * @param location the location to display, or null to clear the field
      */
     public void setSelectedLocation(final ObserverLocation location) {
         selectedLocation = location;
-        setTextQuietly(location == null ? "" : location.getDisplayName());
+
+        final String displayText;
+        if (location == null) {
+            displayText = "";
+        }
+        else {
+            displayText = location.getDisplayName();
+        }
+        setTextQuietly(displayText);
         hideSuggestions();
     }
 
@@ -139,7 +142,7 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
         // Any edit invalidates an earlier choice: the text no longer necessarily names it.
         selectedLocation = null;
 
-        lookupLocationController.lookupLocation(query, maxSuggestions);
+        lookupLocationController.lookupLocation(query, MAX_SUGGESTIONS);
     }
 
     private void applySuggestions(final List<ObserverLocation> matches) {
@@ -158,13 +161,13 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
 
     private void showSuggestions() {
         suggestionList.setSelectedIndex(0);
-        suggestionList.setVisibleRowCount(Math.min(suggestionModel.size(), maxSuggestions));
+        suggestionList.setVisibleRowCount(Math.min(suggestionModel.size(), MAX_SUGGESTIONS));
 
         // Room for the scroll bar the list shows once there are more rows than fit.
         final Dimension size = suggestionList.getPreferredScrollableViewportSize();
         final int width = Math.min(
-                maxPopupWidth, Math.max(textField.getWidth(), size.width + 24));
-        popup.setPopupSize(new Dimension(width, size.height + 4));
+                MAX_POPUP_WIDTH, Math.max(textField.getWidth(), size.width + POPUP_SCROLLBAR_ALLOWANCE));
+        popup.setPopupSize(SwingStyle.size(width, size.height + POPUP_BOTTOM_PADDING));
 
         if (popup.isVisible()) {
             popup.revalidate();
@@ -191,6 +194,8 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
     /**
      * Moves the highlight by {@code offset}, staying inside the list rather than wrapping, so
      * holding an arrow key comes to rest at an end instead of cycling.
+     *
+     * @param offset the number of rows to move the highlight by, negative moves up
      */
     private void moveHighlight(final int offset) {
         if (!suggestionModel.isEmpty()) {
@@ -205,6 +210,8 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
     /**
      * Replaces the text without the document listener treating it as the user typing, which would
      * clear {@link #selectedLocation} and reopen the popup the selection just closed.
+     *
+     * @param text the text to display in the field
      */
     private void setTextQuietly(final String text) {
         updatingText = true;
@@ -213,26 +220,6 @@ public class CityAutocompleteField extends JPanel implements PropertyChangeListe
         }
         finally {
             updatingText = false;
-        }
-    }
-
-    /** Renders a suggestion as the label the dataset built, e.g. "Toronto, Ontario, Canada". */
-    private static final class LocationCellRenderer extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(
-                final JList<?> list,
-                final Object value,
-                final int index,
-                final boolean isSelected,
-                final boolean cellHasFocus) {
-
-            final Component component = super.getListCellRendererComponent(
-                    list, value, index, isSelected, cellHasFocus);
-            if (value instanceof ObserverLocation) {
-                setText(((ObserverLocation) value).getDisplayName());
-            }
-            return component;
         }
     }
 

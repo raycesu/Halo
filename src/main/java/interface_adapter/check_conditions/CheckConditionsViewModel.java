@@ -23,6 +23,11 @@ public class CheckConditionsViewModel {
         return cloudCoverText;
     }
 
+    /**
+     * Sets the cloud-cover display text and notifies listeners.
+     *
+     * @param cloudCoverText the formatted cloud-cover text
+     */
     public void setCloudCoverText(final String cloudCoverText) {
         final String oldValue = this.cloudCoverText;
         this.cloudCoverText = cloudCoverText;
@@ -33,6 +38,11 @@ public class CheckConditionsViewModel {
         return visibilityText;
     }
 
+    /**
+     * Sets the visibility display text and notifies listeners.
+     *
+     * @param visibilityText the formatted visibility text
+     */
     public void setVisibilityText(final String visibilityText) {
         final String oldValue = this.visibilityText;
         this.visibilityText = visibilityText;
@@ -43,6 +53,11 @@ public class CheckConditionsViewModel {
         return precipitationText;
     }
 
+    /**
+     * Sets the precipitation display text and notifies listeners.
+     *
+     * @param precipitationText the formatted precipitation text
+     */
     public void setPrecipitationText(final String precipitationText) {
         final String oldValue = this.precipitationText;
         this.precipitationText = precipitationText;
@@ -53,6 +68,11 @@ public class CheckConditionsViewModel {
         return weatherCodeText;
     }
 
+    /**
+     * Sets the weather-code display text and notifies listeners.
+     *
+     * @param weatherCodeText the formatted weather-code text
+     */
     public void setWeatherCodeText(final String weatherCodeText) {
         final String oldValue = this.weatherCodeText;
         this.weatherCodeText = weatherCodeText;
@@ -63,6 +83,11 @@ public class CheckConditionsViewModel {
         return overallScoreText;
     }
 
+    /**
+     * Sets the overall-score display text and notifies listeners.
+     *
+     * @param overallScoreText the formatted overall-score text
+     */
     public void setOverallScoreText(final String overallScoreText) {
         final String oldValue = this.overallScoreText;
         this.overallScoreText = overallScoreText;
@@ -73,6 +98,11 @@ public class CheckConditionsViewModel {
         return ratingText;
     }
 
+    /**
+     * Sets the observability-rating display text and notifies listeners.
+     *
+     * @param ratingText the formatted rating text
+     */
     public void setRatingText(final String ratingText) {
         final String oldValue = this.ratingText;
         this.ratingText = ratingText;
@@ -83,6 +113,11 @@ public class CheckConditionsViewModel {
         return ratingColor;
     }
 
+    /**
+     * Sets the rating status colour and notifies listeners.
+     *
+     * @param ratingColor the colour identifier for the rating indicator
+     */
     public void setRatingColor(final String ratingColor) {
         final String oldValue = this.ratingColor;
         this.ratingColor = ratingColor;
@@ -93,16 +128,31 @@ public class CheckConditionsViewModel {
         return errorMessage;
     }
 
+    /**
+     * Sets the error message and notifies listeners.
+     *
+     * @param errorMessage the error text, or an empty string to clear it
+     */
     public void setErrorMessage(final String errorMessage) {
         final String oldValue = this.errorMessage;
         this.errorMessage = errorMessage;
         support.firePropertyChange("errorMessage", oldValue, errorMessage);
     }
 
+    /**
+     * Registers a listener to be notified of property changes.
+     *
+     * @param listener the listener to add
+     */
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Unregisters a previously registered property-change listener.
+     *
+     * @param listener the listener to remove
+     */
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }

@@ -6,5 +6,10 @@ import entity.Star;
 
 public interface StarCatalogDataAccessInterface {
 
+    /**
+     * Returns every catalogue star, unpositioned.
+     *
+     * @return the complete star catalogue
+     */
     List<Star> findAll();
 }

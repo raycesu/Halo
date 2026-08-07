@@ -13,10 +13,18 @@ import use_case.view_sky.StarCatalogDataAccessInterface;
 
 public class CsvStarCatalogDataAccessObject implements StarCatalogDataAccessInterface {
 
-    private static final String resourcePath = "/data/bright_stars.csv";
-    private static final String expectedHeader =
+    private static final String RESOURCE_PATH = "/data/bright_stars.csv";
+    private static final String EXPECTED_HEADER =
             "catalogue_id,display_name,right_ascension,declination,"
                     + "apparent_magnitude,constellation_region,spectral_type,description";
+
+    private static final int EXPECTED_COLUMN_COUNT = 8;
+    private static final int RIGHT_ASCENSION_COLUMN = 2;
+    private static final int DECLINATION_COLUMN = 3;
+    private static final int APPARENT_MAGNITUDE_COLUMN = 4;
+    private static final int CONSTELLATION_REGION_COLUMN = 5;
+    private static final int SPECTRAL_TYPE_COLUMN = 6;
+    private static final int DESCRIPTION_COLUMN = 7;
 
     private final List<Star> catalogue;
 
@@ -35,19 +43,19 @@ public class CsvStarCatalogDataAccessObject implements StarCatalogDataAccessInte
 
     private List<Star> loadCatalogue() {
         final InputStream inputStream =
-                CsvStarCatalogDataAccessObject.class.getResourceAsStream(resourcePath);
+                CsvStarCatalogDataAccessObject.class.getResourceAsStream(RESOURCE_PATH);
         if (inputStream == null) {
             throw new IllegalStateException(
-                    "Star catalogue resource was not found: " + resourcePath);
+                    "Star catalogue resource was not found: " + RESOURCE_PATH);
         }
 
         final List<Star> stars = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             final String header = reader.readLine();
-            if (!expectedHeader.equals(header)) {
+            if (!EXPECTED_HEADER.equals(header)) {
                 throw new IllegalStateException(
-                        "Unexpected header in star catalogue: " + resourcePath);
+                        "Unexpected header in star catalogue: " + RESOURCE_PATH);
             }
 
             String line;
@@ -61,7 +69,7 @@ public class CsvStarCatalogDataAccessObject implements StarCatalogDataAccessInte
         }
         catch (IOException exception) {
             throw new IllegalStateException(
-                    "Could not read star catalogue resource: " + resourcePath,
+                    "Could not read star catalogue resource: " + RESOURCE_PATH,
                     exception);
         }
         return List.copyOf(stars);
@@ -69,22 +77,23 @@ public class CsvStarCatalogDataAccessObject implements StarCatalogDataAccessInte
 
     private Star parseStar(final String line, final int lineNumber) {
         final List<String> fields = parseCsvLine(line);
-        if (fields.size() != 8) {
+        if (fields.size() != EXPECTED_COLUMN_COUNT) {
             throw new IllegalStateException(
                     "Expected 8 columns in star catalogue at line " + lineNumber
                             + " but found " + fields.size());
         }
 
         try {
-            return new Star(
-                    fields.get(0),
-                    fields.get(1),
-                    Double.parseDouble(fields.get(2)),
-                    Double.parseDouble(fields.get(3)),
-                    Double.parseDouble(fields.get(4)),
-                    fields.get(5),
-                    fields.get(6),
-                    fields.get(7));
+            return new Star.Builder()
+                    .catalogueId(fields.get(0))
+                    .displayName(fields.get(1))
+                    .rightAscension(Double.parseDouble(fields.get(RIGHT_ASCENSION_COLUMN)))
+                    .declination(Double.parseDouble(fields.get(DECLINATION_COLUMN)))
+                    .apparentMagnitude(Double.parseDouble(fields.get(APPARENT_MAGNITUDE_COLUMN)))
+                    .constellationRegion(fields.get(CONSTELLATION_REGION_COLUMN))
+                    .spectralType(fields.get(SPECTRAL_TYPE_COLUMN))
+                    .description(fields.get(DESCRIPTION_COLUMN))
+                    .build();
         }
         catch (NumberFormatException exception) {
             throw new IllegalStateException(
@@ -98,7 +107,8 @@ public class CsvStarCatalogDataAccessObject implements StarCatalogDataAccessInte
         final StringBuilder field = new StringBuilder();
         boolean insideQuotes = false;
 
-        for (int index = 0; index < line.length(); index++) {
+        int index = 0;
+        while (index < line.length()) {
             final char character = line.charAt(index);
             if (character == '"') {
                 if (insideQuotes
@@ -118,6 +128,7 @@ public class CsvStarCatalogDataAccessObject implements StarCatalogDataAccessInte
             else {
                 field.append(character);
             }
+            index++;
         }
         fields.add(field.toString());
         return fields;

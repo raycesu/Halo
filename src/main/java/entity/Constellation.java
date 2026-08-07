@@ -3,7 +3,7 @@ package entity;
 import java.util.List;
 
 public class Constellation {
-    private  final String name;
+    private final String name;
     private final List<ConstellationLine> lines;
 
     public Constellation(final String name, final List<ConstellationLine> lines) {
@@ -14,6 +14,7 @@ public class Constellation {
     public String getName() {
         return name;
     }
+
     public List<ConstellationLine> getLines() {
         return lines;
     }
