@@ -1,6 +1,12 @@
 package app;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.custom_constellation.ConstellationViewModel;
+import interface_adapter.lookup_location.LookupLocationViewModel;
+import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
+import interface_adapter.view_sky.ObservationSetupViewModel;
+import interface_adapter.view_sky.SkyViewModel;
 import view.LoadingView;
 import view.ObservationSetupView;
 import view.SkyView;
@@ -13,30 +19,36 @@ final class ViewFactory {
     }
 
     static ViewManager build(
-            final ViewModelBundle viewModels,
-            final ControllerBundle controllers) {
+            final ViewManagerModel viewManagerModel,
+            final ObservationSetupViewModel observationSetupViewModel,
+            final SkyViewModel skyViewModel,
+            final CheckConditionsViewModel checkConditionsViewModel,
+            final RankForecastDaysViewModel rankForecastDaysViewModel,
+            final ConstellationViewModel constellationViewModel,
+            final LookupLocationViewModel lookupLocationViewModel,
+            final UseCaseBuilder useCases) {
 
         final ObservationSetupView observationSetupView =
                 new ObservationSetupView(
-                        viewModels.getObservationSetupViewModel(),
-                        controllers.getViewSkyController(),
-                        viewModels.getViewManagerModel(),
-                        controllers.getLookupLocationController(),
-                        viewModels.getLookupLocationViewModel());
+                        observationSetupViewModel,
+                        useCases.getViewSkyController(),
+                        viewManagerModel,
+                        useCases.getLookupLocationController(),
+                        lookupLocationViewModel);
         final LoadingView loadingView = new LoadingView();
         final SkyView skyView =
                 new SkyView(
-                        viewModels.getSkyViewModel(),
-                        controllers.getCheckConditionsController(),
-                        viewModels.getCheckConditionsViewModel(),
-                        controllers.getRankForecastDaysController(),
-                        viewModels.getRankForecastDaysViewModel(),
-                        viewModels.getViewManagerModel());
+                        skyViewModel,
+                        useCases.getCheckConditionsController(),
+                        checkConditionsViewModel,
+                        useCases.getRankForecastDaysController(),
+                        rankForecastDaysViewModel,
+                        viewManagerModel);
         skyView.configureCustomConstellations(
-                controllers.getConstellationController(),
-                viewModels.getConstellationViewModel());
+                useCases.getConstellationController(),
+                constellationViewModel);
 
-        final ViewManager viewManager = new ViewManager(viewModels.getViewManagerModel());
+        final ViewManager viewManager = new ViewManager(viewManagerModel);
         viewManager.registerView(ViewManagerModel.OBSERVATION_SETUP_VIEW, observationSetupView);
         viewManager.registerView(ViewManagerModel.LOADING_VIEW, loadingView);
         viewManager.registerView(ViewManagerModel.SKY_VIEW, skyView);

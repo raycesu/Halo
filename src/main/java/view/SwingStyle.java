@@ -5,7 +5,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -68,5 +71,17 @@ final class SwingStyle {
             color = Color.decode(hexColor);
         }
         return color;
+    }
+
+    static GridBagLayout gridBagLayout() {
+        return new GridBagLayout();
+    }
+
+    static GridBagConstraints gridBagConstraints() {
+        return new GridBagConstraints();
+    }
+
+    static Insets insets(final int top, final int left, final int bottom, final int right) {
+        return new Insets(top, left, bottom, right);
     }
 }
