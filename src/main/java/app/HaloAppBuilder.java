@@ -2,73 +2,44 @@ package app;
 
 import java.util.List;
 
-import astronomy.AltAzCalculator;
-import astronomy.JulianDateCalculator;
-import astronomy.SiderealTimeCalculator;
-import data_access.CsvLocationDataAccessObject;
-import data_access.CsvStarCatalogDataAccessObject;
-import data_access.InMemoryConstellationDataAccessObject;
-import data_access.OpenMeteoWeatherDataAccessObject;
-import data_access.UsnoCelestialBodyDataAccessObject;
+import javax.swing.JFrame;
+
 import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
-import interface_adapter.check_conditions.CheckConditionsController;
-import interface_adapter.check_conditions.CheckConditionsPresenter;
-import interface_adapter.check_conditions.CheckConditionsViewModel;
-import interface_adapter.custom_constellation.ConstellationController;
-import interface_adapter.custom_constellation.ConstellationPresenter;
-import interface_adapter.custom_constellation.ConstellationViewModel;
-import interface_adapter.lookup_location.LookupLocationController;
-import interface_adapter.lookup_location.LookupLocationPresenter;
-import interface_adapter.lookup_location.LookupLocationViewModel;
-import interface_adapter.rank_forecast_days.RankForecastDaysController;
-import interface_adapter.rank_forecast_days.RankForecastDaysPresenter;
-import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
-import interface_adapter.view_sky.ObservationSetupViewModel;
-import interface_adapter.view_sky.SkyViewModel;
-import interface_adapter.view_sky.ViewSkyController;
-import interface_adapter.view_sky.ViewSkyPresenter;
-import use_case.check_conditions.CheckConditionsInputBoundary;
-import use_case.check_conditions.CheckConditionsInteractor;
-import use_case.check_conditions.CheckConditionsOutputBoundary;
-import use_case.custom_constellation.ConstellationDataAccessInterface;
-import use_case.custom_constellation.ConstellationInputBoundary;
-import use_case.custom_constellation.ConstellationInteractor;
-import use_case.custom_constellation.ConstellationOutputBoundary;
-import use_case.rank_forecast_days.RankForecastDaysInputBoundary;
-import use_case.rank_forecast_days.RankForecastDaysInteractor;
-import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
-import use_case.view_sky.CelestialBodyDataAccessInterface;
-import use_case.weather.WeatherDataAccessInterface;
-import view.LoadingView;
-import view.ObservationSetupView;
-import view.SkyView;
-import view.ViewManager;
-import javax.swing.JFrame;
 import use_case.lookup_location.LocationDataAccessInterface;
-import use_case.lookup_location.LookupLocationInputBoundary;
-import use_case.lookup_location.LookupLocationInteractor;
-import use_case.lookup_location.LookupLocationOutputBoundary;
-import use_case.view_sky.HorizontalCoordinateCalculator;
-import use_case.view_sky.StarCatalogDataAccessInterface;
-import use_case.view_sky.ViewSkyInputBoundary;
-import use_case.view_sky.ViewSkyInteractor;
-import use_case.view_sky.ViewSkyOutputBoundary;
+import view.ViewManager;
 
+/**
+ * Composition root: builds every concrete implementation and wires them into a runnable app.
+ *
+ * <p>The actual construction work is delegated to a handful of focused builder classes
+ * ({@link DataAccessBundle}, {@link ViewModelBundle}, {@link UseCaseBuilder},
+ * {@link ViewFactory}) so that no single class has to directly depend on every concrete DAO,
+ * interactor, presenter, controller, and view in the app. This class remains the single place
+ * {@link Main} calls, and the only place that assembles the final object graph.
+ */
 public class HaloAppBuilder {
 
-    private static final String initial_view = ViewManagerModel.observation_setup_view;
+    private static final String INITIAL_VIEW = ViewManagerModel.OBSERVATION_SETUP_VIEW;
 
     /** The place the app opens on, so the first request works before the user picks anything. */
-    private static final String default_location = "Toronto";
+    private static final String DEFAULT_LOCATION = "Toronto";
 
+    private static final int INITIAL_FRAME_WIDTH = 900;
+    private static final int INITIAL_FRAME_HEIGHT = 600;
+
+    /**
+     * Builds the fully wired application window.
+     *
+     * @return a ready-to-show {@link JFrame} containing the app's {@link ViewManager}
+     */
     public JFrame build() {
         final ViewManager viewManager = buildViewManager();
 
         final JFrame frame = new JFrame("Halo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(viewManager);
-        frame.setSize(900, 600);
+        frame.setSize(INITIAL_FRAME_WIDTH, INITIAL_FRAME_HEIGHT);
         frame.setResizable(true);
         frame.setLocationRelativeTo(null);
         return frame;
@@ -77,103 +48,34 @@ public class HaloAppBuilder {
     /**
      * Looks up the place the app opens on, or null if the dataset does not contain it, in which
      * case the user simply picks one before the first request.
+     *
+     * @param locationDataAccess the location catalogue to search
+     * @return the default observer location, or null if it is not in the catalogue
      */
     private ObserverLocation resolveDefaultLocation(
             final LocationDataAccessInterface locationDataAccess) {
-        final List<ObserverLocation> matches = locationDataAccess.findByName(default_location, 1);
-        return matches.isEmpty() ? null : matches.get(0);
+        final List<ObserverLocation> matches = locationDataAccess.findByName(DEFAULT_LOCATION, 1);
+
+        final ObserverLocation defaultLocation;
+        if (matches.isEmpty()) {
+            defaultLocation = null;
+        }
+        else {
+            defaultLocation = matches.get(0);
+        }
+        return defaultLocation;
     }
 
     ViewManager buildViewManager() {
-        final ViewManagerModel viewManagerModel = new ViewManagerModel();
-        final LocationDataAccessInterface locationDataAccess = new CsvLocationDataAccessObject();
-        final ObservationSetupViewModel observationSetupViewModel =
-                new ObservationSetupViewModel();
-        observationSetupViewModel.setSelectedLocation(
-                resolveDefaultLocation(locationDataAccess));
-        final SkyViewModel skyViewModel = new SkyViewModel();
-        final CheckConditionsViewModel checkConditionsViewModel = new CheckConditionsViewModel();
-        final RankForecastDaysViewModel rankForecastDaysViewModel = new RankForecastDaysViewModel();
+        final DataAccessBundle dataAccess = new DataAccessBundle();
+        final ViewModelBundle viewModels = new ViewModelBundle();
+        viewModels.getObservationSetupViewModel().setSelectedLocation(
+                resolveDefaultLocation(dataAccess.getLocationDataAccess()));
 
-        final ViewSkyOutputBoundary viewSkyPresenter =
-                new ViewSkyPresenter(
-                        skyViewModel,
-                        observationSetupViewModel,
-                        checkConditionsViewModel,
-                        rankForecastDaysViewModel);
-        final StarCatalogDataAccessInterface starCatalogDataAccess =
-                new CsvStarCatalogDataAccessObject();
-        final CelestialBodyDataAccessInterface celestialBodyDataAccess =
-                new UsnoCelestialBodyDataAccessObject();
-        final HorizontalCoordinateCalculator coordinateCalculator =
-                new AltAzCalculator(
-                        new JulianDateCalculator(),
-                        new SiderealTimeCalculator());
-        final ViewSkyInputBoundary viewSkyInteractor =
-                new ViewSkyInteractor(
-                        starCatalogDataAccess,
-                        celestialBodyDataAccess,
-                        coordinateCalculator,
-                        viewSkyPresenter);
-        final ViewSkyController viewSkyController =
-                new ViewSkyController(viewSkyInteractor, viewSkyPresenter);
+        final ControllerBundle controllers = UseCaseBuilder.build(dataAccess, viewModels);
+        final ViewManager viewManager = ViewFactory.build(viewModels, controllers);
 
-        final CheckConditionsOutputBoundary checkConditionsPresenter =
-                new CheckConditionsPresenter(checkConditionsViewModel);
-        final WeatherDataAccessInterface weatherDataAccess = new OpenMeteoWeatherDataAccessObject();
-        final CheckConditionsInputBoundary checkConditionsInteractor =
-                new CheckConditionsInteractor(weatherDataAccess, checkConditionsPresenter);
-        final CheckConditionsController checkConditionsController =
-                new CheckConditionsController(checkConditionsInteractor);
-
-        final RankForecastDaysOutputBoundary rankForecastDaysPresenter =
-                new RankForecastDaysPresenter(rankForecastDaysViewModel);
-        final RankForecastDaysInputBoundary rankForecastDaysInteractor =
-                new RankForecastDaysInteractor(weatherDataAccess, rankForecastDaysPresenter);
-        final RankForecastDaysController rankForecastDaysController =
-                new RankForecastDaysController(rankForecastDaysInteractor);
-        final ConstellationViewModel constellationViewModel = new ConstellationViewModel();
-        final ConstellationOutputBoundary constellationPresenter = new ConstellationPresenter(constellationViewModel);
-        final ConstellationDataAccessInterface constellationDataAccess = new InMemoryConstellationDataAccessObject();
-        final ConstellationInputBoundary constellationInteractor =
-                new ConstellationInteractor(constellationDataAccess, constellationPresenter);
-        final ConstellationController constellationController =
-                new ConstellationController(constellationInteractor);
-        final LookupLocationViewModel lookupLocationViewModel = new LookupLocationViewModel();
-        final LookupLocationOutputBoundary lookupLocationPresenter =
-                new LookupLocationPresenter(lookupLocationViewModel);
-        final LookupLocationInputBoundary lookupLocationInteractor =
-                new LookupLocationInteractor(locationDataAccess, lookupLocationPresenter);
-        final LookupLocationController lookupLocationController =
-                new LookupLocationController(lookupLocationInteractor);
-
-        final ViewManager viewManager = new ViewManager(viewManagerModel);
-        final ObservationSetupView observationSetupView =
-                new ObservationSetupView(
-                        observationSetupViewModel,
-                        viewSkyController,
-                        viewManagerModel,
-                        lookupLocationController,
-                        lookupLocationViewModel);
-        final LoadingView loadingView = new LoadingView();
-        final SkyView skyView =
-                new SkyView(
-                        skyViewModel,
-                        checkConditionsController,
-                        checkConditionsViewModel,
-                        rankForecastDaysController,
-                        rankForecastDaysViewModel,
-                        viewManagerModel);
-        skyView.configureCustomConstellations(
-                constellationController,
-                constellationViewModel);
-
-        viewManager.registerView(
-                ViewManagerModel.observation_setup_view, observationSetupView);
-        viewManager.registerView(ViewManagerModel.loading_view, loadingView);
-        viewManager.registerView(ViewManagerModel.sky_view, skyView);
-
-        viewManagerModel.setActiveView(initial_view);
+        viewModels.getViewManagerModel().setActiveView(INITIAL_VIEW);
         return viewManager;
     }
 }

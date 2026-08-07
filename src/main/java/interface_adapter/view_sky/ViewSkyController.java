@@ -43,21 +43,24 @@ public class ViewSkyController {
     public void viewSky(final ObserverLocation location, final String date, final String time) {
         if (location == null) {
             outputBoundary.prepareFailView("Choose a location from the suggestions first.");
-            return;
         }
-
-        try {
-            inputBoundary.execute(new ViewSkyInputData(
-                    location.getDisplayName(),
-                    location.getLatitude(),
-                    location.getLongitude(),
-                    location.getZoneId(),
-                    LocalDateTime.of(
-                            LocalDate.parse(date.trim()),
-                            LocalTime.parse(time.trim()))));
-        }
-        catch (DateTimeException | NullPointerException exception) {
+        else if (date == null || time == null) {
             outputBoundary.prepareFailView("Enter a valid date (yyyy-MM-dd) and time (HH:mm).");
+        }
+        else {
+            try {
+                inputBoundary.execute(new ViewSkyInputData(
+                        location.getDisplayName(),
+                        location.getLatitude(),
+                        location.getLongitude(),
+                        location.getZoneId(),
+                        LocalDateTime.of(
+                                LocalDate.parse(date.trim()),
+                                LocalTime.parse(time.trim()))));
+            }
+            catch (DateTimeException exception) {
+                outputBoundary.prepareFailView("Enter a valid date (yyyy-MM-dd) and time (HH:mm).");
+            }
         }
     }
 }

@@ -11,6 +11,9 @@ import use_case.view_sky.HorizontalCoordinateCalculator;
 public final class AltAzCalculator
         implements HorizontalCoordinateCalculator {
 
+    private static final double HALF_CIRCLE_DEGREES = 180.0;
+    private static final double FULL_CIRCLE_DEGREES = 360.0;
+
     private final JulianDateCalculator julianDateCalculator;
     private final SiderealTimeCalculator siderealTimeCalculator;
 
@@ -36,10 +39,10 @@ public final class AltAzCalculator
                 Math.toRadians(observerLocation.getLatitude());
 
         for (Star star : stars) {
-                if (!Double.isFinite(star.getRightAscension())
-                || !Double.isFinite(star.getDeclination())) {
+            if (!Double.isFinite(star.getRightAscension())
+                    || !Double.isFinite(star.getDeclination())) {
                 continue;
-    }
+            }
             final double hourAngleDegrees = normalizeHourAngle(
                     (localSiderealTime - star.getRightAscension()) * 15.0);
             final double hourAngleRadians =
@@ -71,17 +74,17 @@ public final class AltAzCalculator
     }
 
     private double normalizeHourAngle(final double hourAngleDegrees) {
-        double normalizedHourAngle = (hourAngleDegrees + 180.0) % 360.0;
+        double normalizedHourAngle = (hourAngleDegrees + HALF_CIRCLE_DEGREES) % FULL_CIRCLE_DEGREES;
         if (normalizedHourAngle < 0.0) {
-            normalizedHourAngle += 360.0;
+            normalizedHourAngle += FULL_CIRCLE_DEGREES;
         }
-        return normalizedHourAngle - 180.0;
+        return normalizedHourAngle - HALF_CIRCLE_DEGREES;
     }
 
     private double normalizeAzimuth(final double azimuthDegrees) {
-        double normalizedAzimuth = azimuthDegrees % 360.0;
+        double normalizedAzimuth = azimuthDegrees % FULL_CIRCLE_DEGREES;
         if (normalizedAzimuth < 0.0) {
-            normalizedAzimuth += 360.0;
+            normalizedAzimuth += FULL_CIRCLE_DEGREES;
         }
         return normalizedAzimuth;
     }

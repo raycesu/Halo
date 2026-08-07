@@ -27,46 +27,44 @@ public class ConstellationInteractor
         if (inputData == null) {
             outputBoundary.prepareFailureView(
                     "Constellation information is required.");
-            return;
         }
+        else {
+            final String name;
+            if (inputData.getName() == null) {
+                name = "";
+            }
+            else {
+                name = inputData.getName().trim();
+            }
+            final List<Star> selectedStars = inputData.getSelectedStars();
 
-        final String name = inputData.getName() == null
-                ? ""
-                : inputData.getName().trim();
-        final List<Star> selectedStars = inputData.getSelectedStars();
+            if (name.isEmpty()) {
+                outputBoundary.prepareFailureView(
+                        "Enter a constellation name.");
+            }
+            else if (selectedStars.size() < 2) {
+                outputBoundary.prepareFailureView(
+                        "Select at least two stars.");
+            }
+            else if (containsDuplicateStars(selectedStars)) {
+                outputBoundary.prepareFailureView(
+                        "A star cannot be selected more than once.");
+            }
+            else if (dataAccess.existsByName(name)) {
+                outputBoundary.prepareFailureView(
+                        "A constellation with this name already exists.");
+            }
+            else {
+                final List<ConstellationLine> lines =
+                        createLines(selectedStars);
+                final CustomConstellation constellation =
+                        new CustomConstellation(name, lines);
 
-        if (name.isEmpty()) {
-            outputBoundary.prepareFailureView(
-                    "Enter a constellation name.");
-            return;
+                dataAccess.save(constellation);
+                outputBoundary.prepareSuccessView(
+                        new ConstellationOutputData(constellation));
+            }
         }
-
-        if (selectedStars.size() < 2) {
-            outputBoundary.prepareFailureView(
-                    "Select at least two stars.");
-            return;
-        }
-
-        if (containsDuplicateStars(selectedStars)) {
-            outputBoundary.prepareFailureView(
-                    "A star cannot be selected more than once.");
-            return;
-        }
-
-        if (dataAccess.existsByName(name)) {
-            outputBoundary.prepareFailureView(
-                    "A constellation with this name already exists.");
-            return;
-        }
-
-        final List<ConstellationLine> lines =
-                createLines(selectedStars);
-        final CustomConstellation constellation =
-                new CustomConstellation(name, lines);
-
-        dataAccess.save(constellation);
-        outputBoundary.prepareSuccessView(
-                new ConstellationOutputData(constellation));
     }
 
     private boolean containsDuplicateStars(

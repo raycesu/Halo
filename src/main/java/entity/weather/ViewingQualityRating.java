@@ -33,10 +33,56 @@ public enum ViewingQualityRating {
     private static final double[] PRECIPITATION_ANCHORS = {0, 10, 30, 50, 100};
     private static final double[] PRECIPITATION_SCORES = {100, 85, 55, 25, 0};
 
+    // WMO weather codes, as returned by Open-Meteo's weather_code field.
+    private static final int WMO_CLEAR = 0;
+    private static final int WMO_MAINLY_CLEAR = 1;
+    private static final int WMO_PARTLY_CLOUDY = 2;
+    private static final int WMO_OVERCAST = 3;
+    private static final int WMO_FOG = 45;
+    private static final int WMO_DEPOSITING_RIME_FOG = 48;
+    private static final int WMO_DRIZZLE_LIGHT = 51;
+    private static final int WMO_DRIZZLE_MODERATE = 53;
+    private static final int WMO_DRIZZLE_DENSE = 55;
+    private static final int WMO_FREEZING_DRIZZLE_LIGHT = 56;
+    private static final int WMO_FREEZING_DRIZZLE_DENSE = 57;
+    private static final int WMO_RAIN_SLIGHT = 61;
+    private static final int WMO_RAIN_MODERATE = 63;
+    private static final int WMO_RAIN_HEAVY = 65;
+    private static final int WMO_FREEZING_RAIN_LIGHT = 66;
+    private static final int WMO_FREEZING_RAIN_HEAVY = 67;
+    private static final int WMO_SNOW_SLIGHT = 71;
+    private static final int WMO_SNOW_MODERATE = 73;
+    private static final int WMO_SNOW_HEAVY = 75;
+    private static final int WMO_SNOW_GRAINS = 77;
+    private static final int WMO_SHOWERS_SLIGHT = 80;
+    private static final int WMO_SHOWERS_MODERATE = 81;
+    private static final int WMO_SHOWERS_VIOLENT = 82;
+    private static final int WMO_SNOW_SHOWERS_SLIGHT = 85;
+    private static final int WMO_SNOW_SHOWERS_HEAVY = 86;
+    private static final int WMO_THUNDERSTORM = 95;
+    private static final int WMO_THUNDERSTORM_SLIGHT_HAIL = 96;
+    private static final int WMO_THUNDERSTORM_HEAVY_HAIL = 99;
+
+    // Scores assigned per WMO weather-code family.
+    private static final double SCORE_CLEAR = 100;
+    private static final double SCORE_MAINLY_CLEAR = 90;
+    private static final double SCORE_PARTLY_CLOUDY = 65;
+    private static final double SCORE_OVERCAST = 40;
+    private static final double SCORE_FOG = 20;
+    private static final double SCORE_DRIZZLE = 20;
+    private static final double SCORE_RAIN = 10;
+    private static final double SCORE_SNOW = 10;
+    private static final double SCORE_SHOWERS = 5;
+    private static final double SCORE_THUNDERSTORM = 0;
+    private static final double SCORE_UNRECOGNIZED_CODE = 50;
+
     /**
      * Computes the 0-100 overall viewing-quality score for the given weather condition.
      * Exposed separately from {@link #calculateRating(WeatherCondition)} because future
      * features (e.g. ranking multiple nights) need the raw number, not just a bucketed rating.
+     *
+     * @param condition the weather condition to score
+     * @return the overall viewing-quality score, from 0 to 100
      */
     public static double calculateOverallScore(final WeatherCondition condition) {
         final double cloudCoverScore = interpolate(
@@ -55,6 +101,9 @@ public enum ViewingQualityRating {
 
     /**
      * Convenience wrapper: calculates the overall score and buckets it into a rating.
+     *
+     * @param condition the weather condition to rate
+     * @return the bucketed viewing-quality rating
      */
     public static ViewingQualityRating calculateRating(final WeatherCondition condition) {
         return fromScore(calculateOverallScore(condition));
@@ -63,6 +112,9 @@ public enum ViewingQualityRating {
     /**
      * Maps a 0-100 overall score to a rating category using fixed rubric thresholds
      * (not statistical percentiles).
+     *
+     * @param overallScore the overall viewing-quality score, from 0 to 100
+     * @return the bucketed viewing-quality rating
      */
     public static ViewingQualityRating fromScore(final double overallScore) {
         final ViewingQualityRating rating;
@@ -112,57 +164,68 @@ public enum ViewingQualityRating {
     private static double scoreWeatherCode(final int weatherCode) {
         final double score;
         switch (weatherCode) {
-            case 0:
-                score = 100;
+            case WMO_CLEAR:
+                score = SCORE_CLEAR;
                 break;
-            case 1:
-                score = 90;
+            case WMO_MAINLY_CLEAR:
+                score = SCORE_MAINLY_CLEAR;
                 break;
-            case 2:
-                score = 65;
+            case WMO_PARTLY_CLOUDY:
+                score = SCORE_PARTLY_CLOUDY;
                 break;
-            case 3:
-                score = 40;
+            case WMO_OVERCAST:
+                score = SCORE_OVERCAST;
                 break;
-            case 45:
-            case 48:
-                score = 20;
+            case WMO_FOG:
+            case WMO_DEPOSITING_RIME_FOG:
+                score = SCORE_FOG;
                 break;
-            case 51:
-            case 53:
-            case 55:
-            case 56:
-            case 57:
-                score = 20;
+            default:
+                score = scorePrecipitationWeatherCode(weatherCode);
                 break;
-            case 61:
-            case 63:
-            case 65:
-            case 66:
-            case 67:
-                score = 10;
+        }
+        return score;
+    }
+
+    // WMO codes 51 and above describe precipitation, split out to keep scoreWeatherCode small.
+    private static double scorePrecipitationWeatherCode(final int weatherCode) {
+        final double score;
+        switch (weatherCode) {
+            case WMO_DRIZZLE_LIGHT:
+            case WMO_DRIZZLE_MODERATE:
+            case WMO_DRIZZLE_DENSE:
+            case WMO_FREEZING_DRIZZLE_LIGHT:
+            case WMO_FREEZING_DRIZZLE_DENSE:
+                score = SCORE_DRIZZLE;
                 break;
-            case 71:
-            case 73:
-            case 75:
-            case 77:
-                score = 10;
+            case WMO_RAIN_SLIGHT:
+            case WMO_RAIN_MODERATE:
+            case WMO_RAIN_HEAVY:
+            case WMO_FREEZING_RAIN_LIGHT:
+            case WMO_FREEZING_RAIN_HEAVY:
+                score = SCORE_RAIN;
                 break;
-            case 80:
-            case 81:
-            case 82:
-            case 85:
-            case 86:
-                score = 5;
+            case WMO_SNOW_SLIGHT:
+            case WMO_SNOW_MODERATE:
+            case WMO_SNOW_HEAVY:
+            case WMO_SNOW_GRAINS:
+                score = SCORE_SNOW;
                 break;
-            case 95:
-            case 96:
-            case 99:
-                score = 0;
+            case WMO_SHOWERS_SLIGHT:
+            case WMO_SHOWERS_MODERATE:
+            case WMO_SHOWERS_VIOLENT:
+            case WMO_SNOW_SHOWERS_SLIGHT:
+            case WMO_SNOW_SHOWERS_HEAVY:
+                score = SCORE_SHOWERS;
+                break;
+            case WMO_THUNDERSTORM:
+            case WMO_THUNDERSTORM_SLIGHT_HAIL:
+            case WMO_THUNDERSTORM_HEAVY_HAIL:
+                score = SCORE_THUNDERSTORM;
                 break;
             default:
                 // Unrecognized WMO code: neutral fallback, never crash on an unmapped code.
-                score = 50;
+                score = SCORE_UNRECOGNIZED_CODE;
                 break;
         }
         return score;

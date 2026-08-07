@@ -17,12 +17,22 @@ public class LookupLocationViewModel {
         return suggestions;
     }
 
+    /**
+     * Replaces the location suggestions and notifies listeners.
+     *
+     * @param suggestions the new list of suggested locations
+     */
     public void setSuggestions(final List<ObserverLocation> suggestions) {
         final List<ObserverLocation> old = this.suggestions;
         this.suggestions = suggestions;
         support.firePropertyChange(SUGGESTIONS_PROPERTY, old, suggestions);
     }
 
+    /**
+     * Registers a listener to be notified of property changes.
+     *
+     * @param listener the listener to add
+     */
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }

@@ -34,7 +34,11 @@ public class ConstellationInteractorTest {
     }
 
     private Star createStar(final String id, final String name) {
-        return new Star(id, name, 0.0, 0.0, 1.0, "", "", "");
+        return new Star.Builder()
+                .catalogueId(id)
+                .displayName(name)
+                .apparentMagnitude(1.0)
+                .build();
     }
 
     private static final class TestPresenter implements ConstellationOutputBoundary {

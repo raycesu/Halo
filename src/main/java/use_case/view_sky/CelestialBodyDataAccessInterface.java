@@ -3,9 +3,9 @@ package use_case.view_sky;
 import java.time.Instant;
 import java.util.List;
 
+import entity.CelestialBodyType;
 import entity.ObserverLocation;
 import entity.Star;
-import entity.CelestialBodyType;
 
 /**
  * Supplies the positions of moving celestial objects (the Sun, Moon and planets, plus any bright

@@ -37,24 +37,24 @@ import use_case.lookup_location.LocationDataAccessInterface;
  */
 public class CsvLocationDataAccessObject implements LocationDataAccessInterface {
 
-    private static final String resourcePath = "/data/cities.csv";
-    private static final String expectedHeader =
+    private static final String RESOURCE_PATH = "/data/cities.csv";
+    private static final String EXPECTED_HEADER =
             "name,region,country,latitude,longitude,timezone,population";
-    private static final int expectedColumns = 7;
+    private static final int EXPECTED_COLUMNS = 7;
 
     /** Rank of an entry whose name is exactly what was typed. */
-    private static final int matchExact = 0;
+    private static final int MATCH_EXACT = 0;
 
     /** Rank of an entry whose name starts with what was typed. */
-    private static final int matchPrefix = 1;
+    private static final int MATCH_PREFIX = 1;
 
     /** Rank of an entry that contains what was typed somewhere else in the name. */
-    private static final int matchContains = 2;
+    private static final int MATCH_CONTAINS = 2;
 
-    private static final int noMatch = 3;
+    private static final int NO_MATCH = 3;
 
     /** The combining marks NFD leaves behind once an accented character is decomposed. */
-    private static final Pattern combiningMarks = Pattern.compile("\\p{M}+");
+    private static final Pattern COMBINING_MARKS = Pattern.compile("\\p{M}+");
 
     private final List<Entry> entries;
 
@@ -71,7 +71,7 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
             // One pass per tier rather than collecting and sorting: the file is already ordered by
             // population, so appending in encounter order keeps the largest city first within each
             // tier, and the loop can stop as soon as enough matches are found.
-            for (int tier = matchExact; tier <= matchContains && matches.size() < limit; tier++) {
+            for (int tier = MATCH_EXACT; tier <= MATCH_CONTAINS && matches.size() < limit; tier++) {
                 collectTier(normalisedQuery, tier, limit, matches);
             }
         }
@@ -97,33 +97,33 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
     private int rank(final String searchName, final String normalisedQuery) {
         final int rank;
         if (searchName.equals(normalisedQuery)) {
-            rank = matchExact;
+            rank = MATCH_EXACT;
         }
         else if (searchName.startsWith(normalisedQuery)) {
-            rank = matchPrefix;
+            rank = MATCH_PREFIX;
         }
         else if (searchName.contains(normalisedQuery)) {
-            rank = matchContains;
+            rank = MATCH_CONTAINS;
         }
         else {
-            rank = noMatch;
+            rank = NO_MATCH;
         }
         return rank;
     }
 
     private List<Entry> loadEntries() {
         final InputStream inputStream =
-                CsvLocationDataAccessObject.class.getResourceAsStream(resourcePath);
+                CsvLocationDataAccessObject.class.getResourceAsStream(RESOURCE_PATH);
         if (inputStream == null) {
-            throw new IllegalStateException("City dataset resource was not found: " + resourcePath);
+            throw new IllegalStateException("City dataset resource was not found: " + RESOURCE_PATH);
         }
 
         final List<Entry> loaded = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             final String header = reader.readLine();
-            if (!expectedHeader.equals(header)) {
-                throw new IllegalStateException("Unexpected header in city dataset: " + resourcePath);
+            if (!EXPECTED_HEADER.equals(header)) {
+                throw new IllegalStateException("Unexpected header in city dataset: " + RESOURCE_PATH);
             }
 
             String line;
@@ -138,7 +138,7 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
         }
         catch (IOException exception) {
             throw new IllegalStateException(
-                    "Could not read city dataset resource: " + resourcePath, exception);
+                    "Could not read city dataset resource: " + RESOURCE_PATH, exception);
         }
         return List.copyOf(loaded);
     }
@@ -150,11 +150,14 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
      * small enough that a malformed line there means a mistake worth surfacing loudly; this file
      * is a 34,000-row third-party extract, and losing the whole city list over one row with an
      * unrecognised time zone would be the wrong trade.
+     *
+     * @param line one raw CSV row from the city dataset
+     * @return the parsed entry, or null if the row is malformed or unusable
      */
     private Entry parseEntry(final String line) {
         Entry entry = null;
         final List<String> fields = parseCsvLine(line);
-        if (fields.size() == expectedColumns) {
+        if (fields.size() == EXPECTED_COLUMNS) {
             try {
                 final ObserverLocation location = new ObserverLocation(
                         displayNameOf(fields.get(0), fields.get(1), fields.get(2)),
@@ -173,6 +176,11 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
     /**
      * Builds the label the user picks from, widening out from the city to the region and country
      * so that the eight places called Springfield can be told apart.
+     *
+     * @param name the city name
+     * @param region the region or state name, possibly blank
+     * @param country the country name, possibly blank
+     * @return the formatted display label
      */
     private String displayNameOf(final String name, final String region, final String country) {
         final StringBuilder displayName = new StringBuilder(name);
@@ -195,10 +203,13 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
      *
      * <p>Decomposing to NFD splits an accented character into a base letter followed by combining
      * marks, which the mark category can then remove.
+     *
+     * @param value the raw text to normalise
+     * @return the lowercase, accent-stripped form used for matching
      */
     private String normalise(final String value) {
         final String decomposed = Normalizer.normalize(value.trim(), Normalizer.Form.NFD);
-        return combiningMarks.matcher(decomposed).replaceAll("").toLowerCase(Locale.ROOT);
+        return COMBINING_MARKS.matcher(decomposed).replaceAll("").toLowerCase(Locale.ROOT);
     }
 
     private List<String> parseCsvLine(final String line) {
@@ -206,7 +217,8 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
         final StringBuilder field = new StringBuilder();
         boolean insideQuotes = false;
 
-        for (int index = 0; index < line.length(); index++) {
+        int index = 0;
+        while (index < line.length()) {
             final char character = line.charAt(index);
             if (character == '"') {
                 if (insideQuotes
@@ -226,6 +238,7 @@ public class CsvLocationDataAccessObject implements LocationDataAccessInterface 
             else {
                 field.append(character);
             }
+            index++;
         }
         fields.add(field.toString());
         return fields;

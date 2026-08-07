@@ -112,14 +112,15 @@ class ViewSkyPresenterTest {
     }
 
     private Star testStar() {
-        return new Star(
-                "HIP 32349",
-                "Sirius",
-                6.7525,
-                -16.7161,
-                -1.46,
-                "Canis Major",
-                "A1V",
-                "The brightest star in the night sky.");
+        return new Star.Builder()
+                .catalogueId("HIP 32349")
+                .displayName("Sirius")
+                .rightAscension(6.7525)
+                .declination(-16.7161)
+                .apparentMagnitude(-1.46)
+                .constellationRegion("Canis Major")
+                .spectralType("A1V")
+                .description("The brightest star in the night sky.")
+                .build();
     }
 }

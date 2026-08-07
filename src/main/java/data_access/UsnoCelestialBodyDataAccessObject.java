@@ -74,6 +74,7 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
      * what makes {@link #rightAscensionFrom} possible.
      */
     private static final String ARIES = "ARIES";
+    private static final String ERROR_FIELD = "error";
 
     private final HttpClient httpClient;
 
@@ -131,6 +132,10 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
      * <p>{@code Locale.US} is not optional here: under a locale that uses a comma as the decimal
      * separator, formatting the coordinates with the default locale would produce a query the
      * service silently misreads.
+     *
+     * @param location the observer's location
+     * @param instant the observation instant
+     * @return the fully-built celnav request URL
      */
     private String buildRequestUrl(final ObserverLocation location, final Instant instant) {
         return String.format(
@@ -148,6 +153,10 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
      *
      * <p>Package-private so the parsing can be tested against a recorded response without a
      * network call, which is where the interesting failure modes live.
+     *
+     * @param responseBody the raw celnav JSON response body
+     * @return the parsed celestial bodies
+     * @throws CelestialDataUnavailableException if the response is malformed or has no usable bodies
      */
     List<Star> parseCelestialBodies(final String responseBody)
             throws CelestialDataUnavailableException {
@@ -157,9 +166,9 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
             final JSONObject root = new JSONObject(responseBody);
 
             // The service can report a problem in the body even on a 200 response.
-            if (root.has("error")) {
+            if (root.has(ERROR_FIELD)) {
                 throw new CelestialDataUnavailableException(
-                        "Celestial data service reported: " + root.getString("error"));
+                        "Celestial data service reported: " + root.getString(ERROR_FIELD));
             }
 
             dataArray = root.getJSONObject("properties").getJSONArray("data");
@@ -189,6 +198,9 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
     /**
      * Returns the Greenwich hour angle of the First Point of Aries, which equals Greenwich
      * apparent sidereal time expressed in degrees, or NaN if the response omits it.
+     *
+     * @param dataArray the celnav response's {@code properties.data} array
+     * @return the Greenwich hour angle of Aries in degrees, or NaN if not found
      */
     private double findAriesHourAngle(final JSONArray dataArray) {
         double hourAngle = Double.NaN;
@@ -208,6 +220,10 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
      * Converts one entry, or returns null if the entry is the Aries reference point or is
      * unusable. A malformed entry is skipped rather than failing the whole request, so one
      * unexpected object does not cost the user all the others.
+     *
+     * @param entry one celnav {@code properties.data} array entry
+     * @param siderealTimeDegrees the Greenwich apparent sidereal time in degrees
+     * @return the parsed body, or null if the entry is unusable
      */
     private Star parseBody(final JSONObject entry, final double siderealTimeDegrees) {
         Star body = null;
@@ -236,18 +252,16 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
 
         if (Double.isFinite(declination) && Double.isFinite(altitude) && Double.isFinite(azimuth)) {
             try {
-                body = new Star(
-                        catalogueIdOf(entry),
-                        name,
-                        rightAscensionFrom(greenwichHourAngle, siderealTimeDegrees),
-                        declination,
+                body = new Star.Builder()
+                        .catalogueId(catalogueIdOf(entry))
+                        .displayName(name)
+                        .rightAscension(rightAscensionFrom(greenwichHourAngle, siderealTimeDegrees))
+                        .declination(declination)
                         // celnav carries no photometry, so brightness is genuinely unknown here
                         // rather than zero. The local catalogue supplies it for its own stars.
-                        Double.NaN,
-                        "",
-                        "",
-                        "",
-                        classify(name));
+                        .apparentMagnitude(Double.NaN)
+                        .type(classify(name))
+                        .build();
                 body.updateHorizontalPosition(altitude, wrapIntoCircle(azimuth));
             }
             catch (IllegalArgumentException exception) {
@@ -267,6 +281,10 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
      * <p>The result is in hours, matching {@link Star#getRightAscension()} and the catalogue
      * dataset. It is apparent right ascension of date, so it differs from a J2000 catalogue value
      * by accumulated precession, currently a few tenths of a degree.
+     *
+     * @param greenwichHourAngle the body's Greenwich hour angle in degrees
+     * @param siderealTimeDegrees the Greenwich apparent sidereal time in degrees
+     * @return the right ascension in hours, or NaN if either input is not finite
      */
     private double rightAscensionFrom(
             final double greenwichHourAngle, final double siderealTimeDegrees) {
@@ -282,6 +300,9 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
     /**
      * Wraps an angle into [0, 360) so that a value the service reports as exactly 360, or as a
      * small negative number, still satisfies the entity's invariants.
+     *
+     * @param degrees the angle to wrap, in degrees
+     * @return the equivalent angle in [0, 360) degrees
      */
     private double wrapIntoCircle(final double degrees) {
         final double wrapped = degrees % DEGREES_IN_CIRCLE;
@@ -298,6 +319,9 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
     /**
      * Navigational stars carry a number that identifies them across requests, which is the only
      * stable identifier celnav offers. Planets and the Sun have none.
+     *
+     * @param entry one celnav {@code properties.data} array entry
+     * @return the stable catalogue ID, or an empty string if the body has none
      */
     private String catalogueIdOf(final JSONObject entry) {
         final String catalogueId;
@@ -333,7 +357,7 @@ public class UsnoCelestialBodyDataAccessObject implements CelestialBodyDataAcces
         String message = "no details provided";
         if (responseBody != null && !responseBody.isBlank()) {
             try {
-                message = new JSONObject(responseBody).optString("error", responseBody);
+                message = new JSONObject(responseBody).optString(ERROR_FIELD, responseBody);
             }
             catch (JSONException exception) {
                 message = responseBody;
