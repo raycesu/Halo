@@ -1,5 +1,10 @@
 package interface_adapter.view_sky;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import entity.ObserverLocation;
+import entity.Star;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import use_case.view_sky.ViewSkyOutputBoundary;
@@ -30,16 +35,22 @@ public class ViewSkyPresenter implements ViewSkyOutputBoundary {
         skyViewModel.setDisplayedTime(outputData.getTime());
         skyViewModel.setLatitude(outputData.getLatitude());
         skyViewModel.setLongitude(outputData.getLongitude());
-        skyViewModel.setObserverLocation(outputData.getObserverLocation());
-        skyViewModel.setStars(outputData.getStars());
+
+        final ObserverLocation observer = outputData.getObserverLocation();
+        if (observer != null) {
+            skyViewModel.setZoneId(observer.getZoneId().getId());
+        }
+        else {
+            skyViewModel.setZoneId("");
+        }
+
+        skyViewModel.setStars(toStarDisplayDataList(outputData.getStars()));
         skyViewModel.setSelectedObject(null);
         skyViewModel.setSelectedObjectDetails("");
         skyViewModel.setWarningMessage("");
         skyViewModel.setErrorMessage("");
         observationSetupViewModel.setErrorMessage("");
 
-        // A new observation must not keep showing weather/forecast results from whatever
-        // location, date, or time was previously selected.
         checkConditionsViewModel.reset();
         rankForecastDaysViewModel.reset();
     }
@@ -52,5 +63,29 @@ public class ViewSkyPresenter implements ViewSkyOutputBoundary {
     @Override
     public void prepareWarning(final String warningMessage) {
         skyViewModel.setWarningMessage(warningMessage);
+    }
+
+    private static List<StarDisplayData> toStarDisplayDataList(final List<Star> stars) {
+        final List<StarDisplayData> result = new ArrayList<>(stars.size());
+        for (final Star star : stars) {
+            result.add(toStarDisplayData(star));
+        }
+        return result;
+    }
+
+    private static StarDisplayData toStarDisplayData(final Star star) {
+        return new StarDisplayData(
+                star.getCatalogueId(),
+                star.getDisplayName(),
+                star.getRightAscension(),
+                star.getDeclination(),
+                star.getApparentMagnitude(),
+                star.getConstellationRegion(),
+                star.getSpectralType(),
+                star.getDescription(),
+                star.getType().name(),
+                star.getAltitude(),
+                star.getAzimuth(),
+                star.isAboveHorizon());
     }
 }
