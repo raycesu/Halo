@@ -3,9 +3,12 @@ package interface_adapter.view_sky;
 import java.util.ArrayList;
 import java.util.List;
 
+import entity.Constellation;
+import entity.ConstellationLine;
 import entity.ObserverLocation;
 import entity.Star;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.custom_constellation.ConstellationDisplayData;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import use_case.view_sky.ViewSkyOutputBoundary;
 import use_case.view_sky.ViewSkyOutputData;
@@ -44,6 +47,8 @@ public class ViewSkyPresenter implements ViewSkyOutputBoundary {
             skyViewModel.setZoneId("");
         }
 
+        skyViewModel.setStaticConstellations(
+                toConstellationDisplayDataList(outputData.getStaticConstellations()));
         skyViewModel.setStars(toStarDisplayDataList(outputData.getStars()));
         skyViewModel.setSelectedObject(null);
         skyViewModel.setSelectedObjectDetails("");
@@ -69,6 +74,27 @@ public class ViewSkyPresenter implements ViewSkyOutputBoundary {
         final List<StarDisplayData> result = new ArrayList<>(stars.size());
         for (final Star star : stars) {
             result.add(toStarDisplayData(star));
+        }
+        return result;
+    }
+
+    private static List<ConstellationDisplayData> toConstellationDisplayDataList(
+            final List<Constellation> constellations) {
+        final List<ConstellationDisplayData> result = new ArrayList<>(constellations.size());
+        for (final Constellation constellation : constellations) {
+            final List<ConstellationDisplayData.Line> lines = new ArrayList<>();
+            for (final ConstellationLine line : constellation.getLines()) {
+                final Star start = line.getStartStar();
+                final Star end = line.getEndStar();
+                lines.add(new ConstellationDisplayData.Line(
+                        start.getAltitude(),
+                        start.getAzimuth(),
+                        start.isAboveHorizon(),
+                        end.getAltitude(),
+                        end.getAzimuth(),
+                        end.isAboveHorizon()));
+            }
+            result.add(new ConstellationDisplayData(constellation.getName(), lines));
         }
         return result;
     }

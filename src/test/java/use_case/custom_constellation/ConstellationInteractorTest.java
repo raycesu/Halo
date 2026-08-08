@@ -25,6 +25,7 @@ public class ConstellationInteractorTest {
         final Star thirdStar = createStar("3", "Polaris");
         interactor.execute(new ConstellationInputData(
                 "My Pattern",
+                "#FF5C5C",
                 List.of(firstStar, secondStar, thirdStar)));
         assertTrue(presenter.success);
         assertEquals(1, dataAccess.findAll().size());
@@ -33,6 +34,7 @@ public class ConstellationInteractorTest {
                 dataAccess.findAll().get(0);
 
         assertEquals("My Pattern", saved.getName());
+        assertEquals("#FF5C5C", saved.getColorHex());
         assertEquals(2, saved.getLines().size());
         assertEquals(firstStar, saved.getLines().get(0).getStartStar());
         assertEquals(secondStar, saved.getLines().get(0).getEndStar());

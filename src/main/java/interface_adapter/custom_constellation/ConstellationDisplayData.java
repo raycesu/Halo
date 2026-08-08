@@ -3,17 +3,31 @@ package interface_adapter.custom_constellation;
 import java.util.List;
 
 public final class ConstellationDisplayData {
+    private static final String DEFAULT_COLOR_HEX = "#50B4FF";
 
     private final String name;
+    private final String colorHex;
     private final List<Line> lines;
 
     public ConstellationDisplayData(final String name, final List<Line> lines) {
+        this(name, DEFAULT_COLOR_HEX, lines);
+    }
+
+    public ConstellationDisplayData(
+            final String name,
+            final String colorHex,
+            final List<Line> lines) {
         this.name = name;
+        this.colorHex = colorHex;
         this.lines = List.copyOf(lines);
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getColorHex() {
+        return colorHex;
     }
 
     public List<Line> getLines() {

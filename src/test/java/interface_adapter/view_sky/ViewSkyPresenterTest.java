@@ -3,8 +3,11 @@ package interface_adapter.view_sky;
 import java.util.ArrayList;
 import java.util.List;
 
+import entity.Constellation;
+import entity.ConstellationLine;
 import entity.Star;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.custom_constellation.ConstellationDisplayData;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import use_case.view_sky.ViewSkyOutputData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -113,6 +117,40 @@ class ViewSkyPresenterTest {
         assertEquals(1, skyViewModel.getStars().size());
         assertEquals("HIP 32349", skyViewModel.getStars().get(0).getCatalogueId());
         assertEquals("Toronto", skyViewModel.getDisplayedLocation());
+    }
+
+    @Test
+    void convertsStaticConstellationsToImmutableDisplayData() {
+        final Star visibleStar = testStar();
+        visibleStar.updateHorizontalPosition(35.0, 80.0);
+        final Star hiddenStar = new Star.Builder()
+                .catalogueId("HR 2")
+                .displayName("Hidden")
+                .build();
+        hiddenStar.updateHorizontalPosition(-10.0, 260.0);
+        final Constellation constellation = new Constellation(
+                "Test",
+                List.of(new ConstellationLine(visibleStar, hiddenStar)));
+
+        presenter.prepareSuccessView(new ViewSkyOutputData(
+                "Toronto",
+                "2026-07-24",
+                "18:20",
+                43.6532,
+                -79.3832,
+                List.of(visibleStar),
+                List.of(constellation)));
+
+        final ConstellationDisplayData displayed =
+                skyViewModel.getStaticConstellations().get(0);
+        assertEquals("Test", displayed.getName());
+        assertEquals(35.0, displayed.getLines().get(0).getStartAltitude(), 1e-9);
+        assertTrue(displayed.getLines().get(0).isStartAboveHorizon());
+        assertEquals(-10.0, displayed.getLines().get(0).getEndAltitude(), 1e-9);
+        assertFalse(displayed.getLines().get(0).isEndAboveHorizon());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> skyViewModel.getStaticConstellations().clear());
     }
 
     private Star testStar() {

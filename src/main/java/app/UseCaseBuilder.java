@@ -36,6 +36,7 @@ import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
 import use_case.view_sky.CelestialBodyDataAccessInterface;
 import use_case.view_sky.HorizontalCoordinateCalculator;
 import use_case.view_sky.StarCatalogDataAccessInterface;
+import use_case.view_sky.StaticConstellationDataAccessInterface;
 import use_case.view_sky.ViewSkyInputBoundary;
 import use_case.view_sky.ViewSkyInteractor;
 import use_case.view_sky.ViewSkyOutputBoundary;
@@ -64,6 +65,7 @@ final class UseCaseBuilder {
 
         viewSkyController = buildViewSky(
                 dataAccess.getStarCatalogDataAccess(),
+                dataAccess.getStaticConstellationDataAccess(),
                 dataAccess.getCelestialBodyDataAccess(),
                 skyViewModel, observationSetupViewModel,
                 checkConditionsViewModel, rankForecastDaysViewModel);
@@ -99,6 +101,7 @@ final class UseCaseBuilder {
 
     private static ViewSkyController buildViewSky(
             final StarCatalogDataAccessInterface starCatalogDataAccess,
+            final StaticConstellationDataAccessInterface staticConstellationDataAccess,
             final CelestialBodyDataAccessInterface celestialBodyDataAccess,
             final SkyViewModel skyViewModel,
             final ObservationSetupViewModel observationSetupViewModel,
@@ -110,7 +113,11 @@ final class UseCaseBuilder {
                 skyViewModel, observationSetupViewModel,
                 checkConditionsViewModel, rankForecastDaysViewModel);
         final ViewSkyInputBoundary interactor = new ViewSkyInteractor(
-                starCatalogDataAccess, celestialBodyDataAccess, coordinateCalculator, presenter);
+                starCatalogDataAccess,
+                staticConstellationDataAccess,
+                celestialBodyDataAccess,
+                coordinateCalculator,
+                presenter);
         return new ViewSkyController(interactor, presenter);
     }
 
