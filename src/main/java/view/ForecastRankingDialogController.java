@@ -10,10 +10,14 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
@@ -36,16 +40,23 @@ class ForecastRankingDialogController {
 
     private final Component owner;
     private final Color backgroundColor;
+    private static final int VISIBLE_ROW_COUNT = 4;
+
     private final JButton selectDatesButton = new JButton("Select Dates");
     private final JLabel selectedDatesSummaryLabel = new JLabel();
     private final JButton rankForecastButton = new JButton("Rank Nights");
-    private final RankedDaysListPanel rankedDaysListPanel = new RankedDaysListPanel();
+    private final DefaultListModel<RankedDayDisplayItem> rankedDaysModel = new DefaultListModel<>();
+    private final JList<RankedDayDisplayItem> rankedDaysList = new JList<>(rankedDaysModel);
+    private final JScrollPane rankedDaysScrollPane = new JScrollPane();
     private final JLabel rankForecastErrorLabel = new JLabel();
     private JDialog dialog;
 
     ForecastRankingDialogController(final Component owner, final Color backgroundColor) {
         this.owner = owner;
         this.backgroundColor = backgroundColor;
+        rankedDaysList.setCellRenderer(new RankedDayCellRenderer());
+        rankedDaysList.setVisibleRowCount(VISIBLE_ROW_COUNT);
+        rankedDaysScrollPane.setViewportView(rankedDaysList);
     }
 
     JButton getSelectDatesButton() {
@@ -62,7 +73,10 @@ class ForecastRankingDialogController {
     }
 
     void setRankedDays(final List<RankedDayDisplayItem> items) {
-        rankedDaysListPanel.setItems(items);
+        rankedDaysModel.clear();
+        for (final RankedDayDisplayItem item : items) {
+            rankedDaysModel.addElement(item);
+        }
     }
 
     void setErrorText(final String text) {
@@ -123,7 +137,30 @@ class ForecastRankingDialogController {
         topSection.add(rankForecastErrorLabel);
 
         forecastPanel.add(topSection, BorderLayout.NORTH);
-        forecastPanel.add(rankedDaysListPanel, BorderLayout.CENTER);
+        forecastPanel.add(rankedDaysScrollPane, BorderLayout.CENTER);
         return forecastPanel;
+    }
+
+    private static final class RankedDayCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(
+                final JList<?> list,
+                final Object value,
+                final int index,
+                final boolean isSelected,
+                final boolean cellHasFocus) {
+            final Component component = super.getListCellRendererComponent(
+                    list, value, index, isSelected, cellHasFocus);
+            if (value instanceof RankedDayDisplayItem) {
+                final RankedDayDisplayItem item = (RankedDayDisplayItem) value;
+                setText(item.getRank() + ". " + item.getDateText()
+                        + " — " + item.getRatingText() + " (" + item.getOverallScoreText() + ")");
+                if (!isSelected) {
+                    setForeground(SwingStyle.colorOrDefault(item.getRatingColor()));
+                }
+            }
+            return component;
+        }
     }
 }

@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -205,9 +206,9 @@ public class SkyMapPanel extends JPanel {
 
             drawCustomConstellations(graphics2D, centreX, centreY, radius);
 
-            for (final Star star : VisibilityFilter.filterVisible(stars)) {
-                final SkyVisualization.ScreenPosition position =
-                        SkyVisualization.project(star, centreX, centreY, radius);
+            for (final Star star : filterVisible(stars)) {
+                final ScreenPosition position =
+                        project(star, centreX, centreY, radius);
                 drawObject(graphics2D, star, position);
             }
         }
@@ -235,10 +236,10 @@ public class SkyMapPanel extends JPanel {
                 final Star endStar = constellationLine.getEndStar();
                 // Avoid drawing a segment when either endpoint is below the horizon.
                 if (startStar.isAboveHorizon() && endStar.isAboveHorizon()) {
-                    final SkyVisualization.ScreenPosition start =
-                            SkyVisualization.project(startStar, centreX, centreY, radius);
-                    final SkyVisualization.ScreenPosition end =
-                            SkyVisualization.project(endStar, centreX, centreY, radius);
+                    final ScreenPosition start =
+                            project(startStar, centreX, centreY, radius);
+                    final ScreenPosition end =
+                            project(endStar, centreX, centreY, radius);
 
                     graphics2D.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
                 }
@@ -249,7 +250,7 @@ public class SkyMapPanel extends JPanel {
     private void drawObject(
             final Graphics2D graphics2D,
             final Star star,
-            final SkyVisualization.ScreenPosition position) {
+            final ScreenPosition position) {
         final int size = objectSize(star);
 
         graphics2D.setColor(objectColor(star));
@@ -322,9 +323,9 @@ public class SkyMapPanel extends JPanel {
         Star nearestObject = null;
         double nearestDistanceSquared = maximumDistanceSquared;
 
-        for (final Star star : VisibilityFilter.filterVisible(stars)) {
-            final SkyVisualization.ScreenPosition position =
-                    SkyVisualization.project(star, centreX, centreY, radius);
+        for (final Star star : filterVisible(stars)) {
+            final ScreenPosition position =
+                    project(star, centreX, centreY, radius);
             final double differenceX = position.getX() - mouseX;
             final double differenceY = position.getY() - mouseY;
             final double distanceSquared =
@@ -430,6 +431,50 @@ public class SkyMapPanel extends JPanel {
 
     private int mapDiameter() {
         return Math.max(0, Math.min(getWidth() - HORIZONTAL_MARGIN, getHeight() - VERTICAL_MARGIN));
+    }
+
+    private static final double DEGREES_FROM_ZENITH_TO_HORIZON = 90.0;
+    private static final double MIN_VISIBLE_ALTITUDE = 0.0;
+
+    static ScreenPosition project(
+            final Star star, final int centerX, final int centerY, final int mapRadius) {
+        final double altitude = star.getAltitude();
+        final double azimuth = star.getAzimuth();
+        final double r = ((DEGREES_FROM_ZENITH_TO_HORIZON - altitude)
+                / DEGREES_FROM_ZENITH_TO_HORIZON) * mapRadius;
+        final double theta = Math.toRadians(azimuth);
+        final int screenX = centerX + (int) (r * Math.sin(theta));
+        final int screenY = centerY - (int) (r * Math.cos(theta));
+        return new ScreenPosition(screenX, screenY);
+    }
+
+    private static List<Star> filterVisible(final List<Star> allStars) {
+        final List<Star> visible = new ArrayList<>();
+        for (final Star star : allStars) {
+            final double altitude = star.getAltitude();
+            if (!Double.isNaN(altitude) && altitude >= MIN_VISIBLE_ALTITUDE) {
+                visible.add(star);
+            }
+        }
+        return visible;
+    }
+
+    public static class ScreenPosition {
+        private final int x;
+        private final int y;
+
+        public ScreenPosition(final int screenX, final int screenY) {
+            this.x = screenX;
+            this.y = screenY;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
     }
 
     /** Notified whenever the user clicks a displayed object on the map. */

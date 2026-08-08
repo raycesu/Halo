@@ -11,13 +11,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 /**
- * The right-hand sidebar of {@link SkyView}: the selected star/object information box and the
+ * The right-hand panel of {@link SkyView}: the selected star/object information box and the
  * weather box with its two trigger buttons ("Check Conditions", "Forecast Ranking").
  *
  * <p>This class only builds and exposes the widgets; {@link SkyView} keeps all of the
  * weather/forecast business logic and wires listeners to the widgets returned here.
  */
-class SkyRightSidebar extends JPanel {
+class SkyRightPanel extends JPanel {
 
     static final Color BACKGROUND = SwingStyle.rgb(238, 241, 246);
 
@@ -35,7 +35,7 @@ class SkyRightSidebar extends JPanel {
     private final JButton checkConditionsButton = new JButton("Check Conditions");
     private final JButton forecastRankingButton = new JButton("Forecast Ranking");
 
-    SkyRightSidebar() {
+    SkyRightPanel() {
         setLayout(SwingStyle.grid(2, 1, 0, SECTION_ROW_GAP));
         setPreferredSize(SwingStyle.size(PANEL_WIDTH, 0));
         setBackground(BACKGROUND);

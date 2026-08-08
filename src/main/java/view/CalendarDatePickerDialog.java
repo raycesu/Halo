@@ -138,7 +138,7 @@ final class CalendarDatePickerDialog extends JDialog {
 
     private JToggleButton createDayButton(final LocalDate date) {
         final JToggleButton dayButton = new JToggleButton(String.valueOf(date.getDayOfMonth()));
-        dayButton.setMargin(GridBagStyle.insets(2, 2, 2, 2));
+        dayButton.setMargin(SwingStyle.insets(2, 2, 2, 2));
         dayButton.setSelected(selectedDates.contains(date));
         applyDayButtonStyle(dayButton);
 
