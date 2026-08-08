@@ -3,7 +3,6 @@ package view;
 import java.awt.Component;
 import java.awt.Container;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -14,14 +13,13 @@ import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import entity.ObserverLocation;
-import entity.Star;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.SkyViewModel;
+import interface_adapter.view_sky.StarDisplayData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import use_case.check_conditions.CheckConditionsInputBoundary;
@@ -31,7 +29,6 @@ import use_case.rank_forecast_days.RankForecastDaysInputData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SkyViewTest {
@@ -45,7 +42,7 @@ class SkyViewTest {
     private CapturingCheckConditions checkConditions;
     private CapturingRankForecastDays rankForecastDays;
     private SkyView view;
-    private Star sirius;
+    private StarDisplayData sirius;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -55,23 +52,21 @@ class SkyViewTest {
         skyViewModel.setDisplayedTime("22:15");
         skyViewModel.setLatitude(LATITUDE);
         skyViewModel.setLongitude(LONGITUDE);
+        skyViewModel.setZoneId("Europe/Istanbul");
 
-        // Weather and ranking now take the observed place whole, so that the request can name the
-        // time zone rather than leaving the service to infer one from the coordinates.
-        skyViewModel.setObserverLocation(new ObserverLocation(
-                "Istanbul", LATITUDE, LONGITUDE, ZoneId.of("Europe/Istanbul")));
-
-        sirius = new Star.Builder()
-                .catalogueId("HIP 32349")
-                .displayName("Sirius")
-                .rightAscension(6.7525)
-                .declination(-16.7161)
-                .apparentMagnitude(-1.46)
-                .constellationRegion("Canis Major")
-                .spectralType("A1V")
-                .description("The brightest star in the night sky.")
-                .build();
-        sirius.updateHorizontalPosition(45.0, 120.0);
+        sirius = new StarDisplayData(
+                "HIP 32349",
+                "Sirius",
+                6.7525,
+                -16.7161,
+                -1.46,
+                "Canis Major",
+                "A1V",
+                "The brightest star in the night sky.",
+                "STAR",
+                45.0,
+                120.0,
+                true);
         skyViewModel.setStars(List.of(sirius));
 
         viewManagerModel = new ViewManagerModel();
@@ -97,11 +92,11 @@ class SkyViewTest {
             button(view, "Search").doClick();
         });
 
-        assertSame(sirius, skyViewModel.getSelectedObject());
+        assertEquals(sirius, skyViewModel.getSelectedObject());
         assertEquals("Sirius", skyViewModel.getSelectedObjectName());
         assertTrue(skyViewModel.getSelectedObjectDetails().contains("HIP 32349"));
         assertTrue(skyViewModel.getErrorMessage().isEmpty());
-        assertSame(sirius, mapPanel(view).getSelectedObject());
+        assertEquals(sirius, mapPanel(view).getSelectedObject());
     }
 
     @Test

@@ -14,7 +14,7 @@ class SkyView {
 %% ---------- Interface Adapters ----------
 class CheckConditionsController {
   -CheckConditionsInputBoundary inputBoundary
-  +checkConditions(ObserverLocation, LocalDateTime)
+  +checkConditions(String displayName, double lat, double lng, String zoneId, LocalDateTime)
 }
 
 class CheckConditionsPresenter {
@@ -115,6 +115,7 @@ SkyView ..> CheckConditionsViewModel : listens
 
 CheckConditionsController --> CheckConditionsInputBoundary
 CheckConditionsController ..> CheckConditionsInputData : creates
+CheckConditionsController ..> ObserverLocation : reconstructs
 
 CheckConditionsInteractor ..|> CheckConditionsInputBoundary
 CheckConditionsInteractor --> WeatherDataAccessInterface

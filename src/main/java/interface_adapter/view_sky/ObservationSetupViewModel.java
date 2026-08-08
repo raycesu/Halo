@@ -4,39 +4,74 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.time.LocalDate;
 
-import entity.ObserverLocation;
-
 public class ObservationSetupViewModel {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    /**
-     * The place the user picked from the suggestion list, or null if they have not picked one.
-     *
-     * <p>Replaces the separate latitude, longitude and time zone entries this screen used to ask
-     * for. Those are not things a person knows offhand, and a mistyped one is accepted silently by
-     * every service downstream, so the place is resolved once and then carried whole.
-     */
-    private ObserverLocation selectedLocation;
+    private String selectedLocationName = "";
+    private double selectedLatitude = Double.NaN;
+    private double selectedLongitude = Double.NaN;
+    private String selectedZoneId = "";
 
     // Today in the machine's own zone, so the app opens on a date the forecast actually covers.
     private String date = LocalDate.now().toString();
     private String time = "18:20";
     private String errorMessage = "";
 
-    public ObserverLocation getSelectedLocation() {
-        return selectedLocation;
+    public String getSelectedLocationName() {
+        return selectedLocationName;
+    }
+
+    public double getSelectedLatitude() {
+        return selectedLatitude;
+    }
+
+    public double getSelectedLongitude() {
+        return selectedLongitude;
+    }
+
+    public String getSelectedZoneId() {
+        return selectedZoneId;
     }
 
     /**
-     * Sets the selected observer location and notifies listeners.
+     * Whether a location has been selected.
      *
-     * @param selectedLocation the newly selected location, or null when none is selected
+     * @return true if a location has been set
      */
-    public void setSelectedLocation(final ObserverLocation selectedLocation) {
-        final ObserverLocation oldLocation = this.selectedLocation;
-        this.selectedLocation = selectedLocation;
-        support.firePropertyChange("selectedLocation", oldLocation, selectedLocation);
+    public boolean hasSelectedLocation() {
+        return !selectedLocationName.isEmpty();
+    }
+
+    /**
+     * Sets the selected observer location fields and notifies listeners.
+     *
+     * @param displayName the display name of the location
+     * @param latitude the latitude in decimal degrees
+     * @param longitude the longitude in decimal degrees
+     * @param zoneId the IANA time zone ID string
+     */
+    public void setSelectedLocation(
+            final String displayName,
+            final double latitude,
+            final double longitude,
+            final String zoneId) {
+        this.selectedLocationName = displayName;
+        this.selectedLatitude = latitude;
+        this.selectedLongitude = longitude;
+        this.selectedZoneId = zoneId;
+        support.firePropertyChange("selectedLocation", null, displayName);
+    }
+
+    /**
+     * Clears the selected location.
+     */
+    public void clearSelectedLocation() {
+        this.selectedLocationName = "";
+        this.selectedLatitude = Double.NaN;
+        this.selectedLongitude = Double.NaN;
+        this.selectedZoneId = "";
+        support.firePropertyChange("selectedLocation", null, "");
     }
 
     /**
@@ -45,14 +80,7 @@ public class ObservationSetupViewModel {
      * @return the display name of the selected location, or an empty string
      */
     public String getLocation() {
-        final String location;
-        if (selectedLocation == null) {
-            location = "";
-        }
-        else {
-            location = selectedLocation.getDisplayName();
-        }
-        return location;
+        return selectedLocationName;
     }
 
     public String getDate() {

@@ -38,7 +38,8 @@ class ViewSkyPresenterTest {
     void presentsSuccessfulSkyAndClearsStaleState() {
         final Star star = testStar();
         final List<Star> stars = new ArrayList<>(List.of(star));
-        skyViewModel.setSelectedObject(star);
+        final StarDisplayData expectedDisplay = toDisplayData(star);
+        skyViewModel.setSelectedObject(expectedDisplay);
         skyViewModel.setSelectedObjectDetails("old details");
         skyViewModel.setWarningMessage("old warning");
         skyViewModel.setErrorMessage("old error");
@@ -65,7 +66,9 @@ class ViewSkyPresenterTest {
         assertEquals("18:20", skyViewModel.getDisplayedTime());
         assertEquals(43.6532, skyViewModel.getLatitude(), 1e-9);
         assertEquals(-79.3832, skyViewModel.getLongitude(), 1e-9);
-        assertEquals(List.of(star), skyViewModel.getStars());
+        assertEquals(1, skyViewModel.getStars().size());
+        assertEquals("HIP 32349", skyViewModel.getStars().get(0).getCatalogueId());
+        assertEquals("Sirius", skyViewModel.getStars().get(0).getDisplayName());
         assertThrows(UnsupportedOperationException.class,
                 () -> skyViewModel.getStars().clear());
         assertNull(skyViewModel.getSelectedObject());
@@ -107,7 +110,8 @@ class ViewSkyPresenterTest {
         presenter.prepareWarning("Showing catalogue stars only.");
 
         assertEquals("Showing catalogue stars only.", skyViewModel.getWarningMessage());
-        assertEquals(List.of(star), skyViewModel.getStars());
+        assertEquals(1, skyViewModel.getStars().size());
+        assertEquals("HIP 32349", skyViewModel.getStars().get(0).getCatalogueId());
         assertEquals("Toronto", skyViewModel.getDisplayedLocation());
     }
 
@@ -122,5 +126,21 @@ class ViewSkyPresenterTest {
                 .spectralType("A1V")
                 .description("The brightest star in the night sky.")
                 .build();
+    }
+
+    private static StarDisplayData toDisplayData(final Star star) {
+        return new StarDisplayData(
+                star.getCatalogueId(),
+                star.getDisplayName(),
+                star.getRightAscension(),
+                star.getDeclination(),
+                star.getApparentMagnitude(),
+                star.getConstellationRegion(),
+                star.getSpectralType(),
+                star.getDescription(),
+                star.getType().name(),
+                star.getAltitude(),
+                star.getAzimuth(),
+                star.isAboveHorizon());
     }
 }

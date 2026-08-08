@@ -4,16 +4,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 
-import entity.ObserverLocation;
-
 public class LookupLocationViewModel {
 
     public static final String SUGGESTIONS_PROPERTY = "suggestions";
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List<ObserverLocation> suggestions = List.of();
+    private List<LocationSuggestion> suggestions = List.of();
 
-    public List<ObserverLocation> getSuggestions() {
+    public List<LocationSuggestion> getSuggestions() {
         return suggestions;
     }
 
@@ -22,8 +20,8 @@ public class LookupLocationViewModel {
      *
      * @param suggestions the new list of suggested locations
      */
-    public void setSuggestions(final List<ObserverLocation> suggestions) {
-        final List<ObserverLocation> old = this.suggestions;
+    public void setSuggestions(final List<LocationSuggestion> suggestions) {
+        final List<LocationSuggestion> old = this.suggestions;
         this.suggestions = suggestions;
         support.firePropertyChange(SUGGESTIONS_PROPERTY, old, suggestions);
     }
@@ -35,5 +33,40 @@ public class LookupLocationViewModel {
      */
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
+    }
+
+    public static final class LocationSuggestion {
+
+        private final String displayName;
+        private final double latitude;
+        private final double longitude;
+        private final String zoneId;
+
+        public LocationSuggestion(
+                final String displayName,
+                final double latitude,
+                final double longitude,
+                final String zoneId) {
+            this.displayName = displayName;
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.zoneId = zoneId;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public double getLatitude() {
+            return latitude;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public String getZoneId() {
+            return zoneId;
+        }
     }
 }

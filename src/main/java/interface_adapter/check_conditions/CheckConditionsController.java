@@ -1,10 +1,7 @@
 package interface_adapter.check_conditions;
 
-// thin class the View calls (e.g. from a "Check Conditions" button click).
-// Takes raw UI input, wraps it into CheckConditionsInputData, calls inputBoundary.checkConditions(...).
-// No logic — just translation and delegation.
-
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import entity.ObserverLocation;
 import use_case.check_conditions.CheckConditionsInputBoundary;
@@ -21,12 +18,20 @@ public class CheckConditionsController {
     /**
      * Forwards a check-conditions request to the use case.
      *
-     * @param location the observer location to check conditions for
+     * @param displayName the display name of the observer location
+     * @param latitude the latitude in decimal degrees
+     * @param longitude the longitude in decimal degrees
+     * @param zoneId the IANA time zone ID string
      * @param observationDateTime the local date and time of the observation
      */
     public void checkConditions(
-            final ObserverLocation location,
+            final String displayName,
+            final double latitude,
+            final double longitude,
+            final String zoneId,
             final LocalDateTime observationDateTime) {
+        final ObserverLocation location = new ObserverLocation(
+                displayName, latitude, longitude, ZoneId.of(zoneId));
         final CheckConditionsInputData inputData =
                 new CheckConditionsInputData(location, observationDateTime);
         inputBoundary.checkConditions(inputData);
