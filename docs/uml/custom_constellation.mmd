@@ -8,30 +8,63 @@ direction LR
 class SkyView {
   -ConstellationController constellationController
   -ConstellationViewModel constellationViewModel
-  -List~Star~ constellationSelection
+  -List~StarDisplayData~ constellationSelection
   +configureCustomConstellations(ConstellationController, ConstellationViewModel)
 }
 
 %% ---------- Interface Adapters ----------
 class ConstellationController {
   -ConstellationInputBoundary inputBoundary
-  +createConstellation(String name, List~Star~ selectedStars)
+  +createConstellation(String name, List~StarDisplayData~ selectedStars)
 }
 
 class ConstellationPresenter {
   -ConstellationViewModel viewModel
   +prepareSuccessView(ConstellationOutputData)
   +prepareFailureView(String)
+  -toDisplayData(CustomConstellation) ConstellationDisplayData
 }
 
 class ConstellationViewModel {
-  -List~CustomConstellation~ constellations
+  -List~ConstellationDisplayData~ constellations
   -String errorMessage
   -String successMessage
-  +addConstellation(CustomConstellation)
+  +addConstellation(ConstellationDisplayData)
   +setErrorMessage(String)
   +setSuccessMessage(String)
   +addPropertyChangeListener(PropertyChangeListener)
+}
+
+class StarDisplayData {
+  -String catalogueId
+  -String displayName
+  -double rightAscension
+  -double declination
+  -double apparentMagnitude
+  -String constellationRegion
+  -String spectralType
+  -String description
+  -String type
+  -double altitude
+  -double azimuth
+  -boolean aboveHorizon
+}
+
+class ConstellationDisplayData {
+  -String name
+  -List~Line~ lines
+  +getName() String
+  +getLines() List~Line~
+}
+
+class ConstellationDisplayData_Line {
+  <<inner class>>
+  -double startAltitude
+  -double startAzimuth
+  -boolean startAboveHorizon
+  -double endAltitude
+  -double endAzimuth
+  -boolean endAboveHorizon
 }
 
 %% ---------- Use Case layer ----------
@@ -107,6 +140,7 @@ SkyView ..> ConstellationViewModel : listens
 
 ConstellationController --> ConstellationInputBoundary
 ConstellationController ..> ConstellationInputData : creates
+ConstellationController ..> Star : reconstructs from StarDisplayData
 
 ConstellationInteractor ..|> ConstellationInputBoundary
 ConstellationInteractor --> ConstellationDataAccessInterface
@@ -117,6 +151,7 @@ ConstellationInteractor ..> ConstellationLine : creates
 
 ConstellationPresenter ..|> ConstellationOutputBoundary
 ConstellationPresenter --> ConstellationViewModel
+ConstellationPresenter ..> ConstellationDisplayData : creates
 
 InMemoryConstellationDataAccessObject ..|> ConstellationDataAccessInterface
 
@@ -125,4 +160,5 @@ Constellation o-- ConstellationLine
 ConstellationLine o-- Star
 ConstellationInputData o-- Star
 ConstellationOutputData o-- CustomConstellation
-ConstellationViewModel o-- CustomConstellation
+ConstellationViewModel o-- ConstellationDisplayData
+ConstellationDisplayData *-- ConstellationDisplayData_Line : nested

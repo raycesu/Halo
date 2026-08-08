@@ -21,10 +21,10 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.lookup_location.LookupLocationController;
 import interface_adapter.lookup_location.LookupLocationViewModel;
+import interface_adapter.lookup_location.LookupLocationViewModel.LocationSuggestion;
 import interface_adapter.view_sky.ObservationSetupViewModel;
 import interface_adapter.view_sky.ViewSkyController;
 
@@ -74,7 +74,13 @@ public class ObservationSetupView extends JPanel
         locationField = new CityAutocompleteField(lookupLocationController, lookupLocationViewModel);
         locationField.setName("locationField");
         locationField.getTextField().setName("locationTextField");
-        locationField.setSelectedLocation(viewModel.getSelectedLocation());
+        if (viewModel.hasSelectedLocation()) {
+            locationField.setSelectedLocation(new LocationSuggestion(
+                    viewModel.getSelectedLocationName(),
+                    viewModel.getSelectedLatitude(),
+                    viewModel.getSelectedLongitude(),
+                    viewModel.getSelectedZoneId()));
+        }
 
         dateField = createField("dateField", viewModel.getDate());
         timeField = createField("timeField", viewModel.getTime());
@@ -109,7 +115,7 @@ public class ObservationSetupView extends JPanel
     }
 
     private void submitObservation() {
-        final ObserverLocation location = locationField.getSelectedLocation();
+        final LocationSuggestion location = locationField.getSelectedLocation();
         final String date = dateField.getText();
         final String time = timeField.getText();
 
@@ -117,7 +123,11 @@ public class ObservationSetupView extends JPanel
             viewModel.setErrorMessage("Choose a location from the suggestions first.");
         }
         else {
-            viewModel.setSelectedLocation(location);
+            viewModel.setSelectedLocation(
+                    location.getDisplayName(),
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    location.getZoneId());
             viewModel.setDate(date);
             viewModel.setTime(time);
             viewModel.setErrorMessage("");
@@ -228,11 +238,14 @@ public class ObservationSetupView extends JPanel
     /** Runs the sky use case off the event dispatch thread, then reports the outcome back on it. */
     private final class ViewSkyWorker extends SwingWorker<Void, Void> {
 
-        private final ObserverLocation location;
+        private final LocationSuggestion location;
         private final String date;
         private final String time;
 
-        ViewSkyWorker(final ObserverLocation location, final String date, final String time) {
+        ViewSkyWorker(
+                final LocationSuggestion location,
+                final String date,
+                final String time) {
             this.location = location;
             this.date = date;
             this.time = time;
@@ -240,7 +253,13 @@ public class ObservationSetupView extends JPanel
 
         @Override
         protected Void doInBackground() {
-            viewSkyController.viewSky(location, date, time);
+            viewSkyController.viewSky(
+                    location.getDisplayName(),
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    location.getZoneId(),
+                    date,
+                    time);
             return null;
         }
 

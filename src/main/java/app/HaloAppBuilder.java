@@ -15,6 +15,7 @@ import interface_adapter.view_sky.SkyViewModel;
 import use_case.lookup_location.LocationDataAccessInterface;
 import view.ViewManager;
 
+
 /**
  * Composition root: builds every concrete implementation and wires them into a runnable app.
  *
@@ -70,8 +71,15 @@ public class HaloAppBuilder {
 
     ViewManager buildViewManager() {
         final DataAccessBundle dataAccess = new DataAccessBundle();
-        observationSetupViewModel.setSelectedLocation(
-                resolveDefaultLocation(dataAccess.getLocationDataAccess()));
+        final ObserverLocation defaultLocation =
+                resolveDefaultLocation(dataAccess.getLocationDataAccess());
+        if (defaultLocation != null) {
+            observationSetupViewModel.setSelectedLocation(
+                    defaultLocation.getDisplayName(),
+                    defaultLocation.getLatitude(),
+                    defaultLocation.getLongitude(),
+                    defaultLocation.getZoneId().getId());
+        }
 
         final UseCaseBuilder useCases = new UseCaseBuilder(
                 dataAccess,

@@ -16,10 +16,8 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
-import entity.CelestialBodyType;
-import entity.ConstellationLine;
-import entity.CustomConstellation;
-import entity.Star;
+import interface_adapter.custom_constellation.ConstellationDisplayData;
+import interface_adapter.view_sky.StarDisplayData;
 
 public class SkyMapPanel extends JPanel {
 
@@ -52,8 +50,8 @@ public class SkyMapPanel extends JPanel {
     private static final BasicStroke SELECTION_STROKE = new BasicStroke(2.0F);
     private static final BasicStroke CONSTELLATION_STROKE = new BasicStroke(1.5F);
 
-    private List<Star> stars = List.of();
-    private Star selectedObject;
+    private List<StarDisplayData> stars = List.of();
+    private StarDisplayData selectedObject;
     private SelectionListener selectionListener;
     private double zoom = MIN_ZOOM;
     private double panOffsetX;
@@ -66,8 +64,8 @@ public class SkyMapPanel extends JPanel {
     private int dragStartY;
     private double dragStartPanX;
     private double dragStartPanY;
-    private List<CustomConstellation> customConstellations = List.of();
-    private List<Star> constellationSelection = List.of();
+    private List<ConstellationDisplayData> customConstellations = List.of();
+    private List<StarDisplayData> constellationSelection = List.of();
 
     public SkyMapPanel() {
         setBackground(BACKGROUND_COLOR);
@@ -83,7 +81,7 @@ public class SkyMapPanel extends JPanel {
      *
      * @param stars the completed, calculated stars for the current observation
      */
-    public void setStars(final List<Star> stars) {
+    public void setStars(final List<StarDisplayData> stars) {
         this.stars = List.copyOf(stars);
         selectedObject = null;
         repaint();
@@ -94,7 +92,7 @@ public class SkyMapPanel extends JPanel {
      *
      * @param customConstellations the constellations to draw
      */
-    public void setCustomConstellations(final List<CustomConstellation> customConstellations) {
+    public void setCustomConstellations(final List<ConstellationDisplayData> customConstellations) {
         this.customConstellations = List.copyOf(customConstellations);
         repaint();
     }
@@ -104,7 +102,7 @@ public class SkyMapPanel extends JPanel {
      *
      * @param constellationSelection the stars selected so far, in selection order
      */
-    public void setConstellationSelection(final List<Star> constellationSelection) {
+    public void setConstellationSelection(final List<StarDisplayData> constellationSelection) {
         this.constellationSelection = List.copyOf(constellationSelection);
         repaint();
     }
@@ -114,7 +112,7 @@ public class SkyMapPanel extends JPanel {
      *
      * @return the currently selected object, or null if nothing is selected
      */
-    public Star getSelectedObject() {
+    public StarDisplayData getSelectedObject() {
         return selectedObject;
     }
 
@@ -123,7 +121,7 @@ public class SkyMapPanel extends JPanel {
      *
      * @param selectedObject the object to highlight as selected, or null to clear the selection
      */
-    public void setSelectedObject(final Star selectedObject) {
+    public void setSelectedObject(final StarDisplayData selectedObject) {
         this.selectedObject = selectedObject;
         repaint();
     }
@@ -206,9 +204,9 @@ public class SkyMapPanel extends JPanel {
 
             drawCustomConstellations(graphics2D, centreX, centreY, radius);
 
-            for (final Star star : filterVisible(stars)) {
+            for (final StarDisplayData star : filterVisible(stars)) {
                 final ScreenPosition position =
-                        project(star, centreX, centreY, radius);
+                        project(star.getAltitude(), star.getAzimuth(), centreX, centreY, radius);
                 drawObject(graphics2D, star, position);
             }
         }
@@ -230,16 +228,15 @@ public class SkyMapPanel extends JPanel {
         graphics2D.setColor(CONSTELLATION_LINE_COLOR);
         graphics2D.setStroke(CONSTELLATION_STROKE);
 
-        for (final CustomConstellation constellation : customConstellations) {
-            for (final ConstellationLine constellationLine : constellation.getLines()) {
-                final Star startStar = constellationLine.getStartStar();
-                final Star endStar = constellationLine.getEndStar();
-                // Avoid drawing a segment when either endpoint is below the horizon.
-                if (startStar.isAboveHorizon() && endStar.isAboveHorizon()) {
+        for (final ConstellationDisplayData constellation : customConstellations) {
+            for (final ConstellationDisplayData.Line line : constellation.getLines()) {
+                if (line.isStartAboveHorizon() && line.isEndAboveHorizon()) {
                     final ScreenPosition start =
-                            project(startStar, centreX, centreY, radius);
+                            project(line.getStartAltitude(), line.getStartAzimuth(),
+                                    centreX, centreY, radius);
                     final ScreenPosition end =
-                            project(endStar, centreX, centreY, radius);
+                            project(line.getEndAltitude(), line.getEndAzimuth(),
+                                    centreX, centreY, radius);
 
                     graphics2D.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
                 }
@@ -249,7 +246,7 @@ public class SkyMapPanel extends JPanel {
 
     private void drawObject(
             final Graphics2D graphics2D,
-            final Star star,
+            final StarDisplayData star,
             final ScreenPosition position) {
         final int size = objectSize(star);
 
@@ -260,7 +257,7 @@ public class SkyMapPanel extends JPanel {
                 size,
                 size);
 
-        if (star == selectedObject || constellationSelection.contains(star)) {
+        if (star.equals(selectedObject) || constellationSelection.contains(star)) {
             final int highlightSize = size + SELECTION_HIGHLIGHT_PADDING;
             graphics2D.setColor(SELECTION_COLOR);
             graphics2D.setStroke(SELECTION_STROKE);
@@ -272,17 +269,17 @@ public class SkyMapPanel extends JPanel {
         }
     }
 
-    private int objectSize(final Star star) {
-        final CelestialBodyType type = star.getType();
+    private int objectSize(final StarDisplayData star) {
+        final String type = star.getType();
         final int size;
 
-        if (type == CelestialBodyType.SUN) {
+        if ("SUN".equals(type)) {
             size = SUN_MARKER_SIZE;
         }
-        else if (type == CelestialBodyType.MOON) {
+        else if ("MOON".equals(type)) {
             size = MOON_MARKER_SIZE;
         }
-        else if (type == CelestialBodyType.PLANET) {
+        else if ("PLANET".equals(type)) {
             size = PLANET_MARKER_SIZE;
         }
         else if (Double.isFinite(star.getApparentMagnitude())) {
@@ -299,11 +296,10 @@ public class SkyMapPanel extends JPanel {
         return size;
     }
 
-    private Color objectColor(final Star star) {
-        final CelestialBodyType type = star.getType();
+    private Color objectColor(final StarDisplayData star) {
         final Color color;
 
-        if (type == CelestialBodyType.SUN) {
+        if ("SUN".equals(star.getType())) {
             color = SUN_COLOR;
         }
         else {
@@ -320,12 +316,12 @@ public class SkyMapPanel extends JPanel {
         final int centreY = adjustedCentreY();
         final double maximumDistanceSquared = CLICK_RADIUS * CLICK_RADIUS;
 
-        Star nearestObject = null;
+        StarDisplayData nearestObject = null;
         double nearestDistanceSquared = maximumDistanceSquared;
 
-        for (final Star star : filterVisible(stars)) {
+        for (final StarDisplayData star : filterVisible(stars)) {
             final ScreenPosition position =
-                    project(star, centreX, centreY, radius);
+                    project(star.getAltitude(), star.getAzimuth(), centreX, centreY, radius);
             final double differenceX = position.getX() - mouseX;
             final double differenceY = position.getY() - mouseY;
             final double distanceSquared =
@@ -437,9 +433,11 @@ public class SkyMapPanel extends JPanel {
     private static final double MIN_VISIBLE_ALTITUDE = 0.0;
 
     static ScreenPosition project(
-            final Star star, final int centerX, final int centerY, final int mapRadius) {
-        final double altitude = star.getAltitude();
-        final double azimuth = star.getAzimuth();
+            final double altitude,
+            final double azimuth,
+            final int centerX,
+            final int centerY,
+            final int mapRadius) {
         final double r = ((DEGREES_FROM_ZENITH_TO_HORIZON - altitude)
                 / DEGREES_FROM_ZENITH_TO_HORIZON) * mapRadius;
         final double theta = Math.toRadians(azimuth);
@@ -448,9 +446,9 @@ public class SkyMapPanel extends JPanel {
         return new ScreenPosition(screenX, screenY);
     }
 
-    private static List<Star> filterVisible(final List<Star> allStars) {
-        final List<Star> visible = new ArrayList<>();
-        for (final Star star : allStars) {
+    private static List<StarDisplayData> filterVisible(final List<StarDisplayData> allStars) {
+        final List<StarDisplayData> visible = new ArrayList<>();
+        for (final StarDisplayData star : allStars) {
             final double altitude = star.getAltitude();
             if (!Double.isNaN(altitude) && altitude >= MIN_VISIBLE_ALTITUDE) {
                 visible.add(star);
@@ -485,7 +483,7 @@ public class SkyMapPanel extends JPanel {
          *
          * @param star the clicked object, or null if the click did not land on a displayed object
          */
-        void objectSelected(Star star);
+        void objectSelected(StarDisplayData star);
     }
 
     /** Handles panning by drag, zooming by wheel, and click selection on the map. */

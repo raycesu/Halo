@@ -24,10 +24,22 @@ class LookupLocationPresenter {
 
 class LookupLocationViewModel {
   +String SUGGESTIONS_PROPERTY$
-  -List~ObserverLocation~ suggestions
-  +getSuggestions() List~ObserverLocation~
-  +setSuggestions(List~ObserverLocation~)
+  -List~LocationSuggestion~ suggestions
+  +getSuggestions() List~LocationSuggestion~
+  +setSuggestions(List~LocationSuggestion~)
   +addPropertyChangeListener(PropertyChangeListener)
+}
+
+class LocationSuggestion {
+  <<inner class>>
+  -String displayName
+  -double latitude
+  -double longitude
+  -String zoneId
+  +getDisplayName() String
+  +getLatitude() double
+  +getLongitude() double
+  +getZoneId() String
 }
 
 %% ---------- Use Case layer ----------
@@ -91,8 +103,9 @@ LookupLocationInteractor ..> LookupLocationOutputData : creates
 
 LookupLocationPresenter ..|> LookupLocationOutputBoundary
 LookupLocationPresenter --> LookupLocationViewModel
+LookupLocationPresenter ..> LocationSuggestion : creates
 
 CsvLocationDataAccessObject ..|> LocationDataAccessInterface
 
 LookupLocationOutputData o-- ObserverLocation
-LookupLocationViewModel o-- ObserverLocation
+LookupLocationViewModel *-- LocationSuggestion : nested
