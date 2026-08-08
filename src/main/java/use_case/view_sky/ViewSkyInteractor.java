@@ -4,13 +4,19 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
+import entity.Constellation;
+import entity.ConstellationLine;
 import entity.ObserverLocation;
 import entity.Star;
+import entity.StaticConstellationDefinition;
+import entity.StaticConstellationSegment;
 
 /**
  * Builds the sky as seen from one place at one moment.
@@ -25,19 +31,43 @@ import entity.Star;
 public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     private final StarCatalogDataAccessInterface starCatalogDataAccess;
+    private final StaticConstellationDataAccessInterface staticConstellationDataAccess;
     private final CelestialBodyDataAccessInterface celestialBodyDataAccess;
     private final HorizontalCoordinateCalculator coordinateCalculator;
     private final ViewSkyOutputBoundary outputBoundary;
 
     public ViewSkyInteractor(
             final StarCatalogDataAccessInterface starCatalogDataAccess,
+            final StaticConstellationDataAccessInterface staticConstellationDataAccess,
             final CelestialBodyDataAccessInterface celestialBodyDataAccess,
             final HorizontalCoordinateCalculator coordinateCalculator,
             final ViewSkyOutputBoundary outputBoundary) {
         this.starCatalogDataAccess = starCatalogDataAccess;
+        this.staticConstellationDataAccess = staticConstellationDataAccess;
         this.celestialBodyDataAccess = celestialBodyDataAccess;
         this.coordinateCalculator = coordinateCalculator;
         this.outputBoundary = outputBoundary;
+    }
+
+    /**
+     * Compatibility constructor for callers that do not provide built-in constellations.
+     *
+     * @param starCatalogDataAccess fixed-star catalogue gateway
+     * @param celestialBodyDataAccess moving-body gateway
+     * @param coordinateCalculator horizontal-coordinate calculator
+     * @param outputBoundary output presenter
+     */
+    public ViewSkyInteractor(
+            final StarCatalogDataAccessInterface starCatalogDataAccess,
+            final CelestialBodyDataAccessInterface celestialBodyDataAccess,
+            final HorizontalCoordinateCalculator coordinateCalculator,
+            final ViewSkyOutputBoundary outputBoundary) {
+        this(
+                starCatalogDataAccess,
+                List::of,
+                celestialBodyDataAccess,
+                coordinateCalculator,
+                outputBoundary);
     }
 
     @Override
@@ -83,11 +113,14 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
         final Instant instant = observationTime.toInstant();
 
-        final List<Star> observed = new ArrayList<>(
-                positionCatalogueStars(
-                        starCatalogDataAccess.findAll(),
-                        location,
-                        observationTime));
+        final List<Star> positionedCatalogueStars = positionCatalogueStars(
+                starCatalogDataAccess.findAll(),
+                location,
+                observationTime);
+        final List<Constellation> staticConstellations = resolveStaticConstellations(
+                staticConstellationDataAccess.findAll(),
+                positionedCatalogueStars);
+        final List<Star> observed = new ArrayList<>(positionedCatalogueStars);
 
         // Losing the ephemeris costs the moving bodies, not the whole map.
         String warningMessage = "";
@@ -106,7 +139,8 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
                 observationTime.toLocalDate().toString(),
                 observationTime.toLocalTime().toString(),
                 location,
-                stars);
+                stars,
+                staticConstellations);
 
         outputBoundary.prepareSuccessView(outputData);
 
@@ -141,6 +175,29 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
                 observationTime);
 
         return positioned;
+    }
+
+    private List<Constellation> resolveStaticConstellations(
+            final List<StaticConstellationDefinition> definitions,
+            final List<Star> positionedStars) {
+        final Map<String, Star> starsByCatalogueId = new HashMap<>();
+        for (final Star star : positionedStars) {
+            starsByCatalogueId.put(star.getCatalogueId(), star);
+        }
+
+        final List<Constellation> constellations = new ArrayList<>(definitions.size());
+        for (final StaticConstellationDefinition definition : definitions) {
+            final List<ConstellationLine> lines = new ArrayList<>();
+            for (final StaticConstellationSegment segment : definition.getSegments()) {
+                final Star start = starsByCatalogueId.get(segment.getStartCatalogueId());
+                final Star end = starsByCatalogueId.get(segment.getEndCatalogueId());
+                if (start != null && end != null) {
+                    lines.add(new ConstellationLine(start, end));
+                }
+            }
+            constellations.add(new Constellation(definition.getName(), lines));
+        }
+        return List.copyOf(constellations);
     }
 
     /**

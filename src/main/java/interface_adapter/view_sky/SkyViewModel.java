@@ -4,6 +4,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 
+import interface_adapter.custom_constellation.ConstellationDisplayData;
+
 public class SkyViewModel {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -15,6 +17,7 @@ public class SkyViewModel {
     private double longitude = Double.NaN;
     private String zoneId = "";
 
+    private List<ConstellationDisplayData> staticConstellations = List.of();
     private List<StarDisplayData> stars = List.of();
     private StarDisplayData selectedObject;
     private String selectedObjectName = "";
@@ -115,6 +118,23 @@ public class SkyViewModel {
 
     public List<StarDisplayData> getStars() {
         return stars;
+    }
+
+    public List<ConstellationDisplayData> getStaticConstellations() {
+        return staticConstellations;
+    }
+
+    /**
+     * Replaces the built-in constellation snapshot and notifies listeners.
+     *
+     * @param staticConstellations the built-in constellations for this observation
+     */
+    public void setStaticConstellations(
+            final List<ConstellationDisplayData> staticConstellations) {
+        final List<ConstellationDisplayData> oldConstellations = this.staticConstellations;
+        this.staticConstellations = List.copyOf(staticConstellations);
+        support.firePropertyChange(
+                "staticConstellations", oldConstellations, this.staticConstellations);
     }
 
     /**
