@@ -42,15 +42,15 @@ class ConstellationInputDataTest {
     private Star createStar(
             final String id,
             final String name) {
-        return new Star(
-                id,
-                name,
-                0.0,
-                0.0,
-                1.0,
-                "",
-                "",
-                ""
-        );
+        return new Star.Builder()
+                .catalogueId("Sirius")
+                .displayName("Sirius")
+                .rightAscension(6.7525)
+                .declination(-16.7161)
+                .apparentMagnitude(-1.46)
+                .constellationRegion("CMA")
+                .spectralType("A1V")
+                .description("Brightest star")
+                .build();
     }
 }
