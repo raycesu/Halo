@@ -6,27 +6,36 @@ import javax.swing.JFrame;
 
 import entity.ObserverLocation;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.custom_constellation.ConstellationViewModel;
+import interface_adapter.lookup_location.LookupLocationViewModel;
+import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
+import interface_adapter.view_sky.ObservationSetupViewModel;
+import interface_adapter.view_sky.SkyViewModel;
 import use_case.lookup_location.LocationDataAccessInterface;
 import view.ViewManager;
 
 /**
  * Composition root: builds every concrete implementation and wires them into a runnable app.
  *
- * <p>The actual construction work is delegated to a handful of focused builder classes
- * ({@link DataAccessBundle}, {@link ViewModelBundle}, {@link UseCaseBuilder},
- * {@link ViewFactory}) so that no single class has to directly depend on every concrete DAO,
- * interactor, presenter, controller, and view in the app. This class remains the single place
- * {@link Main} calls, and the only place that assembles the final object graph.
+ * <p>Construction is split into focused builder steps ({@link DataAccessBundle},
+ * {@link UseCaseBuilder}, {@link ViewFactory}) so that no single class directly depends on
+ * every concrete DAO, interactor, presenter, controller, and view.
  */
 public class HaloAppBuilder {
 
     private static final String INITIAL_VIEW = ViewManagerModel.OBSERVATION_SETUP_VIEW;
-
-    /** The place the app opens on, so the first request works before the user picks anything. */
     private static final String DEFAULT_LOCATION = "Toronto";
-
     private static final int INITIAL_FRAME_WIDTH = 900;
     private static final int INITIAL_FRAME_HEIGHT = 600;
+
+    private final ViewManagerModel viewManagerModel = new ViewManagerModel();
+    private final ObservationSetupViewModel observationSetupViewModel = new ObservationSetupViewModel();
+    private final SkyViewModel skyViewModel = new SkyViewModel();
+    private final CheckConditionsViewModel checkConditionsViewModel = new CheckConditionsViewModel();
+    private final RankForecastDaysViewModel rankForecastDaysViewModel = new RankForecastDaysViewModel();
+    private final ConstellationViewModel constellationViewModel = new ConstellationViewModel();
+    private final LookupLocationViewModel lookupLocationViewModel = new LookupLocationViewModel();
 
     /**
      * Builds the fully wired application window.
@@ -45,13 +54,6 @@ public class HaloAppBuilder {
         return frame;
     }
 
-    /**
-     * Looks up the place the app opens on, or null if the dataset does not contain it, in which
-     * case the user simply picks one before the first request.
-     *
-     * @param locationDataAccess the location catalogue to search
-     * @return the default observer location, or null if it is not in the catalogue
-     */
     private ObserverLocation resolveDefaultLocation(
             final LocationDataAccessInterface locationDataAccess) {
         final List<ObserverLocation> matches = locationDataAccess.findByName(DEFAULT_LOCATION, 1);
@@ -68,14 +70,23 @@ public class HaloAppBuilder {
 
     ViewManager buildViewManager() {
         final DataAccessBundle dataAccess = new DataAccessBundle();
-        final ViewModelBundle viewModels = new ViewModelBundle();
-        viewModels.getObservationSetupViewModel().setSelectedLocation(
+        observationSetupViewModel.setSelectedLocation(
                 resolveDefaultLocation(dataAccess.getLocationDataAccess()));
 
-        final ControllerBundle controllers = UseCaseBuilder.build(dataAccess, viewModels);
-        final ViewManager viewManager = ViewFactory.build(viewModels, controllers);
+        final UseCaseBuilder useCases = new UseCaseBuilder(
+                dataAccess,
+                skyViewModel, observationSetupViewModel,
+                checkConditionsViewModel, rankForecastDaysViewModel,
+                constellationViewModel, lookupLocationViewModel);
 
-        viewModels.getViewManagerModel().setActiveView(INITIAL_VIEW);
+        final ViewManager viewManager = ViewFactory.build(
+                viewManagerModel,
+                observationSetupViewModel, skyViewModel,
+                checkConditionsViewModel, rankForecastDaysViewModel,
+                constellationViewModel, lookupLocationViewModel,
+                useCases);
+
+        viewManagerModel.setActiveView(INITIAL_VIEW);
         return viewManager;
     }
 }

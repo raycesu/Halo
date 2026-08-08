@@ -7,8 +7,12 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.swing.JDialog;
@@ -41,9 +45,9 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     private final ViewManagerModel viewManagerModel;
     private final SkyMapPanel skyMapPanel = new SkyMapPanel();
     private final SkyLeftPanel leftPanel = new SkyLeftPanel();
-    private final SkyRightSidebar rightSidebar = new SkyRightSidebar();
+    private final SkyRightPanel rightSidebar = new SkyRightPanel();
     private final ForecastRankingDialogController forecastRankingDialogController =
-            new ForecastRankingDialogController(this, SkyRightSidebar.BACKGROUND);
+            new ForecastRankingDialogController(this, SkyRightPanel.BACKGROUND);
     private final List<LocalDate> selectedForecastDates = defaultForecastDates();
     private final List<Star> constellationSelection = new ArrayList<>();
     private ConstellationController constellationController;
@@ -172,7 +176,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         else {
             viewModel.setSelectedObject(selectedObject);
             viewModel.setSelectedObjectDetails(
-                    StarDetailsFormatter.formatObjectDetails(selectedObject));
+                    formatObjectDetails(selectedObject));
             if (selectedObject != null) {
                 viewModel.setErrorMessage("");
             }
@@ -315,7 +319,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
                     "Set an observation location before checking conditions.");
         }
         else {
-            final var observationDateTime = ObservationTimeParser.parse(
+            final var observationDateTime = parseObservationTime(
                     viewModel.getDisplayedDate(), viewModel.getDisplayedTime());
             if (observationDateTime == null) {
                 checkConditionsViewModel.setErrorMessage(
@@ -368,6 +372,18 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
             window.setSize(width, height);
             window.setLocationRelativeTo(null);
         }
+    }
+
+    private static LocalDateTime parseObservationTime(
+            final String dateText, final String timeText) {
+        LocalDateTime result = null;
+        try {
+            result = LocalDateTime.of(LocalDate.parse(dateText), LocalTime.parse(timeText));
+        }
+        catch (DateTimeParseException exception) {
+            // result stays null; the caller reports this as an invalid date/time.
+        }
+        return result;
     }
 
     /**
@@ -424,6 +440,79 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         else {
             leftPanel.getConstellationStatusLabel().setForeground(CONSTELLATION_SUCCESS_COLOR);
             leftPanel.getConstellationStatusLabel().setText(constellationViewModel.getSuccessMessage());
+        }
+    }
+
+    private static final String DEGREES_FORMAT = "%.2f°";
+
+    private static String formatObjectDetails(final Star object) {
+        if (object == null) {
+            return "";
+        }
+
+        final StringBuilder details = new StringBuilder();
+        appendIdentityFields(details, object);
+        appendCoordinateFields(details, object);
+        appendDescription(details, object);
+
+        if (details.length() == 0) {
+            details.append("Details unavailable");
+        }
+        return details.toString();
+    }
+
+    private static void appendIdentityFields(final StringBuilder details, final Star object) {
+        if (object.getType() != null) {
+            final String typeName = object.getType().name().toLowerCase(Locale.US);
+            appendDetail(details, "Type",
+                    Character.toUpperCase(typeName.charAt(0)) + typeName.substring(1));
+        }
+        appendDetail(details, "Catalogue ID", object.getCatalogueId());
+        if (Double.isFinite(object.getApparentMagnitude())) {
+            appendDetail(details, "Magnitude",
+                    String.format(Locale.US, "%.2f", object.getApparentMagnitude()));
+        }
+        appendDetail(details, "Constellation", object.getConstellationRegion());
+        appendDetail(details, "Spectral type", object.getSpectralType());
+    }
+
+    private static void appendCoordinateFields(final StringBuilder details, final Star object) {
+        if (Double.isFinite(object.getRightAscension())) {
+            appendDetail(details, "Right ascension",
+                    String.format(Locale.US, "%.4f hours", object.getRightAscension()));
+        }
+        if (Double.isFinite(object.getDeclination())) {
+            appendDetail(details, "Declination",
+                    String.format(Locale.US, DEGREES_FORMAT, object.getDeclination()));
+        }
+        if (Double.isFinite(object.getAltitude())) {
+            appendDetail(details, "Altitude",
+                    String.format(Locale.US, DEGREES_FORMAT, object.getAltitude()));
+        }
+        if (Double.isFinite(object.getAzimuth())) {
+            appendDetail(details, "Azimuth",
+                    String.format(Locale.US, DEGREES_FORMAT, object.getAzimuth()));
+        }
+    }
+
+    private static void appendDescription(final StringBuilder details, final Star object) {
+        if (object.getDescription() != null && !object.getDescription().isBlank()) {
+            if (details.length() > 0) {
+                details.append("\n\n");
+            }
+            details.append("Description:\n").append(object.getDescription());
+        }
+    }
+
+    private static void appendDetail(
+            final StringBuilder details,
+            final String label,
+            final String value) {
+        if (value != null && !value.isBlank()) {
+            if (details.length() > 0) {
+                details.append('\n');
+            }
+            details.append(label).append(": ").append(value);
         }
     }
 
