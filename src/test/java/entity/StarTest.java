@@ -11,7 +11,7 @@ class StarTest {
     private static final double DELTA = 1e-9;
 
     @Test
-    void defaultConstructorExposesCatalogueFields() {
+    void builderExposesCatalogueFields() {
         final Star star = createStar();
 
         assertEquals("Sirius", star.getCatalogueId());
@@ -35,18 +35,18 @@ class StarTest {
     }
 
     @Test
-    void fullConstructorAcceptsAnotherCelestialBodyType() {
-        final Star planet = new Star(
-                "mars",
-                "Mars",
-                1.0,
-                2.0,
-                -2.0,
-                "PSC",
-                "",
-                "The planet Mars",
-                CelestialBodyType.PLANET
-        );
+    void builderAcceptsAnotherCelestialBodyType() {
+        final Star planet = new Star.Builder()
+                .catalogueId("mars")
+                .displayName("Mars")
+                .rightAscension(1.0)
+                .declination(2.0)
+                .apparentMagnitude(-2.0)
+                .constellationRegion("PSC")
+                .spectralType("")
+                .description("The planet Mars")
+                .type(CelestialBodyType.PLANET)
+                .build();
 
         assertEquals(CelestialBodyType.PLANET, planet.getType());
     }
@@ -137,17 +137,17 @@ class StarTest {
 
     @Test
     void copyPreservesCatalogueDataButNotObservedPosition() {
-        final Star original = new Star(
-                "mars",
-                "Mars",
-                1.25,
-                -5.5,
-                -2.0,
-                "PSC",
-                "",
-                "The planet Mars",
-                CelestialBodyType.PLANET
-        );
+        final Star original = new Star.Builder()
+                .catalogueId("mars")
+                .displayName("Mars")
+                .rightAscension(1.25)
+                .declination(-5.5)
+                .apparentMagnitude(-2.0)
+                .constellationRegion("PSC")
+                .spectralType("")
+                .description("The planet Mars")
+                .type(CelestialBodyType.PLANET)
+                .build();
         original.updateHorizontalPosition(30.0, 120.0);
         final Star copy = original.copyForObservation();
         assertNotSame(original, copy);
@@ -187,16 +187,16 @@ class StarTest {
     }
 
     private Star createStar() {
-        return new Star(
-                "Sirius",
-                "Sirius",
-                6.7525,
-                -16.7161,
-                -1.46,
-                "CMA",
-                "A1V",
-                "Brightest star"
-        );
+        return new Star.Builder()
+                .catalogueId("Sirius")
+                .displayName("Sirius")
+                .rightAscension(6.7525)
+                .declination(-16.7161)
+                .apparentMagnitude(-1.46)
+                .constellationRegion("CMA")
+                .spectralType("A1V")
+                .description("Brightest star")
+                .build();
     }
 
     private void assertInvalidAltitude(final double altitude) {

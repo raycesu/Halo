@@ -30,15 +30,15 @@ class CustomConstellationTest {
     }
 
     private Star createStar(final String id) {
-        return new Star(
-                id,
-                id,
-                1.0,
-                2.0,
-                3.0,
-                "ORI",
-                "A",
-                "Test star"
-        );
+        return new Star.Builder()
+                .catalogueId(id)
+                .displayName(id)
+                .rightAscension(1.0)
+                .declination(2.0)
+                .apparentMagnitude(3.0)
+                .constellationRegion("ORI")
+                .spectralType("A")
+                .description("Test star")
+                .build();
     }
 }
