@@ -1,13 +1,17 @@
 package interface_adapter.view_sky;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 import entity.Constellation;
 import entity.ConstellationLine;
+import entity.CustomConstellation;
+import entity.ObserverLocation;
 import entity.Star;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
 import interface_adapter.custom_constellation.ConstellationDisplayData;
+import interface_adapter.custom_constellation.ConstellationViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel.RankedDayDisplayItem;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +30,7 @@ class ViewSkyPresenterTest {
     private ObservationSetupViewModel setupViewModel;
     private CheckConditionsViewModel checkConditionsViewModel;
     private RankForecastDaysViewModel rankForecastDaysViewModel;
+    private ConstellationViewModel constellationViewModel;
     private ViewSkyPresenter presenter;
 
     @BeforeEach
@@ -34,8 +39,13 @@ class ViewSkyPresenterTest {
         setupViewModel = new ObservationSetupViewModel();
         checkConditionsViewModel = new CheckConditionsViewModel();
         rankForecastDaysViewModel = new RankForecastDaysViewModel();
+        constellationViewModel = new ConstellationViewModel();
         presenter = new ViewSkyPresenter(
-                skyViewModel, setupViewModel, checkConditionsViewModel, rankForecastDaysViewModel);
+                skyViewModel,
+                setupViewModel,
+                checkConditionsViewModel,
+                rankForecastDaysViewModel,
+                constellationViewModel);
     }
 
     @Test
@@ -151,6 +161,43 @@ class ViewSkyPresenterTest {
         assertThrows(
                 UnsupportedOperationException.class,
                 () -> skyViewModel.getStaticConstellations().clear());
+    }
+
+    @Test
+    void refreshesCustomConstellationWithCurrentStarPositions() {
+        final Star first = testStar();
+        first.updateHorizontalPosition(45.0, 100.0);
+        final Star second = new Star.Builder()
+                .catalogueId("HR 2")
+                .displayName("Second")
+                .build();
+        second.updateHorizontalPosition(55.0, 200.0);
+        final CustomConstellation customConstellation = new CustomConstellation(
+                "My stars",
+                "#55D187",
+                List.of(new ConstellationLine(first, second)));
+
+        presenter.prepareSuccessView(new ViewSkyOutputData(
+                "Toronto",
+                "2026-07-25",
+                "18:20",
+                new ObserverLocation(
+                        "Toronto",
+                        43.6532,
+                        -79.3832,
+                        ZoneId.of("America/Toronto")),
+                List.of(first, second),
+                List.of(),
+                List.of(customConstellation)));
+
+        final ConstellationDisplayData displayed =
+                constellationViewModel.getConstellations().get(0);
+        assertEquals("My stars", displayed.getName());
+        assertEquals("#55D187", displayed.getColorHex());
+        assertEquals(45.0, displayed.getLines().get(0).getStartAltitude(), 1e-9);
+        assertEquals(100.0, displayed.getLines().get(0).getStartAzimuth(), 1e-9);
+        assertEquals(55.0, displayed.getLines().get(0).getEndAltitude(), 1e-9);
+        assertEquals(200.0, displayed.getLines().get(0).getEndAzimuth(), 1e-9);
     }
 
     private Star testStar() {

@@ -3,6 +3,7 @@ package use_case.view_sky;
 import java.util.List;
 
 import entity.Constellation;
+import entity.CustomConstellation;
 import entity.ObserverLocation;
 import entity.Star;
 
@@ -16,6 +17,7 @@ public class ViewSkyOutputData {
     private final ObserverLocation observerLocation;
     private final List<Star> stars;
     private final List<Constellation> staticConstellations;
+    private final List<CustomConstellation> customConstellations;
 
     public ViewSkyOutputData(
             final String location,
@@ -51,6 +53,7 @@ public class ViewSkyOutputData {
         this.observerLocation = null;
         this.stars = List.copyOf(stars);
         this.staticConstellations = List.copyOf(staticConstellations);
+        this.customConstellations = List.of();
     }
 
     /**
@@ -70,7 +73,7 @@ public class ViewSkyOutputData {
             final String time,
             final ObserverLocation observerLocation,
             final List<Star> stars) {
-        this(location, date, time, observerLocation, stars, List.of());
+        this(location, date, time, observerLocation, stars, List.of(), List.of());
     }
 
     public ViewSkyOutputData(
@@ -80,6 +83,17 @@ public class ViewSkyOutputData {
             final ObserverLocation observerLocation,
             final List<Star> stars,
             final List<Constellation> staticConstellations) {
+        this(location, date, time, observerLocation, stars, staticConstellations, List.of());
+    }
+
+    public ViewSkyOutputData(
+            final String location,
+            final String date,
+            final String time,
+            final ObserverLocation observerLocation,
+            final List<Star> stars,
+            final List<Constellation> staticConstellations,
+            final List<CustomConstellation> customConstellations) {
         this.location = location;
         this.date = date;
         this.time = time;
@@ -88,6 +102,7 @@ public class ViewSkyOutputData {
         this.observerLocation = observerLocation;
         this.stars = List.copyOf(stars);
         this.staticConstellations = List.copyOf(staticConstellations);
+        this.customConstellations = List.copyOf(customConstellations);
     }
 
     public String getLocation() {
@@ -125,5 +140,9 @@ public class ViewSkyOutputData {
 
     public List<Constellation> getStaticConstellations() {
         return staticConstellations;
+    }
+
+    public List<CustomConstellation> getCustomConstellations() {
+        return customConstellations;
     }
 }
