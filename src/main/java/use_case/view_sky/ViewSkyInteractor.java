@@ -13,6 +13,7 @@ import java.util.Set;
 
 import entity.Constellation;
 import entity.ConstellationLine;
+import entity.CustomConstellation;
 import entity.ObserverLocation;
 import entity.Star;
 import entity.StaticConstellationDefinition;
@@ -32,6 +33,7 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
 
     private final StarCatalogDataAccessInterface starCatalogDataAccess;
     private final StaticConstellationDataAccessInterface staticConstellationDataAccess;
+    private final CustomConstellationDataAccessInterface customConstellationDataAccess;
     private final CelestialBodyDataAccessInterface celestialBodyDataAccess;
     private final HorizontalCoordinateCalculator coordinateCalculator;
     private final ViewSkyOutputBoundary outputBoundary;
@@ -39,14 +41,31 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
     public ViewSkyInteractor(
             final StarCatalogDataAccessInterface starCatalogDataAccess,
             final StaticConstellationDataAccessInterface staticConstellationDataAccess,
+            final CustomConstellationDataAccessInterface customConstellationDataAccess,
             final CelestialBodyDataAccessInterface celestialBodyDataAccess,
             final HorizontalCoordinateCalculator coordinateCalculator,
             final ViewSkyOutputBoundary outputBoundary) {
         this.starCatalogDataAccess = starCatalogDataAccess;
         this.staticConstellationDataAccess = staticConstellationDataAccess;
+        this.customConstellationDataAccess = customConstellationDataAccess;
         this.celestialBodyDataAccess = celestialBodyDataAccess;
         this.coordinateCalculator = coordinateCalculator;
         this.outputBoundary = outputBoundary;
+    }
+
+    public ViewSkyInteractor(
+            final StarCatalogDataAccessInterface starCatalogDataAccess,
+            final StaticConstellationDataAccessInterface staticConstellationDataAccess,
+            final CelestialBodyDataAccessInterface celestialBodyDataAccess,
+            final HorizontalCoordinateCalculator coordinateCalculator,
+            final ViewSkyOutputBoundary outputBoundary) {
+        this(
+                starCatalogDataAccess,
+                staticConstellationDataAccess,
+                List::of,
+                celestialBodyDataAccess,
+                coordinateCalculator,
+                outputBoundary);
     }
 
     /**
@@ -133,6 +152,8 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
         }
 
         final List<Star> stars = visibleBrightestFirst(observed);
+        final List<CustomConstellation> customConstellations = resolveCustomConstellations(
+                customConstellationDataAccess.findAll(), observed);
 
         final ViewSkyOutputData outputData = new ViewSkyOutputData(
                 location.getDisplayName(),
@@ -140,7 +161,8 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
                 observationTime.toLocalTime().toString(),
                 location,
                 stars,
-                staticConstellations);
+                staticConstellations,
+                customConstellations);
 
         outputBoundary.prepareSuccessView(outputData);
 
@@ -198,6 +220,49 @@ public class ViewSkyInteractor implements ViewSkyInputBoundary {
             constellations.add(new Constellation(definition.getName(), lines));
         }
         return List.copyOf(constellations);
+    }
+
+    /**
+     * Reconnects saved custom lines to the same objects in the newly positioned sky.
+     * Catalogue IDs identify fixed stars; moving bodies use their name and type.
+     *
+     * @param savedConstellations constellations saved from earlier observations
+     * @param positionedStars all objects positioned for the current observation
+     * @return custom constellations using current altitude and azimuth values
+     */
+    private List<CustomConstellation> resolveCustomConstellations(
+            final List<CustomConstellation> savedConstellations,
+            final List<Star> positionedStars) {
+        final Map<String, Star> starsByIdentity = new HashMap<>();
+        for (final Star star : positionedStars) {
+            starsByIdentity.putIfAbsent(stableIdentity(star), star);
+        }
+
+        final List<CustomConstellation> resolved = new ArrayList<>(savedConstellations.size());
+        for (final CustomConstellation saved : savedConstellations) {
+            final List<ConstellationLine> lines = new ArrayList<>();
+            for (final ConstellationLine savedLine : saved.getLines()) {
+                final Star start = starsByIdentity.get(stableIdentity(savedLine.getStartStar()));
+                final Star end = starsByIdentity.get(stableIdentity(savedLine.getEndStar()));
+                if (start != null && end != null) {
+                    lines.add(new ConstellationLine(start, end));
+                }
+            }
+            resolved.add(new CustomConstellation(saved.getName(), saved.getColorHex(), lines));
+        }
+        return List.copyOf(resolved);
+    }
+
+    private String stableIdentity(final Star star) {
+        final String catalogueId = star.getCatalogueId();
+        final String identity;
+        if (catalogueId != null && !catalogueId.isBlank()) {
+            identity = "CATALOGUE:" + catalogueId.trim().toUpperCase(Locale.US);
+        }
+        else {
+            identity = "BODY:" + normaliseName(star.getDisplayName()) + ":" + star.getType().name();
+        }
+        return identity;
     }
 
     /**

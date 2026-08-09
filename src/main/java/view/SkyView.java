@@ -218,6 +218,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         forecastRankingDialogController.getSelectDatesButton().addActionListener(this);
         forecastRankingDialogController.getRankForecastButton().addActionListener(this);
         leftPanel.getConstellationButton().addActionListener(this);
+        leftPanel.getExitConstellationButton().addActionListener(this);
     }
 
     @Override
@@ -245,6 +246,9 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         else if (source == leftPanel.getConstellationButton()) {
             handleConstellationAction();
         }
+        else if (source == leftPanel.getExitConstellationButton()) {
+            cancelConstellationCreation();
+        }
     }
 
     private void handleConstellationAction() {
@@ -261,8 +265,11 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         constellationSelection.clear();
         skyMapPanel.setConstellationSelection(constellationSelection);
         leftPanel.getConstellationButton().setText("Save Constellation");
+        leftPanel.getExitConstellationButton().setVisible(true);
         leftPanel.getConstellationStatusLabel().setForeground(Color.BLACK);
         leftPanel.getConstellationStatusLabel().setText("Select stars in order");
+        leftPanel.revalidate();
+        leftPanel.repaint();
     }
 
     private void saveConstellation() {
@@ -270,7 +277,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
 
         // Press Cancel ends creation without saving
         if (name == null) {
-            finishConstellationCreation();
+            cancelConstellationCreation();
         }
         else {
             constellationController.createConstellation(
@@ -289,6 +296,15 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         constellationSelection.clear();
         skyMapPanel.setConstellationSelection(List.of());
         leftPanel.getConstellationButton().setText("Custom Constellation");
+        leftPanel.getExitConstellationButton().setVisible(false);
+        leftPanel.revalidate();
+        leftPanel.repaint();
+    }
+
+    private void cancelConstellationCreation() {
+        finishConstellationCreation();
+        leftPanel.getConstellationStatusLabel().setForeground(Color.BLACK);
+        leftPanel.getConstellationStatusLabel().setText("Constellation creation cancelled");
     }
 
     private void handleSearch() {

@@ -62,6 +62,7 @@ class SkyLeftPanel extends JPanel {
     private final JButton changeObservationButton = new JButton("Change Observation");
     private final JLabel errorLabel = new JLabel();
     private final JButton constellationButton = new JButton("Custom Constellation");
+    private final JButton exitConstellationButton = new JButton("Exit");
     private final JLabel constellationStatusLabel = new JLabel();
     private String selectedConstellationColorHex = CONSTELLATION_COLOR_HEX_VALUES[0];
 
@@ -117,6 +118,7 @@ class SkyLeftPanel extends JPanel {
         errorLabel.setForeground(SwingStyle.rgb(ERROR_RED, ERROR_GREEN, ERROR_BLUE));
         errorLabel.setAlignmentX(LEFT_ALIGNMENT);
         constellationButton.setEnabled(false);
+        exitConstellationButton.setVisible(false);
         constellationStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
     }
 
@@ -128,6 +130,16 @@ class SkyLeftPanel extends JPanel {
                 Integer.MAX_VALUE, constellationButton.getPreferredSize().height));
         constellationPanel.add(constellationButton);
         return constellationPanel;
+    }
+
+    private JPanel createExitConstellationPanel() {
+        final JPanel exitPanel = new JPanel(SwingStyle.flow(FlowLayout.CENTER, 0, 0));
+        exitPanel.setOpaque(false);
+        exitPanel.setAlignmentX(LEFT_ALIGNMENT);
+        exitPanel.setMaximumSize(SwingStyle.size(
+                Integer.MAX_VALUE, exitConstellationButton.getPreferredSize().height));
+        exitPanel.add(exitConstellationButton);
+        return exitPanel;
     }
 
     private JLabel createSearchHeading() {
@@ -160,6 +172,7 @@ class SkyLeftPanel extends JPanel {
         add(errorLabel);
         add(Box.createVerticalGlue());
         add(createConstellationPanel());
+        add(createExitConstellationPanel());
         add(Box.createRigidArea(SwingStyle.size(0, GAP_BEFORE_CONSTELLATION_STATUS)));
         add(constellationStatusLabel);
     }
@@ -201,6 +214,10 @@ class SkyLeftPanel extends JPanel {
 
     JButton getConstellationButton() {
         return constellationButton;
+    }
+
+    JButton getExitConstellationButton() {
+        return exitConstellationButton;
     }
 
     JLabel getConstellationStatusLabel() {

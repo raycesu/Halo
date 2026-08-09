@@ -33,10 +33,7 @@ import use_case.lookup_location.LookupLocationOutputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInputBoundary;
 import use_case.rank_forecast_days.RankForecastDaysInteractor;
 import use_case.rank_forecast_days.RankForecastDaysOutputBoundary;
-import use_case.view_sky.CelestialBodyDataAccessInterface;
 import use_case.view_sky.HorizontalCoordinateCalculator;
-import use_case.view_sky.StarCatalogDataAccessInterface;
-import use_case.view_sky.StaticConstellationDataAccessInterface;
 import use_case.view_sky.ViewSkyInputBoundary;
 import use_case.view_sky.ViewSkyInteractor;
 import use_case.view_sky.ViewSkyOutputBoundary;
@@ -64,11 +61,10 @@ final class UseCaseBuilder {
             final LookupLocationViewModel lookupLocationViewModel) {
 
         viewSkyController = buildViewSky(
-                dataAccess.getStarCatalogDataAccess(),
-                dataAccess.getStaticConstellationDataAccess(),
-                dataAccess.getCelestialBodyDataAccess(),
+                dataAccess,
                 skyViewModel, observationSetupViewModel,
-                checkConditionsViewModel, rankForecastDaysViewModel);
+                checkConditionsViewModel, rankForecastDaysViewModel,
+                constellationViewModel);
         checkConditionsController = buildCheckConditions(
                 dataAccess.getWeatherDataAccess(), checkConditionsViewModel);
         rankForecastDaysController = buildRankForecastDays(
@@ -100,22 +96,23 @@ final class UseCaseBuilder {
     }
 
     private static ViewSkyController buildViewSky(
-            final StarCatalogDataAccessInterface starCatalogDataAccess,
-            final StaticConstellationDataAccessInterface staticConstellationDataAccess,
-            final CelestialBodyDataAccessInterface celestialBodyDataAccess,
+            final DataAccessBundle dataAccess,
             final SkyViewModel skyViewModel,
             final ObservationSetupViewModel observationSetupViewModel,
             final CheckConditionsViewModel checkConditionsViewModel,
-            final RankForecastDaysViewModel rankForecastDaysViewModel) {
+            final RankForecastDaysViewModel rankForecastDaysViewModel,
+            final ConstellationViewModel constellationViewModel) {
         final HorizontalCoordinateCalculator coordinateCalculator =
                 new AltAzCalculator(new JulianDateCalculator(), new SiderealTimeCalculator());
         final ViewSkyOutputBoundary presenter = new ViewSkyPresenter(
                 skyViewModel, observationSetupViewModel,
-                checkConditionsViewModel, rankForecastDaysViewModel);
+                checkConditionsViewModel, rankForecastDaysViewModel,
+                constellationViewModel);
         final ViewSkyInputBoundary interactor = new ViewSkyInteractor(
-                starCatalogDataAccess,
-                staticConstellationDataAccess,
-                celestialBodyDataAccess,
+                dataAccess.getStarCatalogDataAccess(),
+                dataAccess.getStaticConstellationDataAccess(),
+                dataAccess.getConstellationDataAccess(),
+                dataAccess.getCelestialBodyDataAccess(),
                 coordinateCalculator,
                 presenter);
         return new ViewSkyController(interactor, presenter);

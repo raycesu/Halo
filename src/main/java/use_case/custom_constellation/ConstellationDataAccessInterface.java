@@ -1,10 +1,9 @@
 package use_case.custom_constellation;
 
-import java.util.List;
-
 import entity.CustomConstellation;
+import use_case.view_sky.CustomConstellationDataAccessInterface;
 
-public interface ConstellationDataAccessInterface {
+public interface ConstellationDataAccessInterface extends CustomConstellationDataAccessInterface {
 
     /**
      * Checks whether a constellation with the given name already exists.
@@ -21,10 +20,4 @@ public interface ConstellationDataAccessInterface {
      */
     void save(CustomConstellation constellation);
 
-    /**
-     * Returns every saved custom constellation.
-     *
-     * @return all saved custom constellations
-     */
-    List<CustomConstellation> findAll();
 }
