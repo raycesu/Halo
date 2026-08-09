@@ -2,9 +2,12 @@ package interface_adapter.view_sky;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ObservationSetupViewModel {
+
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -13,10 +16,15 @@ public class ObservationSetupViewModel {
     private double selectedLongitude = Double.NaN;
     private String selectedZoneId = "";
 
-    // Today in the machine's own zone, so the app opens on a date the forecast actually covers.
-    private String date = LocalDate.now().toString();
-    private String time = "18:20";
+    private String date;
+    private String time;
     private String errorMessage = "";
+
+    public ObservationSetupViewModel() {
+        final LocalDateTime now = LocalDateTime.now();
+        date = now.toLocalDate().toString();
+        time = now.format(TIME_FORMAT);
+    }
 
     public String getSelectedLocationName() {
         return selectedLocationName;

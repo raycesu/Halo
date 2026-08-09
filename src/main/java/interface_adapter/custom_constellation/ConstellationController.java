@@ -25,6 +25,20 @@ public class ConstellationController {
     public void createConstellation(
             final String name,
             final List<StarDisplayData> selectedStars) {
+        createConstellation(name, "#50B4FF", selectedStars);
+    }
+
+    /**
+     * Forwards a colored custom-constellation request to the use case.
+     *
+     * @param name the name for the new constellation
+     * @param colorHex the selected line color as a hex string
+     * @param selectedStars the stars to connect, in selection order
+     */
+    public void createConstellation(
+            final String name,
+            final String colorHex,
+            final List<StarDisplayData> selectedStars) {
         final List<Star> entities = new ArrayList<>(selectedStars.size());
         for (final StarDisplayData data : selectedStars) {
             final Star star = new Star.Builder()
@@ -41,6 +55,6 @@ public class ConstellationController {
             star.updateHorizontalPosition(data.getAltitude(), data.getAzimuth());
             entities.add(star);
         }
-        inputBoundary.execute(new ConstellationInputData(name, entities));
+        inputBoundary.execute(new ConstellationInputData(name, colorHex, entities));
     }
 }

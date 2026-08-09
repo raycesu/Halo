@@ -3,6 +3,7 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
@@ -10,6 +11,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.time.Clock;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.BorderFactory;
@@ -45,20 +51,26 @@ public class ObservationSetupView extends JPanel
     private static final int ERROR_GREEN = 30;
     private static final int ERROR_BLUE = 30;
     private static final int LOCATION_ROW = 0;
-    private static final int DATE_ROW = 1;
-    private static final int TIME_ROW = 2;
-    private static final int BUTTON_ROW = 3;
-    private static final int ERROR_ROW = 4;
+    private static final int DATE_TIME_MODE_ROW = 1;
+    private static final int DATE_ROW = 2;
+    private static final int TIME_ROW = 3;
+    private static final int BUTTON_ROW = 4;
+    private static final int ERROR_ROW = 5;
     private static final int FIELD_COLUMNS = 20;
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final ObservationSetupViewModel viewModel;
     private final ViewSkyController viewSkyController;
     private final ViewManagerModel viewManagerModel;
+    private final Clock clock;
     private final CityAutocompleteField locationField;
     private final JTextField dateField;
     private final JTextField timeField;
+    private final JButton nowButton = new JButton("Now");
+    private final JButton customButton = new JButton("Custom");
     private final JButton viewSkyButton = new JButton("View Sky");
     private final JLabel errorLabel;
+    private boolean useCurrentDateTime = true;
     private SwingWorker<Void, Void> viewSkyWorker;
 
     public ObservationSetupView(
@@ -67,9 +79,26 @@ public class ObservationSetupView extends JPanel
             final ViewManagerModel viewManagerModel,
             final LookupLocationController lookupLocationController,
             final LookupLocationViewModel lookupLocationViewModel) {
+        this(
+                viewModel,
+                viewSkyController,
+                viewManagerModel,
+                lookupLocationController,
+                lookupLocationViewModel,
+                Clock.systemDefaultZone());
+    }
+
+    ObservationSetupView(
+            final ObservationSetupViewModel viewModel,
+            final ViewSkyController viewSkyController,
+            final ViewManagerModel viewManagerModel,
+            final LookupLocationController lookupLocationController,
+            final LookupLocationViewModel lookupLocationViewModel,
+            final Clock clock) {
         this.viewModel = viewModel;
         this.viewSkyController = viewSkyController;
         this.viewManagerModel = viewManagerModel;
+        this.clock = Objects.requireNonNull(clock);
 
         locationField = new CityAutocompleteField(lookupLocationController, lookupLocationViewModel);
         locationField.setName("locationField");
@@ -85,7 +114,11 @@ public class ObservationSetupView extends JPanel
         dateField = createField("dateField", viewModel.getDate());
         timeField = createField("timeField", viewModel.getTime());
         errorLabel = new JLabel(viewModel.getErrorMessage());
+        nowButton.setName("nowButton");
+        customButton.setName("customButton");
         viewSkyButton.setName("viewSkyButton");
+
+        setDateTimeMode(true);
 
         setLayout(SwingStyle.border());
         setBackground(Color.WHITE);
@@ -93,6 +126,8 @@ public class ObservationSetupView extends JPanel
         add(createTitleLabel(), BorderLayout.NORTH);
         add(createFormWrapper(), BorderLayout.CENTER);
 
+        nowButton.addActionListener(this);
+        customButton.addActionListener(this);
         viewSkyButton.addActionListener(this);
         viewModel.addPropertyChangeListener(this);
     }
@@ -109,20 +144,30 @@ public class ObservationSetupView extends JPanel
     @Override
     public void actionPerformed(final ActionEvent event) {
         final boolean workerBusy = viewSkyWorker != null && !viewSkyWorker.isDone();
-        if (event.getSource() == viewSkyButton && !workerBusy) {
+        if (event.getSource() == nowButton) {
+            setDateTimeMode(true);
+        }
+        else if (event.getSource() == customButton) {
+            setDateTimeMode(false);
+        }
+        else if (event.getSource() == viewSkyButton && !workerBusy) {
             submitObservation();
         }
     }
 
     private void submitObservation() {
         final LocationSuggestion location = locationField.getSelectedLocation();
-        final String date = dateField.getText();
-        final String time = timeField.getText();
 
         if (location == null) {
             viewModel.setErrorMessage("Choose a location from the suggestions first.");
         }
         else {
+            if (useCurrentDateTime) {
+                refreshCurrentDateTime(location);
+            }
+            final String date = dateField.getText();
+            final String time = timeField.getText();
+
             viewModel.setSelectedLocation(
                     location.getDisplayName(),
                     location.getLatitude(),
@@ -186,6 +231,12 @@ public class ObservationSetupView extends JPanel
         constraints.anchor = GridBagConstraints.WEST;
 
         addFieldRow(formPanel, constraints, LOCATION_ROW, "Location:", locationField);
+        addFieldRow(
+                formPanel,
+                constraints,
+                DATE_TIME_MODE_ROW,
+                "Observation time:",
+                createDateTimeModePanel());
         addFieldRow(formPanel, constraints, DATE_ROW, "Date (yyyy-MM-dd):", dateField);
         addFieldRow(formPanel, constraints, TIME_ROW, "Time (HH:mm):", timeField);
 
@@ -207,6 +258,39 @@ public class ObservationSetupView extends JPanel
         formWrapper.setBackground(Color.WHITE);
         formWrapper.add(formPanel);
         return formWrapper;
+    }
+
+    private JPanel createDateTimeModePanel() {
+        final JPanel modePanel = new JPanel(SwingStyle.flow(FlowLayout.LEFT, 6, 0));
+        modePanel.setBackground(Color.WHITE);
+        modePanel.add(nowButton);
+        modePanel.add(customButton);
+        return modePanel;
+    }
+
+    private void setDateTimeMode(final boolean currentDateTime) {
+        useCurrentDateTime = currentDateTime;
+        nowButton.setEnabled(!currentDateTime);
+        customButton.setEnabled(currentDateTime);
+        dateField.setEditable(!currentDateTime);
+        timeField.setEditable(!currentDateTime);
+        if (currentDateTime) {
+            refreshCurrentDateTime(locationField.getSelectedLocation());
+        }
+    }
+
+    private void refreshCurrentDateTime(final LocationSuggestion location) {
+        ZoneId zoneId = clock.getZone();
+        if (location != null) {
+            zoneId = ZoneId.of(location.getZoneId());
+        }
+        final ZonedDateTime now = ZonedDateTime.ofInstant(clock.instant(), zoneId);
+        final String currentDate = now.toLocalDate().toString();
+        final String currentTime = now.format(TIME_FORMAT);
+        dateField.setText(currentDate);
+        timeField.setText(currentTime);
+        viewModel.setDate(currentDate);
+        viewModel.setTime(currentTime);
     }
 
     private JTextField createField(final String name, final String value) {

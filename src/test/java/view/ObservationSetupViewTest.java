@@ -2,6 +2,8 @@ package view;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -76,6 +78,7 @@ class ObservationSetupViewTest {
 
         SwingUtilities.invokeAndWait(() -> {
             context.view.getLocationField().setSelectedLocation(ISTANBUL_SUGGESTION);
+            namedButton(context.view, "customButton").doClick();
             textField(context.view, "dateField").setText("2026-08-12");
             textField(context.view, "timeField").setText("22:15");
             button(context.view, "View Sky").doClick();
@@ -106,6 +109,40 @@ class ObservationSetupViewTest {
     }
 
     @Test
+    void nowUsesTheSelectedCityTimeAndCustomUnlocksTheFields() throws Exception {
+        final Clock fixedClock = Clock.fixed(
+                Instant.parse("2026-08-08T22:37:45Z"),
+                ZoneId.of("UTC"));
+        final TestContext context = createContext(false, fixedClock);
+        final JTextField date = textField(context.view, "dateField");
+        final JTextField time = textField(context.view, "timeField");
+        final JButton now = namedButton(context.view, "nowButton");
+        final JButton custom = namedButton(context.view, "customButton");
+
+        assertFalse(now.isEnabled());
+        assertTrue(custom.isEnabled());
+        assertFalse(date.isEditable());
+        assertFalse(time.isEditable());
+        assertEquals("2026-08-09", date.getText());
+        assertEquals("01:37", time.getText());
+
+        SwingUtilities.invokeAndWait(custom::doClick);
+        assertTrue(date.isEditable());
+        assertTrue(time.isEditable());
+
+        SwingUtilities.invokeAndWait(() -> {
+            date.setText("2030-01-02");
+            time.setText("03:04");
+            now.doClick();
+        });
+
+        assertFalse(date.isEditable());
+        assertFalse(time.isEditable());
+        assertEquals("2026-08-09", date.getText());
+        assertEquals("01:37", time.getText());
+    }
+
+    @Test
     void failedSubmissionReturnsToSetupAndDisplaysTheError() throws Exception {
         final TestContext context = createContext(true);
         final CountDownLatch setupShown =
@@ -129,6 +166,10 @@ class ObservationSetupViewTest {
     }
 
     private TestContext createContext(final boolean fail) throws Exception {
+        return createContext(fail, Clock.systemDefaultZone());
+    }
+
+    private TestContext createContext(final boolean fail, final Clock clock) throws Exception {
         final ObservationSetupViewModel setupViewModel =
                 new ObservationSetupViewModel();
 
@@ -168,7 +209,8 @@ class ObservationSetupViewTest {
                         controller,
                         viewManagerModel,
                         lookupLocationController,
-                        lookupLocationViewModel)));
+                        lookupLocationViewModel,
+                        clock)));
 
         return new TestContext(
                 viewReference.get(),
@@ -214,6 +256,12 @@ class ObservationSetupViewTest {
             }
         }
         throw new IllegalStateException("Button not found: " + text);
+    }
+
+    private JButton namedButton(
+            final Container container,
+            final String name) {
+        return (JButton) namedComponent(container, name);
     }
 
     private JButton findButton(

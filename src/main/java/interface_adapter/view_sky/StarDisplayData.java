@@ -94,17 +94,33 @@ public final class StarDisplayData {
 
     @Override
     public boolean equals(final Object other) {
-        if (this == other) {
-            return true;
+        boolean equal = this == other;
+        if (!equal && other instanceof StarDisplayData) {
+            final StarDisplayData otherStar = (StarDisplayData) other;
+            if (hasCatalogueId() && otherStar.hasCatalogueId()) {
+                equal = Objects.equals(catalogueId, otherStar.catalogueId);
+            }
+            else if (!hasCatalogueId() && !otherStar.hasCatalogueId()) {
+                equal = Objects.equals(displayName, otherStar.displayName)
+                        && Objects.equals(type, otherStar.type);
+            }
         }
-        if (!(other instanceof StarDisplayData)) {
-            return false;
-        }
-        return Objects.equals(catalogueId, ((StarDisplayData) other).catalogueId);
+        return equal;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(catalogueId);
+        final int hashCode;
+        if (hasCatalogueId()) {
+            hashCode = Objects.hashCode(catalogueId);
+        }
+        else {
+            hashCode = Objects.hash(displayName, type);
+        }
+        return hashCode;
+    }
+
+    private boolean hasCatalogueId() {
+        return catalogueId != null && !catalogueId.isBlank();
     }
 }

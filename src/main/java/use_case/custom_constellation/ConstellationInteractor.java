@@ -58,7 +58,7 @@ public class ConstellationInteractor
                 final List<ConstellationLine> lines =
                         createLines(selectedStars);
                 final CustomConstellation constellation =
-                        new CustomConstellation(name, lines);
+                        new CustomConstellation(name, inputData.getColorHex(), lines);
 
                 dataAccess.save(constellation);
                 outputBoundary.prepareSuccessView(

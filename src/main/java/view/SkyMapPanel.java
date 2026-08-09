@@ -43,11 +43,13 @@ public class SkyMapPanel extends JPanel {
     private static final Color BACKGROUND_COLOR = new Color(7, 7, 9);
     private static final Color SELECTION_COLOR = new Color(255, 210, 40);
     private static final Color SUN_COLOR = new Color(255, 190, 60);
+    private static final Color STATIC_CONSTELLATION_LINE_COLOR = Color.WHITE;
     private static final Color CONSTELLATION_LINE_COLOR = new Color(80, 180, 255);
     private static final Font COMPASS_LABEL_FONT =
             new Font(Font.SANS_SERIF, Font.BOLD, COMPASS_LABEL_FONT_SIZE);
     private static final BasicStroke HORIZON_STROKE = new BasicStroke(2.0F);
     private static final BasicStroke SELECTION_STROKE = new BasicStroke(2.0F);
+    private static final BasicStroke STATIC_CONSTELLATION_STROKE = new BasicStroke(1.5F);
     private static final BasicStroke CONSTELLATION_STROKE = new BasicStroke(1.5F);
 
     private List<StarDisplayData> stars = List.of();
@@ -64,6 +66,7 @@ public class SkyMapPanel extends JPanel {
     private int dragStartY;
     private double dragStartPanX;
     private double dragStartPanY;
+    private List<ConstellationDisplayData> staticConstellations = List.of();
     private List<ConstellationDisplayData> customConstellations = List.of();
     private List<StarDisplayData> constellationSelection = List.of();
 
@@ -84,6 +87,17 @@ public class SkyMapPanel extends JPanel {
     public void setStars(final List<StarDisplayData> stars) {
         this.stars = List.copyOf(stars);
         selectedObject = null;
+        repaint();
+    }
+
+    /**
+     * Replaces the built-in constellations for the current observation.
+     *
+     * @param staticConstellations the built-in constellations to draw
+     */
+    public void setStaticConstellations(
+            final List<ConstellationDisplayData> staticConstellations) {
+        this.staticConstellations = List.copyOf(staticConstellations);
         repaint();
     }
 
@@ -202,6 +216,7 @@ public class SkyMapPanel extends JPanel {
                     circleX - metrics.stringWidth("W") - COMPASS_LABEL_HORIZONTAL_PADDING,
                     centreY + metrics.getAscent() / 2);
 
+            drawStaticConstellations(graphics2D, centreX, centreY, radius);
             drawCustomConstellations(graphics2D, centreX, centreY, radius);
 
             for (final StarDisplayData star : filterVisible(stars)) {
@@ -229,6 +244,7 @@ public class SkyMapPanel extends JPanel {
         graphics2D.setStroke(CONSTELLATION_STROKE);
 
         for (final ConstellationDisplayData constellation : customConstellations) {
+            graphics2D.setColor(customConstellationColor(constellation));
             for (final ConstellationDisplayData.Line line : constellation.getLines()) {
                 if (line.isStartAboveHorizon() && line.isEndAboveHorizon()) {
                     final ScreenPosition start =
@@ -238,6 +254,39 @@ public class SkyMapPanel extends JPanel {
                             project(line.getEndAltitude(), line.getEndAzimuth(),
                                     centreX, centreY, radius);
 
+                    graphics2D.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
+                }
+            }
+        }
+    }
+
+    private Color customConstellationColor(final ConstellationDisplayData constellation) {
+        Color color = CONSTELLATION_LINE_COLOR;
+        if (constellation.getColorHex() != null) {
+            try {
+                color = Color.decode(constellation.getColorHex());
+            }
+            catch (NumberFormatException exception) {
+                // Keep the default color for malformed display data.
+            }
+        }
+        return color;
+    }
+
+    private void drawStaticConstellations(
+            final Graphics2D graphics2D, final int centreX, final int centreY, final int radius) {
+        graphics2D.setColor(STATIC_CONSTELLATION_LINE_COLOR);
+        graphics2D.setStroke(STATIC_CONSTELLATION_STROKE);
+
+        for (final ConstellationDisplayData constellation : staticConstellations) {
+            for (final ConstellationDisplayData.Line line : constellation.getLines()) {
+                if (line.isStartAboveHorizon() && line.isEndAboveHorizon()) {
+                    final ScreenPosition start = project(
+                            line.getStartAltitude(), line.getStartAzimuth(),
+                            centreX, centreY, radius);
+                    final ScreenPosition end = project(
+                            line.getEndAltitude(), line.getEndAzimuth(),
+                            centreX, centreY, radius);
                     graphics2D.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
                 }
             }
