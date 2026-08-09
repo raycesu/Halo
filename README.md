@@ -240,8 +240,7 @@ Contributions are welcome while the course project is active.
 
 - Describe **why** the change is needed and what it affects
 - Keep the change scoped to one feature or fix
-- Follow Clean Architecture boundaries used in this project (see
-  [`.cursor/rules/halo-project-architecture.mdc`](.cursor/rules/halo-project-architecture.mdc))
+- Follow Clean Architecture boundaries used in this project
 - Update or add tests when behaviour changes
 - Do not commit secrets or local IDE clutter
 
