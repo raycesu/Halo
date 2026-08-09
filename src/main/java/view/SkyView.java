@@ -36,6 +36,8 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     private static final Color CONSTELLATION_SUCCESS_COLOR = SwingStyle.rgb(20, 130, 60);
     private static final int OBSERVATION_SETUP_WIDTH = 900;
     private static final int OBSERVATION_SETUP_HEIGHT = 600;
+    private static final String DETAILS_UNAVAILABLE = "Details unavailable";
+    private static final String DEGREES_FORMAT = "%.2f°";
 
     private final SkyViewModel viewModel;
     private final CheckConditionsController checkConditionsController;
@@ -157,7 +159,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         rightSidebar.getObjectNameLabel().setText(textOrPlaceholder(
                 viewModel.getSelectedObjectName(), "No object selected"));
         rightSidebar.getObjectDetailsArea().setText(textOrPlaceholder(
-                viewModel.getSelectedObjectDetails(), "Details unavailable"));
+                viewModel.getSelectedObjectDetails(), DETAILS_UNAVAILABLE));
         updateWeatherFromViewModel();
         leftPanel.getErrorLabel().setText(viewModel.getErrorMessage());
         updateRankedDaysFromViewModel();
@@ -346,21 +348,25 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
             }
             else {
                 rightSidebar.getCheckConditionsButton().setEnabled(false);
-                new Thread(() -> {
-                    try {
-                        checkConditionsController.checkConditions(
-                                viewModel.getDisplayedLocation(),
-                                viewModel.getLatitude(),
-                                viewModel.getLongitude(),
-                                viewModel.getZoneId(),
-                                observationDateTime);
-                    }
-                    finally {
-                        SwingUtilities.invokeLater(
-                                () -> rightSidebar.getCheckConditionsButton().setEnabled(true));
-                    }
-                }, "check-conditions-worker").start();
+                new Thread(
+                        () -> runCheckConditionsWorker(observationDateTime),
+                        "check-conditions-worker").start();
             }
+        }
+    }
+
+    private void runCheckConditionsWorker(final LocalDateTime observationDateTime) {
+        try {
+            checkConditionsController.checkConditions(
+                    viewModel.getDisplayedLocation(),
+                    viewModel.getLatitude(),
+                    viewModel.getLongitude(),
+                    viewModel.getZoneId(),
+                    observationDateTime);
+        }
+        finally {
+            SwingUtilities.invokeLater(
+                    () -> rightSidebar.getCheckConditionsButton().setEnabled(true));
         }
     }
 
@@ -376,21 +382,25 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
             datesToRank.sort(null);
 
             forecastRankingDialogController.getRankForecastButton().setEnabled(false);
-            new Thread(() -> {
-                try {
-                    rankForecastDaysController.rankForecastDays(
-                            viewModel.getDisplayedLocation(),
-                            viewModel.getLatitude(),
-                            viewModel.getLongitude(),
-                            viewModel.getZoneId(),
-                            datesToRank);
-                }
-                finally {
-                    SwingUtilities.invokeLater(() -> {
-                        forecastRankingDialogController.getRankForecastButton().setEnabled(true);
-                    });
-                }
-            }, "rank-forecast-days-worker").start();
+            new Thread(
+                    () -> runRankForecastDaysWorker(datesToRank),
+                    "rank-forecast-days-worker").start();
+        }
+    }
+
+    private void runRankForecastDaysWorker(final List<LocalDate> datesToRank) {
+        try {
+            rankForecastDaysController.rankForecastDays(
+                    viewModel.getDisplayedLocation(),
+                    viewModel.getLatitude(),
+                    viewModel.getLongitude(),
+                    viewModel.getZoneId(),
+                    datesToRank);
+        }
+        finally {
+            SwingUtilities.invokeLater(() -> {
+                forecastRankingDialogController.getRankForecastButton().setEnabled(true);
+            });
         }
     }
 
@@ -471,8 +481,6 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         }
     }
 
-    private static final String DEGREES_FORMAT = "%.2f°";
-
     private static String formatObjectDetails(final StarDisplayData object) {
         if (object == null) {
             return "";
@@ -484,7 +492,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         appendDescription(details, object);
 
         if (details.length() == 0) {
-            details.append("Details unavailable");
+            details.append(DETAILS_UNAVAILABLE);
         }
         return details.toString();
     }
@@ -573,7 +581,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         }
         else if ("selectedObjectDetails".equals(propertyName)) {
             rightSidebar.getObjectDetailsArea().setText(textOrPlaceholder(
-                    viewModel.getSelectedObjectDetails(), "Details unavailable"));
+                    viewModel.getSelectedObjectDetails(), DETAILS_UNAVAILABLE));
         }
         else if ("errorMessage".equals(propertyName)) {
             leftPanel.getErrorLabel().setText(viewModel.getErrorMessage());

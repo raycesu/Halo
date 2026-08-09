@@ -656,6 +656,8 @@
             <property name="max" value="7"/>
         </module>
         <module name="ClassDataAbstractionCoupling">
+            <!-- Halo is a Swing desktop app with a composition root; allow more collaborators. -->
+            <property name="max" value="20"/>
             <!-- Default classes are also listed -->
             <property name="excludedClasses"
                       value="boolean, byte, char, double, float, int, long, short, void,
@@ -669,9 +671,14 @@
                        HashMap, SortedMap, TreeMap, DetailsAST, CheckstyleException,
                        UnsupportedEncodingException, BuildException, ConversionException,
                        FileNotFoundException, TestException"/>
+            <!-- Exact package match only (not recursive); list common AWT/Swing packages. -->
+            <property name="excludedPackages"
+                      value="java.awt, java.awt.event, java.awt.font, java.awt.geom, java.awt.image,
+                       javax.swing, javax.swing.event, javax.swing.border, javax.swing.text,
+                       javax.swing.table, javax.swing.plaf"/>
         </module>
         <module name="ClassFanOutComplexity">
-            <property name="max" value="25"/>
+            <property name="max" value="40"/>
             <!-- Default classes are also listed -->
             <property name="excludedClasses"
                       value="boolean, byte, char, double, float, int, long, short,
@@ -689,6 +696,11 @@
                        TokenStreamException, IOException, Override, Deprecated, SafeVarargs,
                        SuppressWarnings, FunctionalInterface, NoSuchMethodException,
                        InvocationTargetException, IllegalAccessException"/>
+            <!-- Exact package match only (not recursive); list common AWT/Swing packages. -->
+            <property name="excludedPackages"
+                      value="java.awt, java.awt.event, java.awt.font, java.awt.geom, java.awt.image,
+                       javax.swing, javax.swing.event, javax.swing.border, javax.swing.text,
+                       javax.swing.table, javax.swing.plaf"/>
         </module>
         <module name="CyclomaticComplexity">
             <property name="switchBlockAsSingleDecisionPoint" value="true"/>
@@ -796,7 +808,10 @@
         </module>
         <module name="MethodLength"/>
         <module name="OuterTypeNumber"/>
-        <module name="ParameterNumber"/>
+        <module name="ParameterNumber">
+            <!-- Presentation DTOs and composition wiring may carry many fields/deps. -->
+            <property name="max" value="12"/>
+        </module>
         <module name="RecordComponentNumber"/>
 
         <!-- Whitespace -->

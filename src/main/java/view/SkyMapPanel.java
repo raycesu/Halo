@@ -51,6 +51,8 @@ public class SkyMapPanel extends JPanel {
     private static final BasicStroke SELECTION_STROKE = new BasicStroke(2.0F);
     private static final BasicStroke STATIC_CONSTELLATION_STROKE = new BasicStroke(1.5F);
     private static final BasicStroke CONSTELLATION_STROKE = new BasicStroke(1.5F);
+    private static final double DEGREES_FROM_ZENITH_TO_HORIZON = 90.0;
+    private static final double MIN_VISIBLE_ALTITUDE = 0.0;
 
     private List<StarDisplayData> stars = List.of();
     private StarDisplayData selectedObject;
@@ -477,9 +479,6 @@ public class SkyMapPanel extends JPanel {
     private int mapDiameter() {
         return Math.max(0, Math.min(getWidth() - HORIZONTAL_MARGIN, getHeight() - VERTICAL_MARGIN));
     }
-
-    private static final double DEGREES_FROM_ZENITH_TO_HORIZON = 90.0;
-    private static final double MIN_VISIBLE_ALTITUDE = 0.0;
 
     static ScreenPosition project(
             final double altitude,
