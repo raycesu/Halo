@@ -1,16 +1,23 @@
 package view;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 
 /**
  * The left-hand column of {@link SkyView}: the search box, the current observation summary
@@ -41,6 +48,11 @@ class SkyLeftPanel extends JPanel {
     private static final int GAP_BEFORE_CONSTELLATION_STATUS = 8;
     private static final int GAP_LABEL_TO_FIELD = 5;
     private static final int GAP_AFTER_FIELD_ROW = 12;
+    private static final int COLOR_CIRCLE_SIZE = 28;
+    private static final int COLOR_CIRCLE_INSET = 4;
+    private static final String[] CONSTELLATION_COLOR_HEX_VALUES = {
+        "#50B4FF", "#FF5C5C", "#FF9F43", "#FFD93D", "#55D187", "#B388FF",
+    };
 
     private final JTextField searchField = new JTextField();
     private final JButton searchButton = new JButton("Search");
@@ -49,8 +61,10 @@ class SkyLeftPanel extends JPanel {
     private final JTextField timeField = new JTextField();
     private final JButton changeObservationButton = new JButton("Change Observation");
     private final JLabel errorLabel = new JLabel();
-    private final JButton constellationButton = new JButton("Constellation");
+    private final JButton constellationButton = new JButton("Custom Constellation");
+    private final JButton exitConstellationButton = new JButton("Exit");
     private final JLabel constellationStatusLabel = new JLabel();
+    private String selectedConstellationColorHex = CONSTELLATION_COLOR_HEX_VALUES[0];
 
     SkyLeftPanel() {
         SwingStyle.stackVertically(this);
@@ -104,6 +118,7 @@ class SkyLeftPanel extends JPanel {
         errorLabel.setForeground(SwingStyle.rgb(ERROR_RED, ERROR_GREEN, ERROR_BLUE));
         errorLabel.setAlignmentX(LEFT_ALIGNMENT);
         constellationButton.setEnabled(false);
+        exitConstellationButton.setVisible(false);
         constellationStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
     }
 
@@ -115,6 +130,16 @@ class SkyLeftPanel extends JPanel {
                 Integer.MAX_VALUE, constellationButton.getPreferredSize().height));
         constellationPanel.add(constellationButton);
         return constellationPanel;
+    }
+
+    private JPanel createExitConstellationPanel() {
+        final JPanel exitPanel = new JPanel(SwingStyle.flow(FlowLayout.CENTER, 0, 0));
+        exitPanel.setOpaque(false);
+        exitPanel.setAlignmentX(LEFT_ALIGNMENT);
+        exitPanel.setMaximumSize(SwingStyle.size(
+                Integer.MAX_VALUE, exitConstellationButton.getPreferredSize().height));
+        exitPanel.add(exitConstellationButton);
+        return exitPanel;
     }
 
     private JLabel createSearchHeading() {
@@ -147,6 +172,7 @@ class SkyLeftPanel extends JPanel {
         add(errorLabel);
         add(Box.createVerticalGlue());
         add(createConstellationPanel());
+        add(createExitConstellationPanel());
         add(Box.createRigidArea(SwingStyle.size(0, GAP_BEFORE_CONSTELLATION_STATUS)));
         add(constellationStatusLabel);
     }
@@ -190,6 +216,10 @@ class SkyLeftPanel extends JPanel {
         return constellationButton;
     }
 
+    JButton getExitConstellationButton() {
+        return exitConstellationButton;
+    }
+
     JLabel getConstellationStatusLabel() {
         return constellationStatusLabel;
     }
@@ -212,12 +242,79 @@ class SkyLeftPanel extends JPanel {
         }
     }
 
-    /**
-     * Prompts the user for a new custom constellation's name.
-     *
-     * @return the name the user entered, or null if they cancel
-     */
-    String promptForConstellationName() {
-        return JOptionPane.showInputDialog(this, "Enter a name for the constellation:");
+    String promptForConstellationNameAndColor() {
+        final JTextField nameField = new JTextField();
+        final ButtonGroup colorGroup = new ButtonGroup();
+        final JPanel colorPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
+        for (int index = 0; index < CONSTELLATION_COLOR_HEX_VALUES.length; index++) {
+            final String colorHex = CONSTELLATION_COLOR_HEX_VALUES[index];
+            final ColorChoiceButton colorButton =
+                    new ColorChoiceButton(Color.decode(colorHex));
+            colorButton.setActionCommand(colorHex);
+            colorButton.setSelected(index == 0);
+            colorGroup.add(colorButton);
+            colorPanel.add(colorButton);
+        }
+        final Object[] dialogContents = {
+            "Constellation name:",
+            nameField,
+            "Line color:",
+            colorPanel,
+        };
+
+        final int result = JOptionPane.showConfirmDialog(
+                this,
+                dialogContents,
+                "Save Custom Constellation",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+
+        String name = null;
+        if (result == JOptionPane.OK_OPTION) {
+            name = nameField.getText();
+            selectedConstellationColorHex = colorGroup.getSelection().getActionCommand();
+        }
+        return name;
+    }
+
+    String getSelectedConstellationColorHex() {
+        return selectedConstellationColorHex;
+    }
+
+    private static final class ColorChoiceButton extends JToggleButton {
+        private final Color circleColor;
+
+        ColorChoiceButton(final Color circleColor) {
+            this.circleColor = circleColor;
+            setPreferredSize(SwingStyle.size(COLOR_CIRCLE_SIZE, COLOR_CIRCLE_SIZE));
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(final Graphics graphics) {
+            super.paintComponent(graphics);
+            final Graphics2D graphics2D = (Graphics2D) graphics.create();
+            try {
+                graphics2D.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                final int diameter = Math.min(getWidth(), getHeight()) - COLOR_CIRCLE_INSET * 2;
+                final int x = (getWidth() - diameter) / 2;
+                final int y = (getHeight() - diameter) / 2;
+                graphics2D.setColor(circleColor);
+                graphics2D.fillOval(x, y, diameter, diameter);
+                if (isSelected()) {
+                    graphics2D.setColor(Color.DARK_GRAY);
+                    graphics2D.setStroke(new BasicStroke(2.0F));
+                    graphics2D.drawOval(x, y, diameter, diameter);
+                }
+            }
+            finally {
+                graphics2D.dispose();
+            }
+        }
     }
 }

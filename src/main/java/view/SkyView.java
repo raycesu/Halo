@@ -150,6 +150,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         leftPanel.getLocationField().setText(viewModel.getDisplayedLocation());
         leftPanel.getDateField().setText(viewModel.getDisplayedDate());
         leftPanel.getTimeField().setText(viewModel.getDisplayedTime());
+        skyMapPanel.setStaticConstellations(viewModel.getStaticConstellations());
         skyMapPanel.setStars(viewModel.getStars());
         skyMapPanel.setSelectedObject(viewModel.getSelectedObject());
         leftPanel.getSearchButton().setEnabled(!viewModel.getStars().isEmpty());
@@ -217,6 +218,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         forecastRankingDialogController.getSelectDatesButton().addActionListener(this);
         forecastRankingDialogController.getRankForecastButton().addActionListener(this);
         leftPanel.getConstellationButton().addActionListener(this);
+        leftPanel.getExitConstellationButton().addActionListener(this);
     }
 
     @Override
@@ -244,6 +246,9 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         else if (source == leftPanel.getConstellationButton()) {
             handleConstellationAction();
         }
+        else if (source == leftPanel.getExitConstellationButton()) {
+            cancelConstellationCreation();
+        }
     }
 
     private void handleConstellationAction() {
@@ -260,19 +265,25 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         constellationSelection.clear();
         skyMapPanel.setConstellationSelection(constellationSelection);
         leftPanel.getConstellationButton().setText("Save Constellation");
+        leftPanel.getExitConstellationButton().setVisible(true);
         leftPanel.getConstellationStatusLabel().setForeground(Color.BLACK);
         leftPanel.getConstellationStatusLabel().setText("Select stars in order");
+        leftPanel.revalidate();
+        leftPanel.repaint();
     }
 
     private void saveConstellation() {
-        final String name = leftPanel.promptForConstellationName();
+        final String name = leftPanel.promptForConstellationNameAndColor();
 
         // Press Cancel ends creation without saving
         if (name == null) {
-            finishConstellationCreation();
+            cancelConstellationCreation();
         }
         else {
-            constellationController.createConstellation(name, constellationSelection);
+            constellationController.createConstellation(
+                    name,
+                    leftPanel.getSelectedConstellationColorHex(),
+                    constellationSelection);
             // Keep creation mode active when validation fails
             if (constellationViewModel.getErrorMessage().isBlank()) {
                 finishConstellationCreation();
@@ -285,6 +296,15 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
         constellationSelection.clear();
         skyMapPanel.setConstellationSelection(List.of());
         leftPanel.getConstellationButton().setText("Custom Constellation");
+        leftPanel.getExitConstellationButton().setVisible(false);
+        leftPanel.revalidate();
+        leftPanel.repaint();
+    }
+
+    private void cancelConstellationCreation() {
+        finishConstellationCreation();
+        leftPanel.getConstellationStatusLabel().setForeground(Color.BLACK);
+        leftPanel.getConstellationStatusLabel().setText("Constellation creation cancelled");
     }
 
     private void handleSearch() {
@@ -528,6 +548,7 @@ public class SkyView extends JPanel implements ActionListener, PropertyChangeLis
     }
 
     private void handleSkyViewModelPropertyChange(final String propertyName) {
+        skyMapPanel.setStaticConstellations(viewModel.getStaticConstellations());
         if ("displayedLocation".equals(propertyName)) {
             leftPanel.setLocationText(viewModel.getDisplayedLocation());
         }

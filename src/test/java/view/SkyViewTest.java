@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JButton;
@@ -16,6 +17,8 @@ import javax.swing.SwingUtilities;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.check_conditions.CheckConditionsController;
 import interface_adapter.check_conditions.CheckConditionsViewModel;
+import interface_adapter.custom_constellation.ConstellationController;
+import interface_adapter.custom_constellation.ConstellationViewModel;
 import interface_adapter.rank_forecast_days.RankForecastDaysController;
 import interface_adapter.rank_forecast_days.RankForecastDaysViewModel;
 import interface_adapter.view_sky.SkyViewModel;
@@ -127,6 +130,31 @@ class SkyViewTest {
         assertFalse(textField(view, "locationDisplayField").isEditable());
         assertFalse(textField(view, "dateDisplayField").isEditable());
         assertFalse(textField(view, "timeDisplayField").isEditable());
+    }
+
+    @Test
+    void exitButtonLeavesConstellationModeWithoutSaving() throws Exception {
+        final AtomicInteger saveRequests = new AtomicInteger();
+        SwingUtilities.invokeAndWait(() -> {
+            view.configureCustomConstellations(
+                    new ConstellationController(inputData -> saveRequests.incrementAndGet()),
+                    new ConstellationViewModel());
+            button(view, "Custom Constellation").doClick();
+        });
+
+        assertTrue(button(view, "Exit").isVisible());
+        assertEquals("Save Constellation", button(view, "Save Constellation").getText());
+
+        SwingUtilities.invokeAndWait(() -> button(view, "Exit").doClick());
+
+        assertEquals(0, saveRequests.get());
+        assertFalse(button(view, "Exit").isVisible());
+        assertEquals(
+                "Custom Constellation",
+                button(view, "Custom Constellation").getText());
+
+        SwingUtilities.invokeAndWait(() -> button(view, "Custom Constellation").doClick());
+        assertEquals("Save Constellation", button(view, "Save Constellation").getText());
     }
 
     @Test

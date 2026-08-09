@@ -11,8 +11,12 @@ import astronomy.AltAzCalculator;
 import astronomy.JulianDateCalculator;
 import astronomy.SiderealTimeCalculator;
 import entity.CelestialBodyType;
+import entity.ConstellationLine;
+import entity.CustomConstellation;
 import entity.ObserverLocation;
 import entity.Star;
+import entity.StaticConstellationDefinition;
+import entity.StaticConstellationSegment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import use_case.view_sky.CelestialBodyDataAccessInterface;
@@ -38,6 +42,8 @@ class ViewSkyInteractorTest {
             LocalDateTime.of(2026, 7, 30, 23, 0);
 
     private FakeStarCatalog catalogue;
+    private FakeStaticConstellations staticConstellations;
+    private FakeCustomConstellations customConstellations;
     private FakeCelestialBodies ephemeris;
     private FakeViewSkyOutputBoundary presenter;
     private HorizontalCoordinateCalculator coordinateCalculator;
@@ -45,6 +51,8 @@ class ViewSkyInteractorTest {
     @BeforeEach
     void setUp() {
         catalogue = new FakeStarCatalog();
+        staticConstellations = new FakeStaticConstellations();
+        customConstellations = new FakeCustomConstellations();
         ephemeris = new FakeCelestialBodies();
         presenter = new FakeViewSkyOutputBoundary();
 
@@ -102,6 +110,87 @@ class ViewSkyInteractorTest {
                 120.0,
                 presenter.outputData.getStars().get(0).getAzimuth(),
                 1e-9);
+    }
+
+    @Test
+    void resolvesConstellationsUsingPositionedStarsBeforeVisibilityFiltering() {
+        catalogue.stars.add(catalogueStar("HR1", "First", 1.0, 10.0, 1.0));
+        catalogue.stars.add(catalogueStar("HR2", "Second", 2.0, 20.0, 2.0));
+        staticConstellations.definitions.add(new StaticConstellationDefinition(
+                "Test",
+                List.of(new StaticConstellationSegment("HR1", "HR2"))));
+        coordinateCalculator = (stars, location, time) -> {
+            stars.get(0).updateHorizontalPosition(30.0, 40.0);
+            stars.get(1).updateHorizontalPosition(-20.0, 220.0);
+        };
+
+        execute();
+
+        assertEquals(1, presenter.outputData.getStars().size());
+        final ConstellationLine line = presenter.outputData
+                .getStaticConstellations().get(0).getLines().get(0);
+        assertEquals("HR1", line.getStartStar().getCatalogueId());
+        assertEquals(30.0, line.getStartStar().getAltitude(), 1e-9);
+        assertEquals("HR2", line.getEndStar().getCatalogueId());
+        assertEquals(-20.0, line.getEndStar().getAltitude(), 1e-9);
+        assertFalse(line.getEndStar().isAboveHorizon());
+    }
+
+    @Test
+    void skipsAStaticSegmentWhoseEndpointIsMissing() {
+        catalogue.stars.add(catalogueStar("HR1", "First", 1.0, 10.0, 1.0));
+        staticConstellations.definitions.add(new StaticConstellationDefinition(
+                "Test",
+                List.of(new StaticConstellationSegment("HR1", "HR404"))));
+        coordinateCalculator = new FakeHorizontalCoordinateCalculator();
+
+        execute();
+
+        assertTrue(presenter.successCalled);
+        assertEquals(1, presenter.outputData.getStaticConstellations().size());
+        assertTrue(presenter.outputData.getStaticConstellations().get(0).getLines().isEmpty());
+    }
+
+    @Test
+    void keepsCustomConstellationMembershipWhileRepositioningItsStars() {
+        final Star first = catalogueStar("HR1", "First", 1.0, 10.0, 1.0);
+        final Star second = catalogueStar("HR2", "Second", 2.0, 20.0, 2.0);
+        catalogue.stars.add(first);
+        catalogue.stars.add(second);
+
+        final Star savedFirst = first.copyForObservation();
+        final Star savedSecond = second.copyForObservation();
+        savedFirst.updateHorizontalPosition(5.0, 10.0);
+        savedSecond.updateHorizontalPosition(6.0, 20.0);
+        customConstellations.constellations.add(new CustomConstellation(
+                "My stars",
+                "#55D187",
+                List.of(new ConstellationLine(savedFirst, savedSecond))));
+
+        coordinateCalculator = (stars, location, time) -> {
+            final boolean laterObservation = time.toLocalDate().isAfter(OBSERVED_AT.toLocalDate());
+            stars.get(0).updateHorizontalPosition(laterObservation ? 45.0 : 25.0, 100.0);
+            stars.get(1).updateHorizontalPosition(laterObservation ? 55.0 : -35.0, 200.0);
+        };
+
+        executeAt(OBSERVED_AT);
+        final ConstellationLine firstObservation = presenter.outputData
+                .getCustomConstellations().get(0).getLines().get(0);
+
+        executeAt(OBSERVED_AT.plusDays(1));
+        final CustomConstellation updated = presenter.outputData.getCustomConstellations().get(0);
+        final ConstellationLine secondObservation = updated.getLines().get(0);
+
+        assertEquals("My stars", updated.getName());
+        assertEquals("#55D187", updated.getColorHex());
+        assertEquals("HR1", firstObservation.getStartStar().getCatalogueId());
+        assertEquals("HR2", firstObservation.getEndStar().getCatalogueId());
+        assertEquals("HR1", secondObservation.getStartStar().getCatalogueId());
+        assertEquals("HR2", secondObservation.getEndStar().getCatalogueId());
+        assertEquals(25.0, firstObservation.getStartStar().getAltitude(), 1e-9);
+        assertFalse(firstObservation.getEndStar().isAboveHorizon());
+        assertEquals(45.0, secondObservation.getStartStar().getAltitude(), 1e-9);
+        assertEquals(55.0, secondObservation.getEndStar().getAltitude(), 1e-9);
     }
 
     @Test
@@ -362,18 +451,24 @@ class ViewSkyInteractorTest {
     }
 
     private void execute() {
+        executeAt(OBSERVED_AT);
+    }
+
+    private void executeAt(final LocalDateTime observationTime) {
         interactor().execute(
                 new ViewSkyInputData(
                         "Toronto",
                         TORONTO_LATITUDE,
                         TORONTO_LONGITUDE,
                         TORONTO_ZONE,
-                        OBSERVED_AT));
+                        observationTime));
     }
 
     private ViewSkyInteractor interactor() {
         return new ViewSkyInteractor(
                 catalogue,
+                staticConstellations,
+                customConstellations,
                 ephemeris,
                 coordinateCalculator,
                 presenter);
@@ -394,9 +489,18 @@ class ViewSkyInteractorTest {
             final double rightAscension,
             final double declination,
             final double magnitude) {
+        return catalogueStar("HIP test", name, rightAscension, declination, magnitude);
+    }
+
+    private static Star catalogueStar(
+            final String catalogueId,
+            final String name,
+            final double rightAscension,
+            final double declination,
+            final double magnitude) {
 
         return new Star.Builder()
-                .catalogueId("HIP test")
+                .catalogueId(catalogueId)
                 .displayName(name)
                 .rightAscension(rightAscension)
                 .declination(declination)
@@ -457,6 +561,28 @@ class ViewSkyInteractorTest {
             }
 
             return bodies;
+        }
+    }
+
+    private static class FakeStaticConstellations
+            implements StaticConstellationDataAccessInterface {
+
+        private final List<StaticConstellationDefinition> definitions = new ArrayList<>();
+
+        @Override
+        public List<StaticConstellationDefinition> findAll() {
+            return definitions;
+        }
+    }
+
+    private static class FakeCustomConstellations
+            implements CustomConstellationDataAccessInterface {
+
+        private final List<CustomConstellation> constellations = new ArrayList<>();
+
+        @Override
+        public List<CustomConstellation> findAll() {
+            return constellations;
         }
     }
 

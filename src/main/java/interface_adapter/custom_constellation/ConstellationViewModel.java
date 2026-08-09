@@ -16,6 +16,18 @@ public class ConstellationViewModel {
     }
 
     /**
+     * Replaces the displayed constellations after their stars are repositioned.
+     *
+     * @param updatedConstellations custom constellations for the current observation
+     */
+    public void setConstellations(
+            final List<ConstellationDisplayData> updatedConstellations) {
+        final List<ConstellationDisplayData> oldValue = constellations;
+        constellations = List.copyOf(updatedConstellations);
+        support.firePropertyChange("constellations", oldValue, constellations);
+    }
+
+    /**
      * Appends a constellation to the displayed list and notifies listeners.
      *
      * @param constellation the constellation to add

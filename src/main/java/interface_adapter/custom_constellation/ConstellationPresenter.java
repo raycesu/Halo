@@ -21,7 +21,8 @@ public class ConstellationPresenter implements ConstellationOutputBoundary {
         final ConstellationDisplayData displayData = toDisplayData(outputData.getConstellation());
         viewModel.addConstellation(displayData);
         viewModel.setErrorMessage("");
-        viewModel.setSuccessMessage("Constellation saved: " + outputData.getConstellation().getName());
+        viewModel.setSuccessMessage(
+                "Custom constellation saved: " + outputData.getConstellation().getName());
     }
 
     @Override
@@ -44,6 +45,7 @@ public class ConstellationPresenter implements ConstellationOutputBoundary {
                     end.getAzimuth(),
                     end.isAboveHorizon()));
         }
-        return new ConstellationDisplayData(constellation.getName(), displayLines);
+        return new ConstellationDisplayData(
+                constellation.getName(), constellation.getColorHex(), displayLines);
     }
 }

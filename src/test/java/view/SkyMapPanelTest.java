@@ -7,11 +7,13 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import interface_adapter.custom_constellation.ConstellationDisplayData;
 import interface_adapter.view_sky.StarDisplayData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -178,6 +180,42 @@ class SkyMapPanelTest {
         assertMarkerRendering("PLANET", Color.WHITE, 3);
     }
 
+    @Test
+    void movingBodiesWithoutCatalogueIdsRemainDistinct() {
+        final StarDisplayData sun = createObservedObject("", "Sun", "SUN");
+        final StarDisplayData venus = createObservedObject("", "Venus", "PLANET");
+
+        assertNotEquals(sun, venus);
+    }
+
+    @Test
+    void drawsStaticConstellationsBehindTheStars() {
+        final ConstellationDisplayData.Line line = new ConstellationDisplayData.Line(
+                80.0, 270.0, true,
+                80.0, 90.0, true);
+        panel.setStars(List.of());
+        panel.setStaticConstellations(List.of(
+                new ConstellationDisplayData("Test", List.of(line))));
+
+        final BufferedImage image = renderPanel();
+
+        assertEquals(Color.WHITE.getRGB(), image.getRGB(CENTRE, CENTRE));
+    }
+
+    @Test
+    void drawsACustomConstellationInItsSelectedColor() {
+        final ConstellationDisplayData.Line line = new ConstellationDisplayData.Line(
+                80.0, 270.0, true,
+                80.0, 90.0, true);
+        panel.setStars(List.of());
+        panel.setCustomConstellations(List.of(
+                new ConstellationDisplayData("Test", "#FF5C5C", List.of(line))));
+
+        final BufferedImage image = renderPanel();
+
+        assertEquals(new Color(255, 92, 92).getRGB(), image.getRGB(CENTRE, CENTRE));
+    }
+
     private SkyMapPanel.ScreenPosition projectedPosition(final StarDisplayData object) {
         final int centreX =
                 (int) Math.round(CENTRE + panel.getPanOffsetX());
@@ -299,9 +337,16 @@ class SkyMapPanelTest {
     }
 
     private StarDisplayData createObservedObject(final String type) {
+        return createObservedObject(type, type, type);
+    }
+
+    private StarDisplayData createObservedObject(
+            final String catalogueId,
+            final String name,
+            final String type) {
         return new StarDisplayData(
-                type,
-                type,
+                catalogueId,
+                name,
                 12.0,
                 20.0,
                 1.0,
