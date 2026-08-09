@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import entity.ObserverLocation;
 import entity.Star;
+import entity.Constellation;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -91,6 +92,34 @@ class ViewSkyOutputDataTest {
                 UnsupportedOperationException.class,
                 () -> outputData.getStars().clear()
         );
+    }
+
+    @Test
+    void observerLocationAndStaticConstellationsConstructorUsesEmptyCustomList() {
+        final ObserverLocation location =
+                new ObserverLocation(
+                        "Toronto",
+                        43.6532,
+                        -79.3832,
+                        ZoneId.of("America/Toronto"));
+
+        final Constellation constellation =
+                new Constellation("Test", List.of());
+
+        final ViewSkyOutputData outputData =
+                new ViewSkyOutputData(
+                        "Toronto",
+                        "2026-08-07",
+                        "23:30",
+                        location,
+                        List.of(),
+                        List.of(constellation));
+
+        assertSame(location, outputData.getObserverLocation());
+        assertEquals(
+                List.of(constellation),
+                outputData.getStaticConstellations());
+        assertTrue(outputData.getCustomConstellations().isEmpty());
     }
 
     private Star createStar() {
