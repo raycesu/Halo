@@ -15,7 +15,6 @@ import interface_adapter.view_sky.SkyViewModel;
 import use_case.lookup_location.LocationDataAccessInterface;
 import view.ViewManager;
 
-
 /**
  * Composition root: builds every concrete implementation and wires them into a runnable app.
  *
