@@ -450,6 +450,67 @@ class ViewSkyInteractorTest {
         );
     }
 
+    @Test
+    void constructorWithoutCustomConstellationsUsesEmptyCustomList() {
+        final ViewSkyInteractor interactor = new ViewSkyInteractor(
+                catalogue,
+                staticConstellations,
+                ephemeris,
+                coordinateCalculator,
+                presenter);
+
+        interactor.execute(new ViewSkyInputData(
+                "Toronto",
+                TORONTO_LATITUDE,
+                TORONTO_LONGITUDE,
+                TORONTO_ZONE,
+                OBSERVED_AT));
+
+        assertTrue(presenter.successCalled);
+        assertTrue(
+                presenter.outputData
+                        .getCustomConstellations()
+                        .isEmpty());
+    }
+
+    @Test
+    void constructorWithoutAnyConstellationsUsesEmptyLists() {
+        final ViewSkyInteractor interactor = new ViewSkyInteractor(
+                catalogue,
+                ephemeris,
+                coordinateCalculator,
+                presenter);
+
+        interactor.execute(new ViewSkyInputData(
+                "Toronto",
+                TORONTO_LATITUDE,
+                TORONTO_LONGITUDE,
+                TORONTO_ZONE,
+                OBSERVED_AT));
+
+        assertTrue(presenter.successCalled);
+        assertTrue(
+                presenter.outputData
+                        .getStaticConstellations()
+                        .isEmpty());
+        assertTrue(
+                presenter.outputData
+                        .getCustomConstellations()
+                        .isEmpty());
+    }
+
+    @Test
+    void failsWhenInputDataIsNull() {
+        interactor().execute(null);
+
+        assertTrue(presenter.failCalled);
+        assertFalse(presenter.successCalled);
+        assertEquals(
+                "Could not read the observation details: missing required fields.",
+                presenter.errorMessage);
+        assertNull(presenter.outputData);
+    }
+
     private void execute() {
         executeAt(OBSERVED_AT);
     }
