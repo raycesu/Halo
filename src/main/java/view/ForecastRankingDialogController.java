@@ -37,10 +37,10 @@ class ForecastRankingDialogController {
     private static final int ERROR_COLOR_GREEN = 30;
     private static final int ERROR_COLOR_BLUE = 30;
     private static final int SECTION_SPACING = 6;
+    private static final int VISIBLE_ROW_COUNT = 4;
 
     private final Component owner;
     private final Color backgroundColor;
-    private static final int VISIBLE_ROW_COUNT = 4;
 
     private final JButton selectDatesButton = new JButton("Select Dates");
     private final JLabel selectedDatesSummaryLabel = new JLabel();
