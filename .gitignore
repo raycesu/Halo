@@ -17,6 +17,3 @@ target/
 # Local secrets and configuration
 .env
 config.properties
-
-# Cursor local agent rules (not shared via git)
-.cursor/
