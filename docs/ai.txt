@@ -1,0 +1,7 @@
+Generative AI Usage Disclosure
+
+Our team used OpenAI Codex and Anthropic Claude as supplementary tools during the Halo project.
+
+These tools were used to review and understand source code, suggest implementation and testing approaches, interpret code-coverage results, assist with debugging and Git workflows, draft and revise documentation, improve presentation wording, and generate Mermaid class diagrams.
+
+AI-generated suggestions were reviewed, tested, and revised by the team. The team remains responsible for all submitted code, documentation, diagrams, and presentation content.
