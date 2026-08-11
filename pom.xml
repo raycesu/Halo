@@ -57,12 +57,6 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.6.0</version>
                 <dependencies>
-                    <!-- Pin the Checkstyle engine newer than the plugin's own default (9.3).
-                         NOTE: Checkstyle 13.x requires a JRE 21+ to run, but this project builds
-                         with Maven on JDK 17 (see maven.compiler.release above), so we use the
-                         newest release that still runs on JRE 17: the 12.x line. IntelliJ's
-                         CheckStyle-IDEA plugin (.idea/checkstyle-idea.xml) uses 13.4.1 since it
-                         runs inside IntelliJ's own bundled JDK, which is newer. -->
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
